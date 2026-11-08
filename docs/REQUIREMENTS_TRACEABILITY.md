@@ -4,7 +4,7 @@
 
 ## Status and evidence semantics
 
-Allowed statuses: `NOT STARTED`, `PLANNED`, `IN PROGRESS`, `BLOCKED`, `IMPLEMENTED`, `TESTED`, `ACCEPTED`. All product rows start **PLANNED / NOT RUN**. Seven M0.1 documentation deliverables are **TESTED** using the actual checks in [TEST_EVIDENCE.md](TEST_EVIDENCE.md); approval/progress visibility remain IN PROGRESS and recurring commit/audit governance remains ongoing. None is owner-accepted yet. A future destination is a proposed path, not an existing file. Test IDs resolve to [TEST_STRATEGY.md](TEST_STRATEGY.md); milestone acceptance criteria are in [MASTER_PLAN.md](MASTER_PLAN.md).
+Allowed statuses: `NOT STARTED`, `PLANNED`, `IN PROGRESS`, `BLOCKED`, `IMPLEMENTED`, `TESTED`, `ACCEPTED`. All product rows start **PLANNED / NOT RUN**. Eight M0.1 documentation deliverables are **TESTED** using the actual checks in [TEST_EVIDENCE.md](TEST_EVIDENCE.md); owner approval remains IN PROGRESS and recurring commit/audit governance remains ongoing. None is owner-accepted yet. A future destination is a proposed path, not an existing file. Test IDs resolve to [TEST_STRATEGY.md](TEST_STRATEGY.md); milestone acceptance criteria are in [MASTER_PLAN.md](MASTER_PLAN.md).
 
 “Implementation destination” identifies where the requirement will land. “Evidence” distinguishes documentation checks from future executable tests. A Phase 0 plan for security does not implement security controls. Recurring governance is established as a documented process now and must be exercised at every future milestone. Platform-dependent rows remain blocked at their live gate until explicit authorization and actual evidence, even if their mocks pass.
 
@@ -165,7 +165,7 @@ Allowed statuses: `NOT STARTED`, `PLANNED`, `IN PROGRESS`, `BLOCKED`, `IMPLEMENT
 | OPS-007 | §13 Phase 11 | Auditable recommendations, confidence/sample warnings, no unsupported causal claims | M11.2 | PLANNED | `Experiment/learning gates` | `T-LEARNING` — NOT RUN |
 | OPS-008 | §13 Phase 12 | Explicit owner approval for deployment/production credentials; production/rollback plans | M12.3 | PLANNED | `Separate release authorization gate` | `T-PRODUCTION-SMOKE` — NOT RUN |
 | OPS-009 | §17 | Surface brand/access/platform/retry/enablement/cadence/language/retention/AI/hosting/analytics decisions without inventing budget | M0.1 | TESTED | `DECISIONS.md owner register` | `T-DOC` PASS — [evidence](TEST_EVIDENCE.md), 2026-11-08 |
-| OPS-010 | §4.4,18 | Owner can determine planned/implemented/tested/committed/pushed/remaining/blocked/next from docs and latest audit | M0.1 | IN PROGRESS | `SPRINT_STATUS.md; matrix; evidence ledger` | `T-DOC` — NOT RUN |
+| OPS-010 | §4.4,18 | Owner can determine planned/implemented/tested/committed/pushed/remaining/blocked/next from docs and latest audit | M0.1 | TESTED | `SPRINT_STATUS.md; matrix; evidence ledger` | `T-DOC` PASS — [evidence](TEST_EVIDENCE.md); verified M0.1 delivery audit, 2026-11-08 |
 
 ## Source-section coverage checklist
 

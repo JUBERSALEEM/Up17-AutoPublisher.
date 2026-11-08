@@ -4,7 +4,7 @@ This ledger records executed checks, not aspirational test names. See [TEST_STRA
 
 ## Final pre-commit gate
 
-The final documentation run reports **154 requirements: 7 TESTED, 2 IN PROGRESS, 145 PLANNED; 0 ACCEPTED**. The seven TESTED items are Phase 0 documentation deliverables only. Approval/progress visibility remain in progress; recurring commit/audit controls are not claimed complete for future milestones. All product requirements remain planned.
+The final documentation run reports **154 requirements: 8 TESTED, 1 IN PROGRESS, 145 PLANNED; 0 ACCEPTED**. The eight TESTED items are Phase 0 documentation deliverables only. Owner approval remains in progress; recurring commit/audit controls are not claimed complete for future milestones. All product requirements remain planned.
 
 The validator's 10 unit tests pass (valid baseline plus nine rejection cases). Python syntax compilation passes. The original brief preservation diff is empty. Staged whitespace, intended-file and credential-pattern checks are recorded below after staging; a push is never inferred from these checks.
 
@@ -28,6 +28,6 @@ The validator's 10 unit tests pass (valid baseline plus nine rejection cases). P
 | Staged whitespace | `git diff --cached --check` | PASS — initial check found Markdown hard-break spaces; removed them from new docs only, restaged and reran successfully |
 | Application formatting/lint/type/unit/E2E/build | No application/package scripts exist | NOT RUN — not applicable to Phase 0; do not report as PASS |
 | Live social/AI/storage tests | No authorization, credentials or connected resources | NOT RUN — documentation research is not integration evidence |
-| Commit/push | Commit intended docs/tooling, push fixed branch, compare remote hash | PENDING — report only after actual operation |
+| Commit/push | `git commit`, `git push -u origin arena/698e4880-up17-autopublisher`, `git ls-remote --heads origin refs/heads/arena/698e4880-up17-autopublisher` | PASS — commit `067f569`; remote matched full hash `067f569a569d5299acb30986f0f3e01dbaf5821f`; immediate audit delivered |
 
 The final validator output is recorded in `docs/evidence/phase-0-validation.txt`. The first structural run found five milestones without direct requirement rows; explicit queue/platform/publishing requirements were added (147 → 154), then all checks passed. A later evidence-status edit temporarily produced eight-column rows; the validator and its negative tests caught it, the seven affected rows were repaired, and both suites passed again. These failures and corrections are retained in the audit trail. Owner acceptance remains separate.

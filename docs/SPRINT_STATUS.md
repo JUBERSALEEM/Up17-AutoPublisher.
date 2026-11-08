@@ -24,14 +24,14 @@ The original two-file repository has been audited, including complete Git histor
 
 Delivery procedure: run documentation checks, preserve source diff, inspect all changes and scan for secrets/artifacts. Commit only the Phase 0 package on `arena/698e4880-up17-autopublisher`; push that branch and verify the remote hash. The immediate session audit is the authoritative current commit/push report; a commit cannot contain its own final hash. Git history and the latest session audit are the delivery record; the next milestone carries forward the prior audit reference.
 
-At the initial audit the remote had only `main`; no working-branch push had yet been attempted. A push is not claimed here until verified. If write access fails, report `NOT PUSHED` with the actual reason and preserve the local commit.
+The initial planning package was committed as `067f569` and pushed to the fixed working branch. The remote hash was verified equal to local `067f569a569d5299acb30986f0f3e01dbaf5821f`; the mandatory immediate audit was delivered. This status update records that verified delivery. Future pushes must likewise be verified, never inferred.
 
 ## Phase 0 requirement snapshot
 
 | Status | Count | Meaning |
 |---|---:|---|
-| TESTED | 7 | Phase 0 documentation/audit deliverables with recorded checks |
-| IN PROGRESS | 2 | Owner approval gate and final progress visibility |
+| TESTED | 8 | Phase 0 documentation/audit deliverables with recorded checks |
+| IN PROGRESS | 1 | Owner approval gate |
 | PLANNED | 145 | Includes all product features and ongoing governance |
 | ACCEPTED | 0 | No owner acceptance recorded |
 | Total | 154 | All original sections mapped; no live integration claimed |
@@ -59,4 +59,8 @@ After the Phase 0 audit/push report, wait for owner approval. If approved, begin
 
 ## Audit history
 
-The initial baseline was `b16202c`. The Phase 0 commit/push result will be reported immediately using the exact brief §4.3 template after verification. Subsequent milestone audits must be listed here with hash, branch, verified push result and evidence link; do not pre-fill future success.
+| Milestone | Commit | Branch | Push evidence | Result |
+|---|---|---|---|---|
+| M0.1 planning package | `067f569` | `arena/698e4880-up17-autopublisher` | `git ls-remote` matched full local hash `067f569a569d5299acb30986f0f3e01dbaf5821f` | SUCCESS; immediate audit delivered; owner approval pending |
+
+The initial baseline was `b16202c`. The subsequent audit-trail update has its own commit hash and immediate session audit; a commit cannot embed its own hash. Subsequent milestone audits must be listed here with hash, branch, verified push result and evidence link; do not pre-fill future success.
