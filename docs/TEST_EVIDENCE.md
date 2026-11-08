@@ -43,3 +43,5 @@ Playwright browser assertions are **NOT RUN**: browser download failed with TLS 
 ### M1.1 delivery blocker
 
 The initial local commit `85a10ef` could not be pushed: GitHub refused a workflow update without workflow permission. Remote remained `ddded10`. The CI file was preserved as an inactive example and the unpushed commit replaced locally; no force-push or shared-history rewrite. The replacement commit's push must be independently verified. Active CI and browser assertions remain NOT RUN.
+
+The replacement M1.1 commit `34246d3` was pushed successfully; `git ls-remote` matched `34246d3c3a4ea77a3b7ca0240195668cd8679877`, and the immediate audit was delivered. Active CI remains blocked/not run.
