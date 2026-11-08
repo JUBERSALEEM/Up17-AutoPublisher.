@@ -2,9 +2,9 @@
 
 This ledger records executed checks, not aspirational test names. See [TEST_STRATEGY.md](TEST_STRATEGY.md) for the future application catalog.
 
-## Final pre-commit gate
+## Phase 0 final pre-commit gate (historical)
 
-The final documentation run reports **154 requirements: 8 TESTED, 1 IN PROGRESS, 145 PLANNED; 0 ACCEPTED**. The eight TESTED items are Phase 0 documentation deliverables only. Owner approval remains in progress; recurring commit/audit controls are not claimed complete for future milestones. All product requirements remain planned.
+At the Phase 0 gate the documentation run reported **154 requirements: 8 TESTED, 1 IN PROGRESS, 145 PLANNED; 0 ACCEPTED**. The eight TESTED items are Phase 0 documentation deliverables only. Owner approval remains in progress; recurring commit/audit controls are not claimed complete for future milestones. All product requirements remain planned.
 
 The validator's 10 unit tests pass (valid baseline plus nine rejection cases). Python syntax compilation passes. The original brief preservation diff is empty. Staged whitespace, intended-file and credential-pattern checks are recorded below after staging; a push is never inferred from these checks.
 
@@ -31,3 +31,15 @@ The validator's 10 unit tests pass (valid baseline plus nine rejection cases). P
 | Commit/push | `git commit`, `git push -u origin arena/698e4880-up17-autopublisher`, `git ls-remote --heads origin refs/heads/arena/698e4880-up17-autopublisher` | PASS — commit `067f569`; remote matched full hash `067f569a569d5299acb30986f0f3e01dbaf5821f`; immediate audit delivered |
 
 The final validator output is recorded in `docs/evidence/phase-0-validation.txt`. The first structural run found five milestones without direct requirement rows; explicit queue/platform/publishing requirements were added (147 → 154), then all checks passed. A later evidence-status edit temporarily produced eight-column rows; the validator and its negative tests caught it, the seven affected rows were repaired, and both suites passed again. These failures and corrections are retained in the audit trail. Owner acceptance remains separate.
+
+## M1.1 — local application foundation
+
+**Date:** 2026-11-08 UTC. **Scope:** toolchain and truthful temporary foundation page only; no product workflows/integrations.
+
+See [m1-1-validation.txt](evidence/m1-1-validation.txt) for exact commands, results and compatibility notes. Clean npm 11.21.2 install, format, lint, strict typecheck, 3 unit tests, foundation security checks, production build and dependency audit pass. Local HTTP/preview-host smoke returns 200 with honest demo/no-connection content.
+
+Playwright browser assertions are **NOT RUN**: browser download failed with TLS ECONNRESET and the executable is absent; the attempted visual command failed before assertions. HTTP smoke does not replace browser/accessibility evidence. Product integration and live-provider suites are also NOT RUN because those features/authorizations do not exist. The browser blocker must be resolved before M1.2 acceptance.
+
+### M1.1 delivery blocker
+
+The initial local commit `85a10ef` could not be pushed: GitHub refused a workflow update without workflow permission. Remote remained `ddded10`. The CI file was preserved as an inactive example and the unpushed commit replaced locally; no force-push or shared-history rewrite. The replacement commit's push must be independently verified. Active CI and browser assertions remain NOT RUN.

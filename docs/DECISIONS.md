@@ -25,9 +25,9 @@
 
 | ID | Status | Recommendation and rationale | Alternatives / trade-off | Revisit gate |
 |---|---|---|---|---|
-| ADR-001 | PROPOSED | Keep this repository and `docs/PLAN.md` as the immutable baseline source; add repository-specific docs rather than replace existing work | Renaming/replacing the brief loses provenance | Phase 0 approval |
-| ADR-002 | PROPOSED | Next.js App Router + React + TypeScript; Tailwind CSS plus semantic CSS tokens; one web codebase, server-only integration boundaries | SPA plus separate API adds operational surface; plain React gives less server-side OAuth support | M1.1 compatibility spike |
-| ADR-003 | PROPOSED | Pin a tested compatible toolchain, not “latest”: candidate Next 16.4.5, React 19.3.1, TS 5.9.3, Tailwind 4.3.5, ESLint 9.39.5, Vitest 4.1.12; exact lockfile after install checks | Registry also exposes TS 7, ESLint 10 and Vitest 5; newer majors are not assumed compatible | M1.1; dependency updates thereafter |
+| ADR-001 | APPROVED (Phase 0) | Keep this repository and `docs/PLAN.md` as the immutable baseline source; add repository-specific docs rather than replace existing work | Renaming/replacing the brief loses provenance | Phase 0 approval |
+| ADR-002 | APPROVED (M1.1 tested) | Next.js App Router + React + TypeScript; Tailwind CSS plus semantic CSS tokens; one web codebase, server-only integration boundaries | SPA plus separate API adds operational surface; plain React gives less server-side OAuth support | M1.1 compatibility spike |
+| ADR-003 | APPROVED (M1.1 tested; npm variance below) | Pin a tested compatible toolchain, not “latest”: tested Next 16.4.5, React 19.3.1, TS 5.9.3, Tailwind 4.3.5, ESLint 9.39.5, Vitest 4.1.12; exact lockfile after install checks | Registry also exposes TS 7, ESLint 10 and Vitest 5; newer majors are not assumed compatible | M1.1; dependency updates thereafter |
 | ADR-004 | PROPOSED | Supabase Auth/Postgres/Storage behind provider interfaces, local development first; hosted project only after explicit approval | Self-hosted Postgres/auth/storage gives control but more operations; no hosted lock-in in domain code | Phase 4 infrastructure authorization |
 | ADR-005 | PROPOSED | Separate long-lived TypeScript worker container for FFmpeg/AI orchestration/publishing; durable Postgres-backed queue, pg-boss as candidate | Serverless-only media work is unsuitable; Redis queue adds a service; final queue choice needs local durability/concurrency benchmarks | M3.2 and M5.2 |
 | ADR-006 | PROPOSED | Direct resumable object-storage upload using Supabase TUS when authorized; local emulator for development; never proxy large video bytes through a short-lived web handler | Browser-to-platform-only upload cannot support shared multi-platform analysis; ordinary request uploads are fragile | Phase 5 storage authorization |
@@ -62,4 +62,19 @@
 
 ## Approval ledger
 
-No Phase 0 implementation plan approval has been recorded yet. No infrastructure authorization has been given. Supabase and Vercel being available as conversation connectors does not authorize their use. Approval of the plan alone does not authorize cloud resources, credentials, public posting or deployment; those require named, separate gates.
+| Approval | Date | Scope and evidence |
+|---|---|---|
+| Phase 0 plan + recommended defaults | 2026-11-08 | Owner selected “Approve — start M1.1” in the approval prompt. Approves the local Next.js/TypeScript direction, YouTube-first live sequence, explicit account enablement, bounded retries and required platform consent. Authorizes **M1.1 local development only**; later milestones follow the approved small-step process. |
+
+No infrastructure authorization has been given. Supabase and Vercel being available as conversation connectors does not authorize their use. Approval of the plan alone does not authorize cloud resources, credentials, public posting or deployment; those require named, separate gates.
+
+## M1.1 compatibility result — 2026-11-08
+
+- Clean install/build/type/lint/unit evidence: [M1.1 validation](evidence/m1-1-validation.txt).
+- **Variance:** npm 10.9.8 failed during optional-peer graph resolution; project and CI now use npm 11.21.2, with a successful strict `npm ci` and no legacy-peer override. Node remains 22.22.3.
+- ESLint 10.14 was experimentally tested, but Next's transitive plugins declare ESLint <=9 peers. Retained the approved 9.39.5 rather than suppress peer conflicts; its upstream deprecation warning remains a tracked maintenance risk.
+- Pin `minimatch` to 11.0.1 through a reviewed override for GHSA-g3hv-75wg-m249 in lint tooling. All quality gates pass and npm audit reports zero known vulnerabilities at this date; revisit on dependency updates.
+- Playwright/axe setup is committed, but browser download from `cdn.playwright.dev` is blocked by sandbox TLS egress. Browser/visual assertions are NOT RUN, not passed. M1.2 cannot exit without resolving browser execution.
+- npm 11 reports an unapproved esbuild postinstall warning; strict install and Vitest pass. Review installer policy on future toolchain updates rather than disabling all scripts or claiming the warning absent.
+
+- **CI delivery blocker:** GitHub rejected the active workflow path because the connected GitHub App lacks workflow permission. The unpushed local commit was replaced without rewriting remote/shared history; the workflow is preserved as `docs/ci/quality.yml.example`. Local gates remain executable. Active CI is NOT IMPLEMENTED until the connection permission is fixed and the template is explicitly installed in a later commit.

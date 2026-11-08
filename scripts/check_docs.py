@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Validate Phase 0 planning documents using only the Python standard library.
+"""Validate planning traceability and the approved implementation stage.
 
-This is documentation tooling, not application feature code. It checks structure,
-traceability references and local links; it does not prove product/API behavior.
+This is documentation tooling, not product feature code. It checks structure,
+references and local links; it does not prove product/API behavior.
 """
 
 from __future__ import annotations
@@ -148,15 +148,17 @@ def main() -> int:
                 if rid not in rows:
                     fail(errors, f"Coverage manifest references unknown requirement: {section}={rid}")
 
-    # Phase 0 is documentation-only. Fail if common application/cloud artifacts
-    # appear before the approval gate; this is not a replacement for diff review.
-    forbidden = (
-        "package.json", "package-lock.json", ".env", ".env.local",
-        "vercel.json", "supabase/config.toml", "app/page.tsx",
-    )
-    for name in forbidden:
+    # Plan approval permits local application files, not hosted resources or secrets.
+    decisions = (ROOT / "docs/DECISIONS.md").read_text(encoding="utf-8")
+    approved = "Owner selected “Approve — start M1.1”" in decisions
+    local_artifacts = ("package.json", "package-lock.json", "app/page.tsx")
+    if not approved:
+        for name in local_artifacts:
+            if (ROOT / name).exists():
+                fail(errors, f"Unexpected pre-approval application artifact: {name}")
+    for name in (".env", ".env.local", "vercel.json", "supabase/config.toml"):
         if (ROOT / name).exists():
-            fail(errors, f"Unexpected pre-approval application/cloud artifact: {name}")
+            fail(errors, f"Secret or externally hosted resource artifact requires a separate gate: {name}")
     return report(errors, len(rows), counts, link_count)
 
 

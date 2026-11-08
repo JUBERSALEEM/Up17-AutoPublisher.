@@ -4,7 +4,7 @@
 
 ## Status and evidence semantics
 
-Allowed statuses: `NOT STARTED`, `PLANNED`, `IN PROGRESS`, `BLOCKED`, `IMPLEMENTED`, `TESTED`, `ACCEPTED`. All product rows start **PLANNED / NOT RUN**. Eight M0.1 documentation deliverables are **TESTED** using the actual checks in [TEST_EVIDENCE.md](TEST_EVIDENCE.md); owner approval remains IN PROGRESS and recurring commit/audit governance remains ongoing. None is owner-accepted yet. A future destination is a proposed path, not an existing file. Test IDs resolve to [TEST_STRATEGY.md](TEST_STRATEGY.md); milestone acceptance criteria are in [MASTER_PLAN.md](MASTER_PLAN.md).
+Allowed statuses: `NOT STARTED`, `PLANNED`, `IN PROGRESS`, `BLOCKED`, `IMPLEMENTED`, `TESTED`, `ACCEPTED`. All product rows start **PLANNED / NOT RUN**. Nine M0.1 documentation deliverables and two M1.1 foundation requirements are **TESTED** using the actual checks in [TEST_EVIDENCE.md](TEST_EVIDENCE.md); owner approval is recorded; M1.1 delivery is pending its verified audit and recurring commit/audit governance remains ongoing. None is owner-accepted yet. A future destination is a proposed path, not an existing file. Test IDs resolve to [TEST_STRATEGY.md](TEST_STRATEGY.md); milestone acceptance criteria are in [MASTER_PLAN.md](MASTER_PLAN.md).
 
 “Implementation destination” identifies where the requirement will land. “Evidence” distinguishes documentation checks from future executable tests. A Phase 0 plan for security does not implement security controls. Recurring governance is established as a documented process now and must be exercised at every future milestone. Platform-dependent rows remain blocked at their live gate until explicit authorization and actual evidence, even if their mocks pass.
 
@@ -14,7 +14,7 @@ Allowed statuses: `NOT STARTED`, `PLANNED`, `IN PROGRESS`, `BLOCKED`, `IMPLEMENT
 |---|---|---|---|---|---|---|
 | GOV-001 | §0 Stage A | Inspect complete repository/history/config/dependencies and preserve existing work before planning | M0.1 | TESTED | `REPOSITORY_AUDIT.md; original brief unchanged` | `T-DOC` PASS — [evidence](TEST_EVIDENCE.md), 2026-11-08 |
 | GOV-002 | §0 Stage A | Produce repository-specific plan, risks, decisions, full traceability and acceptance/test strategy | M0.1 | TESTED | `MASTER_PLAN.md and required supporting docs` | `T-DOC` PASS — [evidence](TEST_EVIDENCE.md), 2026-11-08 |
-| GOV-003 | §0,18 | Present Phase 0 for review and wait for approval before substantial implementation | M0.1 | IN PROGRESS | `DECISIONS.md approval ledger; SPRINT_STATUS.md` | `T-DOC` — NOT RUN |
+| GOV-003 | §0,18 | Present Phase 0 for review and wait for approval before substantial implementation | M0.1 | TESTED | `DECISIONS.md approval ledger; SPRINT_STATUS.md` | Owner approval recorded 2026-11-08 — [decision ledger](DECISIONS.md) |
 | GOV-004 | §0 Stage B | Implement small coherent milestones; test before commit; do not mark untested work complete | M3.1 | PLANNED | `MASTER_PLAN.md §2; TEST_STRATEGY.md evidence rules` | `T-QUALITY` — NOT RUN |
 | GOV-005 | §0,4.2 | Commit logically and push fixed working branch when available; verify result; never force-push/overwrite shared work | M0.1 | PLANNED | `Git workflow; README operating rules` | `T-DOC` — NOT RUN |
 | GOV-006 | §4.3 | Immediately after every commit/push provide exact concise audit fields, including failures and variance | M0.1 | PLANNED | `MASTER_PLAN.md §2; SPRINT_STATUS.md audit pointer` | `T-DOC` — NOT RUN |
@@ -27,7 +27,7 @@ Allowed statuses: `NOT STARTED`, `PLANNED`, `IN PROGRESS`, `BLOCKED`, `IMPLEMENT
 | GOV-013 | §2.4–2.5 | Never invent API results or claim Studio parity; unavailable/failed features stay unavailable | M7.1 | PLANNED | `Account capabilities and truthful error states` | `T-CAPABILITIES` — NOT RUN |
 | GOV-014 | §2.5 | Represent all eight connection states and label every sample metric/action Demo data or Simulation | M2.1 | PLANNED | `Domain connection enum; DemoIndicator; fixtures` | `T-DEMO` — NOT RUN |
 | GOV-015 | §3,16 | Use stable requirement IDs and distinguish NOT STARTED/PLANNED/IN PROGRESS/BLOCKED/IMPLEMENTED/TESTED/ACCEPTED | M0.1 | TESTED | `Matrix vocabulary and checker` | `T-DOC` PASS — [evidence](TEST_EVIDENCE.md), 2026-11-08 |
-| GOV-016 | §4.1 | Inspect diffs and exclude secrets/media/local DB/build artifacts; update docs in same milestone | M1.1 | PLANNED | `Ignore rules; quality/secret checks; commit checklist` | `T-SECRET` — NOT RUN |
+| GOV-016 | §4.1 | Inspect diffs and exclude secrets/media/local DB/build artifacts; update docs in same milestone | M1.1 | TESTED | `Ignore rules; quality/secret checks; commit checklist` | `T-SECRET` foundation scope PASS — [M1.1 evidence](evidence/m1-1-validation.txt); recurring review required |
 | PRD-001 | §1,5.1 | Upload once, analyse, research, create account content, schedule, officially publish, collect analytics and learn | M9.2 | PLANNED | `Shared media pipeline plus independent account services` | `T-UPLOAD-E2E` — NOT RUN |
 | PRD-002 | §1,9 | Multi-account operations platform, not only metadata generator/calendar; many accounts per platform | M3.1 | PLANNED | `Tenant/account/content/job model` | `T-DOMAIN` — NOT RUN |
 | PRD-003 | §1 | Initial complete product experience may use honest mocks; real integrations in later approved phases | M2.6 | PLANNED | `Ten-screen demo through isolated adapters` | `T-DEMO-E2E` — NOT RUN |
@@ -126,10 +126,11 @@ Allowed statuses: `NOT STARTED`, `PLANNED`, `IN PROGRESS`, `BLOCKED`, `IMPLEMENT
 | DAT-002 | §9 | Refine platform content/versions/variants/strategies/jobs/attempts/posts/analytics/notifications/audit | M3.1 | PLANNED | `DATA_MODEL.md entity dictionary` | `T-DOMAIN` — NOT RUN |
 | DAT-003 | §9,11 | Ownership/foreign keys/indexes/retention/RLS design; workspace/account scoped access | M4.1 | PLANNED | `Composite FKs/indexes/policies and service guards` | `T-RBAC` — NOT RUN |
 | DAT-004 | §9 | One video may generate many packages; each account has own credentials/permissions/strategy/schedule/queue/analytics | M3.1 | PLANNED | `Account-specific immutable relationships` | `T-DOMAIN` — NOT RUN |
-| ARC-001 | §10 | Validate proposed stack after audit; provider interfaces for AI/storage/queue/social | M1.1 | PLANNED | `ARCHITECTURE.md; packages/ports` | `T-PORTS` — NOT RUN |
+| ARC-001 | §10 | Validate proposed stack after repository audit | M1.1 | TESTED | `package.json; lockfile; ARCHITECTURE.md; M1.1 evidence` | `T-SCAFFOLD` / `T-QUALITY` PASS — [M1.1 evidence](evidence/m1-1-validation.txt), 2026-11-08 |
 | ARC-002 | §10 | Separate durable worker/queue selected by workload/cost; no long video work in short-lived serverless request | M5.2 | PLANNED | `worker supervisor and durable queue benchmark` | `T-QUEUE-LOCAL` — NOT RUN |
 | ARC-003 | §10 | Structured logs/job traces/error tracking/audit; PWA and responsive web foundation | M12.2 | PLANNED | `Observability and operational runbooks` | `T-OPS` — NOT RUN |
 | ARC-004 | §10,13 Phase 3 | Select queue after local durability/concurrency/workload evaluation; replaceable service adapters | M3.2 | PLANNED | `Queue benchmark; provider ports; ADR-005 evidence` | `T-QUEUE-LOCAL` — NOT RUN |
+| ARC-005 | §10 | Provider interfaces allow AI/storage/queue/social replacement without rewriting product logic | M3.2 | PLANNED | `packages/ports and adapter contract suite` | `T-PORTS` — NOT RUN |
 | SEC-001 | §11 | Workspace access control/RLS and secure sessions | M4.2 | PLANNED | `Membership guards/policies/session adapter` | `T-RBAC` — NOT RUN |
 | SEC-002 | §11 | Server OAuth exchange, CSRF/state validation, least scopes, refresh/revocation | M4.2 | PLANNED | `OAuth attempts/token broker` | `T-OAUTH` — NOT RUN |
 | SEC-003 | §2.3,11 | Encrypt stored tokens with deliberate key management; server-only secrets and redacted logs | M4.2 | PLANNED | `Envelope encryption/KMS decision/redaction` | `T-TOKENS` — NOT RUN |
@@ -208,7 +209,7 @@ At each milestone update the affected row status, actual implementation path and
 7=UX-011,UX-012,UX-014,OVR-001,VID-001,AI-001,MET-001,RES-001,SCH-001,PUB-001,STU-001,LAB-001,SOC-001,SET-001
 8=PUB-008,PUB-009,PRD-001
 9=DAT-001,DAT-002,DAT-003,DAT-004
-10=ARC-001,ARC-002,ARC-003,ARC-004,UX-013
+10=ARC-001,ARC-002,ARC-003,ARC-004,ARC-005,UX-013
 11=SEC-001,SEC-002,SEC-003,SEC-004,SEC-005,SEC-006,SEC-007,SEC-008,SEC-009,SEC-010
 12=NOT-001,NOT-002,NOT-003,NOT-004
 13=OPS-001,OPS-002,OPS-003,OPS-004,OPS-005,OPS-006,OPS-007,OPS-008,TST-006,TST-007,TST-008,SOC-004,SOC-005,SOC-006,SOC-007,ARC-004,PUB-010,PUB-011,PUB-012

@@ -1,6 +1,6 @@
 Required documents: 14
-Requirements: 154; unique IDs and references checked
-Local links checked: 42
-Status counts: IN PROGRESS=1, PLANNED=145, TESTED=8
+Requirements: 155; unique IDs and references checked
+Local links checked: 45
+Status counts: PLANNED=144, TESTED=11
 PASS: documentation structure, traceability, links and preserved source brief
 Boundary: no application tests or live integrations are claimed by this check.

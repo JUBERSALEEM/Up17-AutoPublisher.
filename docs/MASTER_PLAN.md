@@ -2,7 +2,7 @@
 
 **Version:** 1.0 proposed delivery plan
 **Prepared:** 2026-11-08 UTC
-**Status:** PHASE 0 DOCUMENTATION CHECKS PASSED; OWNER APPROVAL PENDING
+**Status:** APPROVED 2026-11-08; M1.1 FOUNDATION CHECKS PASSED (BROWSER EVIDENCE PENDING); PHASE 1 IN PROGRESS
 **Authority:** the unchanged [original master brief](PLAN.md), plus the owner's Phase 0 instruction. This document translates it into repository-specific work; it does not silently replace requirements.
 
 ## 1. Audit conclusion and planning decisions
@@ -64,7 +64,7 @@ Every milestone below lists a proposed commit scope, dependencies, deliverables,
 ### M1.1 — `chore(web): establish tested application foundation`
 
 - **Depends on:** M0.1 approval; ADR-002/003 stack approval.
-- **Deliver:** minimal Next/React/TS app, lockfile/Node pin, Tailwind, strict types, ESLint/Prettier, Vitest/Playwright setup, ignore rules, environment example with no secrets, quality scripts and local-only CI; advance the documentation checker beyond its Phase 0 artifact guard only after approval is recorded.
+- **Deliver:** minimal Next/React/TS app, lockfile/Node pin, Tailwind, strict types, ESLint/Prettier, Vitest/Playwright setup, ignore rules, environment example with no secrets, quality scripts and local-only CI template (active workflow delivery requires GitHub workflow permission); advance the documentation checker beyond its Phase 0 artifact guard only after approval is recorded.
 - **Acceptance:** clean install succeeds; candidate version/engine conflicts resolved and recorded; lint/type/unit smoke/build pass; client bundle contains no server secrets; no cloud/deployment step; README setup matches reality.
 - **Tests:** `T-SCAFFOLD`, `T-QUALITY`, `T-SECRET`.
 - **Split if needed:** scaffold/tooling, then CI/environment conventions; no product screens yet.

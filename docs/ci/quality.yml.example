@@ -1,0 +1,21 @@
+name: Local quality gates
+on:
+  push:
+    branches: [arena/698e4880-up17-autopublisher]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm install --global npm@11.21.2
+      - run: npm ci
+      - run: npm run check
+      - run: npm run test:security
+      # No deployment, provider credentials or live integration calls.

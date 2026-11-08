@@ -1,66 +1,46 @@
 # Sprint and delivery status
 
 **Updated:** 2026-11-08 UTC
-**Current phase:** Phase 0 — repository audit and technical planning
-**Gate:** documentation checks PASSED; owner approval pending
-**Application implementation:** NOT STARTED
-**External resources/integrations/deployment:** NOT CREATED / NOT CONNECTED
+**Current phase:** Phase 1 — design system and application shell
+**Current milestone:** M1.1 local foundation — quality gates passed, delivery audit pending
+**Approval:** owner approved Phase 0 plan/defaults and M1.1 local development on 2026-11-08
+**Product workflows/integrations/deployment:** NOT IMPLEMENTED / NOT CONNECTED
 
-## What exists now
+## Completed in this milestone
 
-The original two-file repository has been audited, including complete Git history and remote branch metadata. The unchanged product brief is `docs/PLAN.md`. The Phase 0 package now contains the repository-specific master plan, 154 traceable requirements, architecture/data/security/UX proposals, official integration research, decisions/risks, test strategy and a documentation validator and 10 passing validator tests. See [REPOSITORY_AUDIT.md](REPOSITORY_AUDIT.md) and [TEST_EVIDENCE.md](TEST_EVIDENCE.md) for actual checks rather than inferred completion.
+- Recorded owner approval; advanced the documentation guard to permit local application files while retaining secret/hosted-resource gates.
+- Added locked Next.js 16.4.5 / React 19.3.1 / TypeScript 5.9.3 / Tailwind 4.3.5 foundation, strict quality scripts, ignore rules and an inactive local-only CI template.
+- Added a temporary honest DEMO page, server-controlled supported-mode check and client-source secret-boundary test.
+- Proved clean npm 11.21.2 install, formatting, lint, typecheck, 3 unit tests, foundation security checks, production build and zero reported npm audit vulnerabilities.
+- Started the local preview on 0.0.0.0:3000 and verified HTTP 200 with preview Host/Origin. This is not the product dashboard.
 
-## What is implemented vs tested vs accepted
+Evidence: [M1.1 validation](evidence/m1-1-validation.txt) and [test ledger](TEST_EVIDENCE.md). Compatibility changes and warnings are recorded in [DECISIONS.md](DECISIONS.md).
 
-- **Documentation implemented:** required project documents and planning-only validation tooling.
-- **Product features implemented:** none.
-- **Tests:** documentation validation and 10 validator tests pass; results are recorded in the evidence ledger. Application lint/type/tests/build are not applicable because no app exists.
-- **Owner acceptance:** none recorded. Phase 0 is not accepted merely because files exist or checks pass.
-- **Integrations:** documentation researched only; every real provider connection/publish/analytics capability remains untested.
+## Remaining blockers / unfinished work
 
-## Current milestone
-
-**M0.1 — `docs: complete phase 0 audit and delivery plan`**
-
-Delivery procedure: run documentation checks, preserve source diff, inspect all changes and scan for secrets/artifacts. Commit only the Phase 0 package on `arena/698e4880-up17-autopublisher`; push that branch and verify the remote hash. The immediate session audit is the authoritative current commit/push report; a commit cannot contain its own final hash. Git history and the latest session audit are the delivery record; the next milestone carries forward the prior audit reference.
-
-The initial planning package was committed as `067f569` and pushed to the fixed working branch. The remote hash was verified equal to local `067f569a569d5299acb30986f0f3e01dbaf5821f`; the mandatory immediate audit was delivered. This status update records that verified delivery. Future pushes must likewise be verified, never inferred.
-
-## Phase 0 requirement snapshot
-
-| Status | Count | Meaning |
-|---|---:|---|
-| TESTED | 8 | Phase 0 documentation/audit deliverables with recorded checks |
-| IN PROGRESS | 1 | Owner approval gate |
-| PLANNED | 145 | Includes all product features and ongoing governance |
-| ACCEPTED | 0 | No owner acceptance recorded |
-| Total | 154 | All original sections mapped; no live integration claimed |
-
-No active requirement is hidden as complete. Future provider authorization/review dependencies are explicit gates in the plan, not simulated successes.
-
-## Remaining work and blockers
-
-| Item | State | Next action / gate |
+| Item | State | Next action |
 |---|---|---|
-| Phase 0 validation | PASS | 154 requirements; 14 required docs; 41 local links; 10 validator tests; see evidence ledger |
-| Owner plan review | Awaiting owner | Present plan and ask approval of local stack/safe defaults; no feature work before approval |
-| M1.1 toolchain | PLANNED | After approval, prove clean install/lint/type/test/build and commit lockfile |
-| Phases 1–3 UI/domain | PLANNED | Small milestones; all ten screens in explicitly labelled demo first |
-| Hosted Supabase/Vercel/resources | Not authorized | Separate explicit resource authorization; connectors being enabled is not consent |
-| Google/Meta/TikTok apps/accounts | Not authorized / not connected | Per-platform approval, current policy checks and test-account evidence |
-| Public automatic publishing | Not authorized / unverified | Private tests, platform eligibility/audit and separate owner approval |
-| AI/research provider and budgets | Unselected | D-009/D-013 before external processing |
-| Brand/license/retention/jurisdiction/cadence | Owner decisions pending | Resolve at named gates in DECISIONS.md; do not invent |
-| API documentation conflicts/access limits | Open risks | Recheck YouTube eligibility/limits, Meta quota/login path and TikTok guidelines during authorized spikes |
+| GitHub workflow push | BLOCKED | Current GitHub App lacks workflow permission; template preserved in `docs/ci/quality.yml.example`, not active CI |
+| Playwright browser execution | BLOCKED in sandbox | CDN TLS download failed; browser assertions NOT RUN. Resolve before M1.2 viewport/accessibility exit |
+| npm / lint maintenance | Known warning | npm 11.21.2 clean install works; ESLint 9 upstream deprecated, Next plugins do not yet declare ESLint 10 peers; reviewed minimatch override applied |
+| M1.2 clay primitives/themes | PLANNED | Next small milestone after M1.1 audit; no claim of premium UI completion |
+| M1.3 shell/PWA | PLANNED | All ten destinations, responsive navigation, safe public-shell caching |
+| Phases 2–12 product requirements | PLANNED | Follow matrix; demo first, then local domain/security/media/integrations |
+| Hosted/cloud resources | Not authorized | Separate explicit permission required |
+| Social/AI/research providers | Not connected | Per-provider approval, budgets and real test evidence required |
+| Brand/license/retention/jurisdiction/cadence | Deferred decisions | Resolve at named gates; no invented values |
 
-## Next specific milestone
+## Requirement snapshot
 
-After the Phase 0 audit/push report, wait for owner approval. If approved, begin **M1.1: establish the tested local Next.js/TypeScript application foundation and quality gates**. Do not begin screens, cloud setup or OAuth in that milestone.
+The authoritative counts are generated by `python3 scripts/check_docs.py` from the 155-row matrix. M1.1 adds tested evidence for ARC-001 (validated stack) and GOV-016 (foundation artifact/secret gate); GOV-003 approval is recorded. These are scoped results, not acceptance of future security or integrations. No product workflow row is marked complete. Owner acceptance of M1.1 is not yet recorded.
 
-## Audit history
+## Delivery and audit history
 
-| Milestone | Commit | Branch | Push evidence | Result |
-|---|---|---|---|---|
-| M0.1 planning package | `067f569` | `arena/698e4880-up17-autopublisher` | `git ls-remote` matched full local hash `067f569a569d5299acb30986f0f3e01dbaf5821f` | SUCCESS; immediate audit delivered; owner approval pending |
+| Milestone | Commit | Branch | Verified result |
+|---|---|---|---|
+| M0.1 planning package | `067f569` | `arena/698e4880-up17-autopublisher` | Remote hash matched; immediate audit delivered |
+| Phase 0 audit-trail update | `ddded10` | same fixed branch | Remote hash matched; immediate audit delivered |
+| M1.1 initial local attempt | `85a10ef` (unpushed, superseded locally) | same fixed branch | Push rejected: workflow permission; no shared history rewritten |
+| M1.1 foundation without active workflow | Current commit | same fixed branch | Report immediately after push verification; do not pre-fill success |
 
-The initial baseline was `b16202c`. The subsequent audit-trail update has its own commit hash and immediate session audit; a commit cannot embed its own hash. Subsequent milestone audits must be listed here with hash, branch, verified push result and evidence link; do not pre-fill future success.
+A commit cannot contain its own final hash. The latest session audit reports the current commit; the next documentation update carries it into this table. Next specific milestone after M1.1 delivery: **M1.2 accessible clay primitives and light/dark tokens**, with browser execution resolved before acceptance.

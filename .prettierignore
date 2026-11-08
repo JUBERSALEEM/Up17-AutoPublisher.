@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+build
+coverage
+test-results
+playwright-report
+package-lock.json
+next-env.d.ts
+docs/PLAN.md
+docs/evidence
+*.md

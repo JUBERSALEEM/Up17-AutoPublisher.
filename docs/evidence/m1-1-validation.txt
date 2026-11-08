@@ -1,0 +1,25 @@
+Up17 AutoPublisher — M1.1 foundation evidence
+Date: 2026-11-08 UTC
+Node: 22.22.3; npm: 11.21.2 (via npx; sandbox global npm remains 10.9.8)
+
+PASS npx --yes npm@11.21.2 ci --no-fund --no-audit — clean locked install, no legacy-peer-deps
+PASS npm run format:check — all matched files formatted
+PASS npm run lint — zero errors/warnings
+PASS npm run typecheck — strict TypeScript
+PASS npm run test:unit — 2 files, 3 tests
+PASS npm run test:security — 10 documentation-validator tests + 1 client-source boundary test; not a full product security audit
+PASS npm run build — Next.js 16.4.5 production build; / and /_not-found
+PASS npm audit — 0 known reported vulnerabilities at execution time
+PASS local HTTP smoke — status 200 with preview Host and both local/preview Origin; truthful DEMO/NOT_CONNECTED/DISABLED content
+PASS preview startup — bound 0.0.0.0:3000; no embedding/host rejection warnings
+NOT RUN Playwright browser/visual assertions — cdn.playwright.dev TLS download blocked (ECONNRESET); executable absent. test:visual was attempted and failed before assertions. HTTP smoke is not a substitute for browser evidence.
+NOT RUN npm run test:integration — no product integration adapters exist at M1.1; script is configured to report no tests rather than claim integration coverage
+NOT RUN live social/AI/storage tests — no authorization or connected resources
+
+Compatibility notes:
+- Initial npm 10.9.8 install failed in optional-peer resolution (edgesOut). npm 11.21.2 clean install succeeds; project engines and the inactive CI template pin npm 11.21.2.
+- ESLint 10.14 was tested but Next transitive plugins declare ESLint <=9 peers; retained approved ESLint 9.39.5 to avoid peer overrides. npm reports that major deprecated; track upgrade when Next plugins support it.
+- minimatch override 11.0.1 addresses GHSA-g3hv-75wg-m249 in lint-only dependency paths; lint/type/build/unit pass and audit reports zero. Review/remove override on toolchain updates.
+- npm 11 warns esbuild postinstall is not yet allowlisted; clean install and Vitest still pass. No blanket script-disable or force audit fix used.
+- Browser download failure remains visible; M1.2 must resolve browser execution before viewport/accessibility acceptance.
+NOT RUN active GitHub CI — workflow permission rejected; configuration preserved at docs/ci/quality.yml.example, not claimed as running.

@@ -1,4 +1,4 @@
-"""Negative/positive tests for the Phase 0 documentation validator.
+"""Negative/positive tests for the planning-stage documentation validator.
 
 Each case runs in a temporary copy; repository documents are never mutated.
 Run: python3 -m unittest discover -s scripts -p 'test_*.py' -v
@@ -101,10 +101,16 @@ class DocumentationValidatorTests(unittest.TestCase):
             path.write_text("\n".join(line for line in text.splitlines() if not line.startswith("18=")) + "\n")
         self.assert_rejected(change, "Source coverage mismatch")
 
+    @staticmethod
+    def remove_approval_and_add_app(root: Path) -> None:
+        decisions = root / "docs/DECISIONS.md"
+        decisions.write_text(decisions.read_text().replace("Owner selected “Approve — start M1.1”", "Approval pending"))
+        (root / "package.json").write_text("{}")
+
     def test_premature_application_artifact_is_rejected(self):
         self.assert_rejected(
-            lambda root: (root / "package.json").write_text("{}"),
-            "Unexpected pre-approval application/cloud artifact",
+            lambda root: self.remove_approval_and_add_app(root),
+            "Unexpected pre-approval application artifact",
         )
 
 
