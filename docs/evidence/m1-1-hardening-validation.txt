@@ -3,7 +3,7 @@ Date: 2026-11-08 UTC
 Starting commit: d9250a619801149ada8ed86aee281ea6f635535e
 Branch: arena/698e4880-up17-autopublisher
 Environment: Node 22.22.3; npm 11.21.2; Python 3.11.2; Linux sandbox.
-Final commit/push: reported in the immediate verified post-push audit; not inferred here.
+Hardening commit/push: 241d3aa5f4292ddb64a836ddfdcd57e028385d37 — SUCCESS, remote hash verified; immediate audit delivered.
 
 Dependency / toolchain gates
 PASS npm ci --dry-run --ignore-scripts --no-audit --no-fund (global npm 10.9.8) — expected rejection, exit 1, EBADENGINE/Unsupported engine under engine-strict=true.
