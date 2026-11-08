@@ -62,7 +62,7 @@ Structured logs carry correlation/job/attempt IDs and redacted provider error co
 
 ## 8. Security checklist by gate
 
-- **M1.1:** ignore secrets/build/media; protected server environment conventions; dependency review; no provider keys in client bundle.
+- **M1.1:** implemented foundation-scope guards: ignore secrets/build/media/cloud artifacts; Git-index/worktree credential/config validator with redaction; `server-only` foundation boundary and client-bundle rejection test; exact npm enforcement; dependency review. These are repository/toolchain controls, not product auth/RLS/token encryption, and do not replace later security gates.
 - **Phase 2:** demo network isolation, truthful labels, safe rendering and confirmation dialogs.
 - **Phase 4:** RLS/role/storage negatives; OAuth state tests; encrypted credential design; audit and session controls.
 - **Phase 5:** resumable-upload authorization, object verification, worker isolation and resource ceilings.

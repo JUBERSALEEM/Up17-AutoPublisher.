@@ -1,6 +1,15 @@
 # Changelog
 
-## Unreleased — M1.1 local foundation (2026-11-08)
+## Unreleased — M1.1 foundation hardening (2026-11-08)
+
+- Added `server-only` protection and a real browser-condition bundle regression test; DEMO behavior unchanged.
+- Removed integration-test false-green behavior; empty suites now exit 1 and no placeholder tests were added.
+- Expanded Git-index/worktree secret/cloud-artifact validation, ignore rules and positive/negative validator tests.
+- Enforced exact npm 11.21.2 and added portable Node/Python wrappers plus `fileURLToPath` aliases for Windows-compatible local development.
+- Added a real axe accessibility scan/script; browser download remains blocked, so browser/axe/visual assertions are NOT RUN and M1.1 is not fully verified/owner-accepted.
+- No M1.2 work, publishing functionality, cloud resources, OAuth setup or external account connections.
+
+## M1.1 local foundation (2026-11-08)
 
 - Added the approved Next.js/React/TypeScript/Tailwind foundation with locked dependencies, strict quality scripts and an inactive local-only CI template (GitHub workflow permission blocked).
 - Added a temporary truthful DEMO foundation page, client-source secret-boundary tests and preview-compatible local server configuration.

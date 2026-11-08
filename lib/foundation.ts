@@ -1,3 +1,5 @@
+import "server-only";
+
 import { z } from "zod";
 
 /** M1.1 supports only an honest, network-free demo foundation. */

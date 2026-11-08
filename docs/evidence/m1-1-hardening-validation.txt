@@ -1,0 +1,56 @@
+Up17 AutoPublisher — M1.1 foundation hardening evidence
+Date: 2026-11-08 UTC
+Starting commit: d9250a619801149ada8ed86aee281ea6f635535e
+Branch: arena/698e4880-up17-autopublisher
+Environment: Node 22.22.3; npm 11.21.2; Python 3.11.2; Linux sandbox.
+Final commit/push: reported in the immediate verified post-push audit; not inferred here.
+
+Dependency / toolchain gates
+PASS npm ci --dry-run --ignore-scripts --no-audit --no-fund (global npm 10.9.8) — expected rejection, exit 1, EBADENGINE/Unsupported engine under engine-strict=true.
+PASS npx --yes npm@11.21.2 ci --no-fund --no-audit — clean locked install, exit 0; only existing ESLint deprecation and esbuild install-script approval warnings.
+PASS npm run toolchain:check — Node 22.22.3; npm 11.21.2.
+PASS lock/manifest unit assertion — root engines, dependencies and devDependencies match; packageManager is npm@11.21.2.
+Only dependency addition: server-only 0.0.1. Existing dependency versions unchanged.
+
+Static / unit / security / build gates
+PASS npm run format:check — all matched files formatted.
+PASS npm run lint — eslint . --max-warnings 0; zero errors/warnings.
+PASS npm run typecheck — strict TypeScript.
+PASS npm run test:unit — 4 files, 8 tests. Includes a real Vite browser-condition bundle import rejection for lib/foundation.ts, empty-integration-directory failure, toolchain rejection and portable wrapper probes.
+PASS npm run test:security — documentation/artifact validator + 34 Python validator tests + 2 TypeScript security tests. Validator checked 155 requirements and Git-index/worktree candidates; values redacted.
+PASS npm run docs:check — documentation structure, traceability, links, preserved brief and Git artifact policy.
+PASS npm run build — Next.js 16.4.5 production build; / and /_not-found.
+PASS npm run check — aggregate toolchain/format/lint/type/unit/security/build gates exit 0. Nested scripts use the executing pinned npm CLI through portable wrappers, avoiding an older global npm lookup.
+PASS npm audit — 0 known reported vulnerabilities at execution time.
+PASS node scripts/run-python.mjs -B -m py_compile scripts/check_docs.py scripts/test_check_docs.py — Python syntax.
+
+Integration empty-suite gate
+EXPECTED FAIL npm run test:integration — exit 1, "No test files found, exiting with code 1", include tests/integration/**/*.test.ts. This is the required fail-on-empty behavior, not integration coverage. No fake integration tests were added. The command is intentionally outside npm run check until real approved integration tests exist.
+
+Browser / accessibility gates
+FAIL SETUP npx --yes npm@11.21.2 exec -- playwright install chromium — exit 1; ECONNRESET to cdn.playwright.dev:443 before secure TLS establishment while downloading Chrome for Testing 158.0.8127.18 / Playwright chromium v1254.
+NOT RUN npm run test:e2e — command exit 1 at browser launch; executable absent at ~/.cache/ms-playwright/chromium_headless_shell-1254/chrome-headless-shell-linux64/chrome-headless-shell. No page assertion executed.
+NOT RUN npm run test:a11y — command exit 1 at the same browser launch; real @axe-core/playwright scan is implemented but did not execute. No accessibility PASS claimed.
+NOT RUN npm run test:visual — command exit 1 at the same browser launch; no viewport assertion executed.
+An earlier webServer attempt exposed a nested global-npm lookup issue; Playwright now invokes the checked Node wrapper directly. The remaining failure is exclusively the absent browser executable.
+
+Local preview / truthfulness
+PASS local HTTP smoke — status 200; visible foundation content remains DEMO/M1.1, accounts not connected, publishing disabled, "not a working automation product".
+PASS preview Host/Origin smoke — status 200 with preview Host and Origin; server bound to 0.0.0.0:3000.
+PASS client-chunk inspection — server-only guard text absent from generated client chunks; browser-condition bundle regression rejects client import.
+NOT RUN live social/AI/storage tests — no authorization or connected resources.
+NOT RUN active GitHub CI — workflow permission still missing; docs/ci/quality.yml.example remains inactive.
+NOT RUN Windows execution — portable APIs/scripts and regression probes are implemented, but this sandbox is Linux; no Windows runtime PASS claimed.
+
+Affected files
+- Boundary/runtime: lib/foundation.ts; package.json; package-lock.json; .npmrc; next.config.ts.
+- Portable tooling: scripts/toolchain.mjs; scripts/run-next.mjs; scripts/run-python.mjs; scripts/run-npm.mjs; scripts/run-quality.mjs; vitest.config.ts; vitest.integration.config.ts; playwright.config.ts.
+- Validation/tests: scripts/check_docs.py; scripts/test_check_docs.py; .gitignore; tests/unit/security/server-boundary.test.ts; tests/unit/toolchain.test.ts; tests/e2e/foundation.spec.ts; docs/ci/quality.yml.example.
+- Documentation/evidence: README.md; docs/SPRINT_STATUS.md; docs/TEST_EVIDENCE.md; docs/REQUIREMENTS_TRACEABILITY.md; docs/TEST_STRATEGY.md; docs/DECISIONS.md; docs/SECURITY_PRIVACY.md; docs/MASTER_PLAN.md; docs/CHANGELOG.md; docs/evidence/m1-1-hardening-validation.txt.
+- Generated next-env.d.ts churn was restored and is not part of the intended change.
+
+Operational notes
+- Stop the dev server before npm ci. The previous long-running preview emitted transient Turbopack "Next.js package not found" errors while node_modules was reorganized during install; after stopping it, clean install, production build and a fresh preview succeeded.
+- next-env.d.ts is generated by Next and may switch between dev/build route type paths; generated churn is not a product change.
+- The artifact validator is a heuristic Git-inclusion guard, not a complete DLP/product security audit. It scans index and non-ignored worktree content, rejects force-added ignored artifacts, and never prints matched secret values.
+- M1.1 hardening is implemented but not fully verified/owner-accepted while browser and axe assertions remain NOT RUN.

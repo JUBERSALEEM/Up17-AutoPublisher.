@@ -78,3 +78,13 @@ No infrastructure authorization has been given. Supabase and Vercel being availa
 - npm 11 reports an unapproved esbuild postinstall warning; strict install and Vitest pass. Review installer policy on future toolchain updates rather than disabling all scripts or claiming the warning absent.
 
 - **CI delivery blocker:** GitHub rejected the active workflow path because the connected GitHub App lacks workflow permission. The unpushed local commit was replaced without rewriting remote/shared history; the workflow is preserved as `docs/ci/quality.yml.example`. Local gates remain executable. Active CI is NOT IMPLEMENTED until the connection permission is fixed and the template is explicitly installed in a later commit.
+
+## M1.1 foundation hardening — 2026-11-08
+
+Owner requested maintenance within M1.1 only. Implemented without changing the approved product architecture or advancing to M1.2:
+
+- Added only `server-only` 0.0.1 as a new runtime dependency; existing stack pins unchanged. Exact npm 11.21.2 is now enforced through `packageManager`, engines, `engine-strict=true` and an executing-CLI check.
+- Replaced POSIX-only environment prefixes and URL pathname aliases with portable Node wrappers/`fileURLToPath`. Python 3 detection supports `python3`, `python`, `py -3` and `PYTHON`. Windows runtime execution is still NOT RUN in this Linux sandbox.
+- Empty integration suites fail closed. The expected exit-1 result is documented and kept outside the aggregate `check` script until real approved integration tests exist; no placeholder tests were created.
+- Expanded the Git artifact/credential validator and ignore policy for the current local-only stage. Future approved local Supabase migrations or other provider code will require an explicit gate update rather than silently weakening this guard.
+- Browser/axe/visual assertions remain NOT RUN because Chromium download is blocked. This is a verification blocker, not a reason to claim accessibility success or mark M1.1 owner-accepted.

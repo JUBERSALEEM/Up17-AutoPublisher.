@@ -1,6 +1,6 @@
 # Test strategy and acceptance evidence contract
 
-**Phase 0 status:** documentation checks only. All application/live-provider suites below are PLANNED / NOT RUN. A test name in this document is not evidence that it exists or passed.
+**Current status:** M1.1 local foundation hardening. Local static/unit/security/build gates have executed; browser/axe/visual assertions remain NOT RUN because the sandbox cannot download Chromium. Product/live-provider suites remain PLANNED / NOT RUN. A test name in this document is not evidence that it exists or passed.
 
 ## 1. Tooling and command contract
 
@@ -19,17 +19,21 @@ npm run test:visual
 npm run build
 ```
 
-Targeted runs may use `npm run test:unit -- <path>` or `npm run test:e2e -- --grep <suite-id>`. Integration tests must not silently substitute mocks when their name says local/live. Live suites are opt-in, require explicit resource/account authorization and refuse to run without an approved test environment. They default to private/test visibility and redact evidence. CI for ordinary PRs never receives production social credentials.
+Targeted runs may use `npm run test:unit -- <path>` or `npm run test:e2e -- --grep <suite-id>`. `npm run test:integration` deliberately exits 1 while `tests/integration/` is empty; it is outside `npm run check` until real approved integration tests exist. Integration tests must not silently substitute mocks when their name says local/live. Live suites are opt-in, require explicit resource/account authorization and refuse to run without an approved test environment. They default to private/test visibility and redact evidence. CI for ordinary PRs never receives production social credentials.
 
-Current Phase 0 validation commands:
+Browser setup on a machine with browser-download access: `npx playwright install chromium`, then `npm run test:e2e`, `npm run test:a11y`, `npm run test:visual`. The axe scan uses WCAG 2 A/AA, 2.1 A/AA and 2.2 AA tags with no disabled rules; manual keyboard/screen-reader review remains separate.
+
+Current portable validation commands:
 
 ```sh
-python3 scripts/check_docs.py
-PYTHONPYCACHEPREFIX=/tmp/up17-pycache python3 -m unittest discover -s scripts -p 'test_*.py' -v
-PYTHONPYCACHEPREFIX=/tmp/up17-pycache python3 -m py_compile scripts/check_docs.py
+npm run docs:check
+node scripts/run-python.mjs -B -m unittest discover -s scripts -p test_*.py -v
+node scripts/run-python.mjs -B -m py_compile scripts/check_docs.py scripts/test_check_docs.py
 git diff --check
 git diff --exit-code b16202cc61c12a4ae374bedcca94680882064a9f -- docs/PLAN.md
 ```
+
+Historical Phase 0 commands used `python3` and `PYTHONPYCACHEPREFIX`; those remain in the historical evidence ledger, while current scripts avoid platform-specific environment prefixes.
 
 ## 2. Evidence rules
 
@@ -53,16 +57,16 @@ Fixtures carry stable IDs, source=`demo`/`fixture`, scenario and requirement ref
 | ID | Planned assertions / manual procedure | Evidence destination |
 |---|---|---|
 | `T-DOC` | Required files populated; relative links resolve; unique valid requirement IDs/statuses; all original brief sections covered; every matrix milestone/test ID resolves; no forbidden application/cloud artifacts in Phase 0; original source hash unchanged | `docs/evidence/phase-0-validation.txt`; TEST_EVIDENCE.md |
-| `T-SCAFFOLD` | Clean lockfile install; Node/peer compatibility; dev startup and production build; documented commands work from fresh checkout | M1.1 command summary |
-| `T-QUALITY` | Format/lint/strict type checks and unit smoke; CI reproduces local gates without secrets/deployment | CI/local summary per milestone |
-| `T-SECRET` | Secret canaries absent from client bundle/logs/errors/audit/Git; env examples contain no real values; ignore rules exclude media/build/db artifacts | Security summary |
+| `T-SCAFFOLD` | Clean lockfile install; exact Node/npm enforcement; Node/peer compatibility; server-only boundary; dev startup and production build; documented commands work from fresh checkout | M1.1/hardening command summary |
+| `T-QUALITY` | Format/zero-warning lint/strict type checks and unit smoke; empty integration suite fails; CI template reproduces local gates without secrets/deployment | CI/local summary per milestone |
+| `T-SECRET` | Secret canaries absent from client bundle/logs/errors/audit/Git; env examples contain no real values; Git-index/worktree validator rejects credential/cloud artifacts and force-added ignored files; ignore rules exclude media/build/db artifacts | Security summary |
 
 ## 5. Catalog — UI and demo
 
 | ID | Assertions |
 |---|---|
 | `T-UI` | Primitive variants/states; labels/described errors; focus/keyboard menus/dialogs; pressed/loading/disabled behavior; semantic tokens |
-| `T-A11Y` | Axe serious/critical violations zero on tested routes; manual keyboard/focus/landmark/zoom/screen-reader checks; contrast and reduced motion |
+| `T-A11Y` | Real axe scan zero violations on tested routes (foundation scan implemented, NOT RUN until browser available); manual keyboard/focus/landmark/zoom/screen-reader checks; contrast and reduced motion |
 | `T-VIEWPORT` | Required six widths, both themes; no page-level horizontal overflow; 44px targets; primary workflows usable without hover/drag |
 | `T-SHELL` | All ten routes reachable; mobile More menu; desktop sidebar; context switching; theme persistence; notifications/profile controls |
 | `T-PWA` | Valid manifest/icons/installability where browser supports; public-shell offline fallback/update; authenticated/API/OAuth/media routes never cached; no offline publish |

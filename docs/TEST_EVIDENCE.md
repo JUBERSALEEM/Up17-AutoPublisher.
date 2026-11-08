@@ -45,3 +45,26 @@ Playwright browser assertions are **NOT RUN**: browser download failed with TLS 
 The initial local commit `85a10ef` could not be pushed: GitHub refused a workflow update without workflow permission. Remote remained `ddded10`. The CI file was preserved as an inactive example and the unpushed commit replaced locally; no force-push or shared-history rewrite. The replacement commit's push must be independently verified. Active CI and browser assertions remain NOT RUN.
 
 The replacement M1.1 commit `34246d3` was pushed successfully; `git ls-remote` matched `34246d3c3a4ea77a3b7ca0240195668cd8679877`, and the immediate audit was delivered. Active CI remains blocked/not run.
+
+## M1.1 — foundation hardening (2026-11-08)
+
+**Starting commit:** `d9250a619801149ada8ed86aee281ea6f635535e`, verified present locally and on the fixed remote branch before edits. **Scope:** maintenance only; no M1.2, publishing, cloud resource, OAuth setup or simulated success.
+
+See [m1-1-hardening-validation.txt](evidence/m1-1-hardening-validation.txt) for exact commands, exit statuses and limitations.
+
+| Check | Actual result |
+|---|---|
+| Wrong npm enforcement | PASS — global npm 10.9.8 `npm ci --dry-run` exits 1 with EBADENGINE under `engine-strict=true` |
+| Clean pinned install | PASS — npm 11.21.2 `npm ci`; only new dependency is `server-only` 0.0.1 |
+| Toolchain / lock consistency | PASS — exact npm declaration, executing-CLI check and lock-root manifest assertion |
+| Formatting / zero-warning lint / strict types | PASS |
+| Unit tests | PASS — 4 files, 8 tests, including real browser-condition bundle rejection of the foundation module |
+| Integration empty suite | EXPECTED FAIL — `npm run test:integration` exits 1, “No test files found”; no fake tests added |
+| Documentation/security validator | PASS — 34 Python tests + 2 TypeScript security tests; Git-index/worktree artifact policy checked |
+| Production build / dependency audit | PASS — Next.js build succeeds; `npm audit` reports 0 known vulnerabilities |
+| Browser install | FAIL SETUP — Chromium v1254 download from `cdn.playwright.dev` fails with TLS ECONNRESET |
+| E2E / axe accessibility / visual | NOT RUN — commands exit 1 at browser launch because the executable is absent; no page/axe/viewport assertion executed |
+| Local HTTP / preview-host smoke | PASS — 200 and unchanged honest DEMO/no-connection/disabled-publishing content; not browser evidence |
+| Active CI / Windows runtime / live providers | NOT RUN — workflow permission missing; sandbox is Linux; no provider authorization/resources |
+
+The real `@axe-core/playwright` scan is implemented with WCAG 2 A/AA, 2.1 A/AA and 2.2 AA tags and no disabled rules, but it has **not** executed. No genuine accessibility violation result is available yet. M1.1 hardening is implemented, not fully verified or owner-accepted, until browser/axe evidence is obtained. The final commit hash and verified push are reported in the immediate post-push audit rather than invented inside the commit.

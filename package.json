@@ -3,46 +3,50 @@
   "version": "0.1.0",
   "private": true,
   "description": "Local-first creator automation studio foundation; integrations are not connected.",
+  "packageManager": "npm@11.21.2",
   "engines": {
     "node": ">=22.22.3 <23",
     "npm": "11.21.2"
   },
   "scripts": {
-    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev --hostname 0.0.0.0",
-    "build": "NEXT_TELEMETRY_DISABLED=1 next build",
-    "start": "NEXT_TELEMETRY_DISABLED=1 next start --hostname 0.0.0.0",
-    "lint": "eslint .",
+    "toolchain:check": "node scripts/toolchain.mjs",
+    "dev": "node scripts/run-next.mjs dev --hostname 0.0.0.0",
+    "build": "node scripts/run-next.mjs build",
+    "start": "node scripts/run-next.mjs start --hostname 0.0.0.0",
+    "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:unit": "vitest run",
-    "test:integration": "vitest run --config vitest.integration.config.ts --passWithNoTests",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:e2e": "playwright test --grep-invert @visual",
-    "test:security": "python3 scripts/check_docs.py && PYTHONPYCACHEPREFIX=/tmp/up17-pycache python3 -m unittest discover -s scripts -p 'test_*.py' -v && npm run test:unit -- tests/unit/security",
+    "test:security": "node scripts/run-python.mjs -B scripts/check_docs.py && node scripts/run-python.mjs -B -m unittest discover -s scripts -p test_*.py -v && node scripts/run-npm.mjs test:unit -- tests/unit/security",
     "test:visual": "playwright test --grep @visual",
-    "docs:check": "python3 scripts/check_docs.py",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:unit && npm run docs:check && npm run build"
+    "test:a11y": "playwright test --grep @a11y",
+    "docs:check": "node scripts/run-python.mjs -B scripts/check_docs.py",
+    "check": "node scripts/run-quality.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "server-only": "0.0.1",
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@playwright/test": "1.65.0",
     "@tailwindcss/postcss": "4.3.5",
     "@types/node": "22.20.5",
     "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.5",
     "prettier": "3.9.10",
     "tailwindcss": "4.3.5",
     "typescript": "5.9.3",
     "vite": "7.3.7",
-    "vitest": "4.1.12",
-    "@types/react-dom": "19.3.0",
-    "@axe-core/playwright": "4.14.0"
+    "vitest": "4.1.12"
   },
   "overrides": {
     "minimatch": "11.0.1"

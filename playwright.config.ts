@@ -9,7 +9,9 @@ export default defineConfig({
   use: { baseURL: "http://127.0.0.1:3000", trace: "retain-on-failure" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: "npm run dev -- --port 3000",
+    // Invoke the checked Node wrapper directly: a nested `npm` lookup can
+    // resolve an older global npm on Windows or in npx-based sandbox setups.
+    command: "node scripts/run-next.mjs dev --hostname 0.0.0.0 --port 3000",
     url: "http://127.0.0.1:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
