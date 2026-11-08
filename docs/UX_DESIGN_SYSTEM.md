@@ -1,0 +1,101 @@
+# Claymorphism UX and design system
+
+**Status:** PROPOSED design specification, not implemented screens. The goal is a distinctive creator workflow studio, not a generic analytics/admin template.
+
+## 1. Experience principles
+
+- **One video, many independent destinations.** Show shared source media, then account-specific packages and outcomes; never imply one caption/schedule/credential serves every account.
+- **Tactile, calm, legible.** Soft surfaces and physical press feedback support hierarchy. Avoid neon, excessive glass, giant shadows and decorative charts.
+- **Truth before polish.** Persistent demo indicator; textual state badges; unavailable metrics have explanations, not invented zeroes.
+- **Phone is the primary device.** Upload, preview, correct, schedule, pause and retry without desktop-only controls.
+- **Automation remains understandable.** Show why a time/content choice was recommended and what requires attention. Platform-mandated consent cannot be hidden by an automation toggle.
+
+## 2. Semantic tokens and candidate palette
+
+Central CSS variables, consumed by reusable components and Tailwind utilities. Palette values below are starting tokens; contrast tests must pass before acceptance. State is never communicated by color alone.
+
+| Token | Light candidate | Dark candidate | Use |
+|---|---|---|---|
+| `--background` | `#F5F3FA` | `#111522` | Warm lavender / deep navy canvas |
+| `--surface` | `#FAF9FD` | `#1A2030` | Standard clay surface |
+| `--surface-raised` | `#FFFFFF` | `#242C40` | Raised cards and active controls |
+| `--surface-inset` | `#EEEBF5` | `#151B29` | Inputs, wells and pressed controls |
+| `--text` | `#20243A` | `#F4F5FB` | Primary text |
+| `--muted` | `#62677D` | `#B2B9CC` | Secondary text; verify contrast |
+| `--primary` | `#6246C7` | `#B6A2FF` | Primary action; pair with appropriate contrast token |
+| `--secondary` | `#147D89` | `#72D5DD` | Restrained supporting accent |
+| `--success` | `#24734F` | `#79D6AA` | Text/badge accent, not sole signal |
+| `--warning` | `#946000` | `#F0C572` | Attention/review |
+| `--danger` | `#B44747` | `#FFAAAA` | Destructive/error |
+| `--border` | `#DED9EB` | `#35405A` | Subtle edge definition |
+
+Additional required tokens: `--shadow-raised`, `--shadow-inset`, `--focus-ring`, `--primary-foreground`, semantic foreground/background pairs, spacing, radius, typography and motion. Raised shadows combine a soft ambient shadow and subtle top highlight; dark theme uses surface separation rather than enormous black glows. No more than one restrained gradient in a focal area.
+
+## 3. Geometry, typography and motion
+
+- Cards: 24px default radius within required 20–28px range; compact panels 20px. Buttons/badges pill-shaped; inputs 14–16px.
+- Spacing scale: 4/8/12/16/24/32/48px. Mobile page gutter 16px, minimum 12px at 320px only when needed.
+- Touch targets at least 44×44px, preferred 48px; adequate separation for destructive actions.
+- Body 16px minimum for primary mobile content; supporting text generally 14px, never tiny critical instructions. Strong heading scale and short line lengths.
+- One locally hosted modern sans family, preferably Inter or Geist, with system fallback; one Lucide icon style. Icon-only controls have accessible names and tooltips where helpful.
+- Motion 120–200ms for hover/press/state changes; no looping attention animations. `prefers-reduced-motion` removes nonessential transforms/transitions.
+- Focus ring always visible against raised/inset surfaces. Do not remove outlines in favor of shadow-only focus.
+
+## 4. Primitive contract
+
+| Component | Required behavior/states |
+|---|---|
+| ClayCard / Panel | Raised/inset/flat variants, semantic heading structure, optional action slot; no nested clickable cards |
+| Button / IconButton | Primary/secondary/ghost/danger; hover, pressed-inset, focus, loading/disabled; stable width during async labels; 44px+ target |
+| Input / Select / Textarea | Inset surface, persistent label, description/error linked by aria-describedby; character/byte counters where relevant |
+| Badge / StatusBadge | Icon + text label; all connection/job/analysis states; source/freshness visible near data |
+| Dialog / ConfirmAction | Accessible modal/focus trap/escape/return focus; destructive confirmation names object and consequences |
+| Menu / Popover / Tabs | Keyboard support, correct roles/selected state, outside dismissal, mobile-safe positioning |
+| Calendar / ScheduleItem | List alternative, keyboard reschedule, account/platform labels and timezone; drag is optional enhancement |
+| Toast / Notification | Accessible announcement, actionable error link, deduplication; not the sole persistent error record |
+| Empty / Loading / Error | Useful next action; skeleton matches layout; error retains context and retry; unavailable is distinct from empty |
+| Chart | Real metric definition, readable axes/legend/tooltips, accessible summary/table, missing-data explanation; no ornamental data |
+| DemoIndicator | Persistent shell indicator plus local **Demo data** / **Simulation** labels on sample accounts, metrics and actions |
+
+Use native elements or an accessibility-reviewed primitive library; do not build inaccessible div-based controls. Automated axe checks supplement, not replace, keyboard/screen-reader review.
+
+## 5. Shell and responsive navigation
+
+All ten destinations: Overview, Video Studio, AI Content, Smart Scheduler, Publishing Queue, Creator Studio, Research Centre, Performance Lab, Accounts, Settings.
+
+Shell includes original brand mark/wordmark, workspace selector/context, account context where relevant, notifications, theme switcher and profile menu. Demo has an explicitly simulated workspace context, not a fabricated signed-in user.
+
+- **320–430px:** compact header; five-item bottom navigation (Overview, Video Studio, Content, Queue, More); More exposes every remaining destination and settings. Stacked cards, full-width primary actions, dialogs/sheets sized to visual viewport. No hover-only or drag-only action.
+- **Tablet ~768px:** adaptive two-column bento; collapsible navigation if persistent sidebar would crowd content.
+- **Desktop >=1024px:** persistent sidebar with all destinations; wider bento and optional drag-and-drop with keyboard alternative.
+- Test 320, 360, 390, 430, 768 and 1440 CSS pixels; no page-level horizontal overflow. Tables/calendar may have contained, labelled scrolling only when no readable stacked alternative exists.
+- Theme follows system initially, allows explicit light/dark choice and persists without flash. Account/workspace changes visibly update context and never leak previous-account content.
+
+## 6. Screen composition and interaction inventory
+
+| Screen | Distinctive composition | Primary interactions and necessary states |
+|---|---|---|
+| Overview | Workflow “upload → analyse → package → schedule” focal panel; asymmetric bento of attention, queue and recent media | Continue upload, review attention, inspect upcoming post; true empty first-run vs labelled demo; no fake connection totals |
+| Video Studio | Mobile upload action first; media library with thumbnail/state; detail sheet with original/derivative lineage | File picker/drop, progress/resume explanation, search/sort/filter, preview, retry and confirmed delete; session-only demo clearly stated |
+| AI Content | Source evidence rail + per-account tabs/cards; platform-shaped previews; timeline linked to evidence | Generate simulation, edit/correct, regenerate, compare versions, counters/validation, review/automation policy; unknown claims blocked |
+| Smart Scheduler | Agenda-first mobile calendar; day/week/month switch; account lanes on wider screens | Filter, inspect recommendation reason/confidence, reschedule via accessible control, set windows/quiet/blackouts; sparse-data warning |
+| Publishing Queue | Account-grouped operational list, attention first; attempt timeline in detail | Filter, pause/resume, cancel/reschedule, retry with eligibility explanation; failed/simulated jobs never look live |
+| Creator Studio | Account selector then sourced metric panels and published-post library | Date/account/post filters, compare periods, inspect freshness/definition; unavailable/permission-limited/stale states |
+| Research Centre | Topic cards with source/date/freshness and relevance rationale; saved brief drawer | Search simulation, verify source, save idea to brief, discard irrelevant trend; verified fact vs suggestion separation |
+| Performance Lab | Experiment workbench with variables, sample coverage and limitations before result chart | Define experiment, choose account/metrics/window, compare supported groups, inspect uncertainty and next test; no causal badge |
+| Accounts | Platform groups containing multiple distinct account cards; capability/permission matrix | Connect explanation (disabled in demo), enable/pause simulation, strategy/timezone, reauth/disconnect confirmation; no implied live OAuth |
+| Settings | Grouped sections with sticky save feedback on mobile | Workspace/voice/niche/audience/language/defaults, automation/approval, frequency/windows, notifications/theme/accessibility, export/delete, services/security |
+
+Analysis timeline belongs to Video Studio detail and is consumed by AI Content. It exposes timestamp, observed fact vs estimate, evidence reference, confidence and correction action. Audio findings and clip suggestions appear alongside visual events. Demo analysis is illustrative, never represented as actual model inference.
+
+## 7. Content and status language
+
+Use “Not connected,” “Demo mode,” “Connected,” “Syncing,” “Needs authorisation,” “Limited permissions,” “Error,” “Disconnected.” Job labels follow the domain state machine. “Upload accepted” ≠ “analysis ready”; “publish request accepted” ≠ “published”; “unavailable” ≠ zero.
+
+Errors explain what happened, whether work is safe to retry and the next action. Do not expose provider tokens or raw responses. Full automation means no unnecessary repeated manual review after opt-in, **except** platform consent, safety, changed claims, missing permissions or other explicit intervention rules.
+
+## 8. PWA, accessibility and acceptance
+
+Manifest and original icons, install instructions and public-shell offline fallback; no offline publishing or sensitive response caching. Respect safe areas and mobile keyboard overlap. Maintain heading/landmark structure, focus order and readable zoom/reflow. Target WCAG 2.2 AA contrast and operability; record automated and manual evidence.
+
+Each screen milestone includes populated/demo, applicable loading/empty/error and unavailable states; keyboard operation; 320/360/390/430/768/1440 checks; theme checks and no overflow. Visual review checks premium clay surfaces without legibility loss. Screenshots alone do not establish accessible behavior or working integrations.
