@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — UI Batch 3: core creator screens (2026-11-08)
+
+- Populated Overview, Video Studio, Creator Studio, Smart Scheduler, Publishing Queue and Accounts with explicitly labelled demo presentation data.
+- Added real library search/filter/sort/view/selection/details, browser-local per-platform drafts and demo schedule slots, queue filters/attempt details, and disconnected account requirements/settings.
+- Added typed demo contracts/selectors, draft validation and browser-local storage with stable snapshots; no backend, upload, OAuth, AI or publishing calls.
+- Added core unit/browser/axe/phone tests; corrected draft hydration/remount behavior, queue attention filtering and a 320px accounts overflow found during verification.
+
 ## Unreleased — UI Batch 2: responsive shell and PWA (2026-11-08)
 
 - Added the ten canonical destinations, desktop sidebar, mobile bottom navigation/More, workspace details, destination search, profile and theme controls.

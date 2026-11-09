@@ -6,3 +6,4 @@ export * from "./dialog";
 export * from "./tabs";
 export * from "./states";
 export * from "./popover";
+export * from "./segmented";

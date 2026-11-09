@@ -1,18 +1,10 @@
-import { ScreenPlaceholder } from "@/components/shell/screen-placeholder";
-
+import { VideoWorkspace } from "@/components/creator-studio/video-workspace";
 export const metadata = { title: "Creator Studio" };
-
-export default function Page() {
-  return (
-    <ScreenPlaceholder
-      title="Creator Studio"
-      description="Prepare a shared video into independent packages for each destination account."
-      features={[
-        "Title, description, hashtags and tags",
-        "Per-platform settings and thumbnail selection",
-        "Account selection, schedule and validation",
-      ]}
-      availability="Saving drafts will be browser-local in this UI phase. Publishing and platform validation remain unavailable."
-    />
-  );
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ video?: string }>;
+}) {
+  const { video } = await searchParams;
+  return <VideoWorkspace initialVideoId={video} />;
 }

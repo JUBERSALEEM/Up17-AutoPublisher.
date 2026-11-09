@@ -117,3 +117,12 @@ Canonical PLAN.md §7 navigation is preserved exactly: Overview, Video Studio, A
 Desktop uses a persistent grouped sidebar; below 1024px a five-slot bottom bar exposes Overview/Videos/Queue/Accounts/More. More contains all ten destinations plus Notifications and workspace context. Search is local navigation only (Ctrl/Cmd+K), not a fake global data query. Workspace/profile menus state that no authentication or additional workspace backend exists.
 
 PWA caching is deliberately narrow: versioned `/_next/static/` assets, original icons and a data-free offline HTML fallback. Navigations are network-only with offline fallback; API/auth/query-string/media responses are never cached. Updates require an explicit user action. The offline fallback follows system light/dark rather than pretending to be the full themed application. Device-level install acceptance is not claimed from headless manifest/service-worker tests.
+
+
+## 11. Core screen implementation — UI Batch 3 (2026-11-08)
+
+Core screens use presentation-only fixtures under `features/demo`, not domain/database entities. Every sample surface carries Demo data/Simulation context; real connection counts remain zero and missing analytics are unavailable, not zero. Original schematic SVG artwork replaces real thumbnails/media and is labelled as demo artwork.
+
+Video Studio implements local search/filter/sort, card/list views, selection and metadata details. Creator Studio edits independent per-platform browser-local drafts with validation, account selection, cover direction and optional demo timing; it never generates or publishes. Smart Scheduler provides day/week/month/agenda views and browser-local demo slots. Publishing Queue exposes independent demo job filters and attempt history with disabled live actions. Accounts shows multiple demo identities per platform, official OAuth requirements and local pause preferences without implying authorization.
+
+Browser-local state is an explicit demo convenience, not persistence architecture. Drafts/slots/pause preferences use versioned local keys and survive reload; storage denial falls back to session memory with an honest notice. Full service contracts, real media, durable jobs and provider capabilities remain later approved phases.
