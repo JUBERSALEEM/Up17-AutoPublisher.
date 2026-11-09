@@ -1,6 +1,6 @@
 # Test strategy and acceptance evidence contract
 
-**Current status:** frontend UI Batches 1–5 tested locally with the documented registry-only Chromium fallback; Batch 6 final verification is in progress. Static/unit/security/build and production browser/axe/viewport gates have executed. Standard Playwright CDN download remains blocked; product/live-provider suites remain PLANNED / NOT RUN. A test name in this document is not evidence that it exists or passed.
+**Current status:** frontend UI Batches 1–6 tested locally with the documented registry-only Chromium fallback. Static/unit/security/build and production browser/axe/viewport gates have executed. Standard Playwright CDN download remains blocked; product/live-provider suites remain PLANNED / NOT RUN. A test name in this document is not evidence that it exists or passed.
 
 ## 1. Tooling and command contract
 

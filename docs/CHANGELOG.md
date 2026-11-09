@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — UI Batch 6: final verification and delivery report (2026-11-08)
+
+- Completed final dependency audit (0 known vulnerabilities), security/documentation validation and consolidated frontend delivery report.
+- Recorded exact browser/axe/viewport evidence, verified batch commits, remaining blockers and the explicit boundary between local UI completeness and unimplemented live services.
+- Updated sprint/master-plan/test-strategy/traceability status without claiming owner acceptance or live integration success.
+
 ## Unreleased — UI Batch 5: polish and accessibility verification (2026-11-08)
 
 - Added four-theme axe coverage for every main destination plus Notifications, and six-width overflow/navigation coverage for every destination.

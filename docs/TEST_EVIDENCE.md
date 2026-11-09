@@ -79,3 +79,22 @@ See [m1-1-hardening-validation.txt](evidence/m1-1-hardening-validation.txt) for 
 | Active CI / Windows runtime / live providers | NOT RUN — workflow permission missing; sandbox is Linux; no provider authorization/resources |
 
 The real `@axe-core/playwright` scan is implemented with WCAG 2 A/AA, 2.1 A/AA and 2.2 AA tags and no disabled rules, but it has **not** executed. No genuine accessibility violation result is available yet. M1.1 hardening is implemented, not fully verified or owner-accepted, until browser/axe evidence is obtained. The hardening commit `241d3aa5f4292ddb64a836ddfdcd57e028385d37` was pushed successfully and verified against the remote; the immediate audit was delivered. Browser/axe verification remains pending.
+
+
+## Frontend UI delivery — Batches 1–6 (2026-11-08)
+
+**Scope:** local frontend/demo only. **Environment:** Linux, Node 22.22.3, npm 11.21.2, Next.js 16.4.5; Chromium 153.0.8010.0 from the documented registry-only fallback with safe launch arguments. Standard Playwright CDN download remains blocked.
+
+| Check | Actual result |
+|---|---|
+| Formatting / zero-warning lint / strict types | PASS |
+| Unit tests | PASS — 22 tests / 8 files |
+| Production E2E (`npm run test:e2e`) | PASS — 97 assertions |
+| Axe (`npm run test:a11y`) | PASS — 75 scans, including 11 destinations × 4 themes |
+| Viewport (`npm run test:visual`) | PASS — 84 checks, including 11 destinations × 6 widths |
+| Security/docs validator | PASS — 34 Python tests + 2 TypeScript security tests; 155 requirements; preserved brief |
+| Production build | PASS — 15 routes |
+| Dependency audit | PASS — `npm audit --audit-level=moderate`: 0 vulnerabilities |
+| Manual screen-reader / OS install / Windows / live providers | NOT RUN — outside executed local evidence or unauthorized |
+
+Detailed logs: [Batch 1](evidence/ui-batch1-validation.txt), [Batch 2](evidence/ui-batch2-validation.txt), [Batch 3](evidence/ui-batch3-validation.txt), [Batch 4](evidence/ui-batch4-validation.txt), [Batch 5](evidence/ui-batch5-validation.txt), [Batch 6](evidence/ui-batch6-validation.txt). Consolidated interpretation: [UI_DELIVERY_REPORT.md](UI_DELIVERY_REPORT.md). Owner acceptance remains NOT RECORDED.
