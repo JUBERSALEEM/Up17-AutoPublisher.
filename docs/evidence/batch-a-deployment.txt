@@ -25,7 +25,12 @@ Targeted security TypeScript: 2 passed.
 First production build exposed missing TypeScript declarations for the new direct
 .mjs test import; declaration added, final rerun result recorded below.
 
-Pending at file creation: final build, commit/push, fresh hosted preview and browser check.
+Commit 6ad7ae4776479d826ccfee8482d811ea4196da3d pushed; git ls-remote matched.
+Fresh preview dpl_9w3SZMZsVDUjrWf2NKjcqEQ3rKdA: READY, aliasAssigned=true,
+source sha matched; hosted install added 405 packages, audit 0 vulnerabilities;
+Next compile/types/15 routes PASS; build completed in 38s; deployment completed.
+Anonymous fetch redirected to Vercel login (Protected Deployment). Hosted UI
+browser verification BLOCKED by team SSO; not claimed as passed.
 Production has NOT been promoted. Existing READY production is docs-only b16202cc.
 Final local reruns: format PASS; lint PASS (zero warnings); typecheck PASS;
 production build PASS (15 routes); documentation checker PASS (155 requirements).

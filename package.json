@@ -25,6 +25,8 @@
     "test:security": "node scripts/run-python.mjs -B scripts/check_docs.py && node scripts/run-python.mjs -B -m unittest discover -s scripts -p test_*.py -v && node scripts/run-npm.mjs test:unit -- tests/unit/security",
     "pretest:visual": "node scripts/run-npm.mjs build",
     "test:visual": "playwright test --grep @visual",
+    "pretest:clay": "node scripts/run-npm.mjs build",
+    "test:clay": "playwright test --grep @clay",
     "pretest:a11y": "node scripts/run-npm.mjs build",
     "test:a11y": "playwright test --grep @a11y",
     "docs:check": "node scripts/run-python.mjs -B scripts/check_docs.py",

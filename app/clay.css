@@ -1,0 +1,373 @@
+/*
+ * Clay material engine. Color roles live in globals.css; sculptural material
+ * roles live here. Every rule is family-scoped: Bento never inherits clay depth.
+ * Depth = ambient shadow + contact shadow + upper bevel + lower occlusion.
+ */
+[data-theme^="clay-"] {
+  --material-canvas:
+    radial-gradient(ellipse at 8% 0%, rgb(255 255 255 / 0.8), transparent 48%),
+    radial-gradient(ellipse at 95% 90%, rgb(193 180 231 / 0.2), transparent 52%),
+    linear-gradient(145deg, #f4f1fa, #eae6f3);
+  --material-surface: linear-gradient(145deg, #ffffff 0%, #f8f6fc 48%, #eeebf6 100%);
+  --material-surface-hover: linear-gradient(145deg, #ffffff, #f4f0fc 55%, #eae4f7);
+  --material-inset: linear-gradient(145deg, #e9e5f1, #f5f2fa);
+  --material-primary: linear-gradient(155deg, #8b70e8 0%, #6c4fd2 48%, #5638b4 100%);
+  --material-primary-hover: linear-gradient(155deg, #967bee, #7658dc 48%, #6041c1);
+  --material-accent: linear-gradient(145deg, #eafafb, #cfebef);
+  --material-highlight: rgb(255 255 255 / 0.96);
+  --material-occlusion: rgb(104 87 143 / 0.13);
+  --material-ambient: rgb(77 60 112 / 0.16);
+  --material-contact: rgb(65 48 96 / 0.12);
+  --material-color-shadow: rgb(91 61 184 / 0.3);
+  --material-raised:
+    0 18px 32px -18px var(--material-ambient), 0 4px 8px -4px var(--material-contact),
+    inset 2px 2px 3px var(--material-highlight), inset -2px -3px 5px var(--material-occlusion);
+  --material-control:
+    0 7px 12px -7px var(--material-ambient), 0 2px 3px var(--material-contact),
+    inset 1px 2px 2px var(--material-highlight), inset -1px -2px 3px var(--material-occlusion);
+  --material-primary-depth:
+    0 10px 18px -8px var(--material-color-shadow), 0 3px 5px -2px var(--material-contact),
+    inset 1px 2px 2px rgb(255 255 255 / 0.4), inset -1px -3px 4px rgb(44 20 104 / 0.32);
+  --material-well:
+    inset 3px 4px 7px rgb(87 68 124 / 0.14), inset -2px -2px 4px rgb(255 255 255 / 0.92),
+    0 1px 0 rgb(255 255 255 / 0.8);
+  --material-floating:
+    0 28px 56px -22px rgb(49 35 80 / 0.38), 0 8px 16px -8px var(--material-contact),
+    inset 2px 2px 3px var(--material-highlight), inset -2px -2px 4px var(--material-occlusion);
+  --material-edge: rgb(255 255 255 / 0.72);
+  --radius-card: 28px;
+  --radius-panel: 22px;
+  --radius-input: 17px;
+}
+
+[data-theme="clay-dark"] {
+  --material-canvas:
+    radial-gradient(ellipse at 5% 0%, rgb(83 69 125 / 0.22), transparent 48%),
+    radial-gradient(ellipse at 100% 100%, rgb(32 83 96 / 0.14), transparent 50%),
+    linear-gradient(145deg, #151827, #101420);
+  --material-surface: linear-gradient(145deg, #2b3248 0%, #22293c 48%, #1b2132 100%);
+  --material-surface-hover: linear-gradient(145deg, #333b54, #282f45 50%, #20273a);
+  --material-inset: linear-gradient(145deg, #171d2c, #22293b);
+  --material-primary: linear-gradient(155deg, #c6b5ff, #a58aee 50%, #896bd4);
+  --material-primary-hover: linear-gradient(155deg, #d3c5ff, #b39bf5 50%, #9679e0);
+  --material-accent: linear-gradient(145deg, #25454e, #19333d);
+  --material-highlight: rgb(255 255 255 / 0.1);
+  --material-occlusion: rgb(0 0 0 / 0.32);
+  --material-ambient: rgb(0 0 0 / 0.48);
+  --material-contact: rgb(0 0 0 / 0.4);
+  --material-color-shadow: rgb(137 100 224 / 0.28);
+  --material-well:
+    inset 3px 4px 8px rgb(0 0 0 / 0.45), inset -2px -2px 4px rgb(255 255 255 / 0.055),
+    0 1px 0 rgb(255 255 255 / 0.055);
+  --material-primary-depth:
+    0 10px 20px -8px var(--material-color-shadow), 0 3px 6px -2px var(--material-contact),
+    inset 1px 2px 3px rgb(255 255 255 / 0.38), inset -1px -3px 5px rgb(53 29 105 / 0.38);
+  --material-edge: rgb(255 255 255 / 0.085);
+}
+
+/* Canvas and shell retain the same geometry in all four themes. */
+[data-theme^="clay-"] body {
+  background: var(--material-canvas);
+  background-attachment: fixed;
+}
+[data-theme^="clay-"] .sidebar {
+  background: var(--material-surface);
+  border-right-color: var(--material-edge);
+  box-shadow:
+    8px 0 28px -20px var(--material-ambient),
+    inset -2px 0 4px var(--material-occlusion);
+}
+[data-theme^="clay-"] .topbar {
+  background: var(--material-surface);
+  border-bottom-color: var(--material-edge);
+  box-shadow:
+    0 8px 20px -16px var(--material-ambient),
+    inset 0 -2px 3px var(--material-occlusion);
+}
+[data-theme^="clay-"] .brand-mark,
+[data-theme^="clay-"] .workspace-avatar,
+[data-theme^="clay-"] .profile-avatar,
+[data-theme^="clay-"] .empty-icon,
+[data-theme^="clay-"] .activity-icon,
+[data-theme^="clay-"] .platform-icon,
+[data-theme^="clay-"] .notification-icon {
+  background: var(--material-surface);
+  border: 1px solid var(--material-edge);
+  box-shadow: var(--material-control);
+}
+[data-theme^="clay-"] .brand-mark {
+  background: var(--material-primary);
+  box-shadow: var(--material-primary-depth);
+}
+[data-theme^="clay-"] .workspace-avatar,
+[data-theme^="clay-"] .profile-avatar {
+  background: var(--material-accent);
+}
+[data-theme^="clay-"] .workspace-switch,
+[data-theme^="clay-"] .connection-note,
+[data-theme^="clay-"] .search-trigger,
+[data-theme^="clay-"] .settings-jumps,
+[data-theme^="clay-"] .view-switch {
+  border-color: var(--material-edge);
+  background: var(--material-inset);
+  box-shadow: var(--material-well);
+}
+[data-theme^="clay-"] .workspace-switch:hover {
+  background: var(--material-surface-hover);
+  box-shadow: var(--material-control);
+  transform: translateY(-1px);
+}
+[data-theme^="clay-"] .nav-link-active,
+[data-theme^="clay-"] .bottom-nav-active,
+[data-theme^="clay-"] .settings-jumps a:hover {
+  background: var(--material-surface);
+  box-shadow: var(--material-control);
+  border: 1px solid var(--material-edge);
+}
+[data-theme^="clay-"] .nav-link:not(.nav-link-active) {
+  border: 1px solid transparent;
+}
+[data-theme^="clay-"] .active-dot {
+  box-shadow:
+    0 0 0 4px var(--primary-soft),
+    0 2px 3px var(--material-contact);
+}
+
+/* Shared primitives: material changes, accessible names/focus/geometry do not. */
+[data-theme^="clay-"] .card-raised,
+[data-theme^="clay-"] .metric-card,
+[data-theme^="clay-"] .library-toolbar,
+[data-theme^="clay-"] .workspace-source,
+[data-theme^="clay-"] .analysis-source,
+[data-theme^="clay-"] .performance-filters,
+[data-theme^="clay-"] .account-security-note {
+  border-color: var(--material-edge);
+  background: var(--material-surface);
+  box-shadow: var(--material-raised);
+}
+[data-theme^="clay-"] .card-inset,
+[data-theme^="clay-"] .upload-zone,
+[data-theme^="clay-"] .unavailable-note,
+[data-theme^="clay-"] .demo-notice,
+[data-theme^="clay-"] .timeline-track,
+[data-theme^="clay-"] .research-question {
+  border-color: var(--material-edge);
+  background: var(--material-inset);
+  box-shadow: var(--material-well);
+}
+[data-theme^="clay-"] .card-flat {
+  border-color: var(--material-edge);
+  background: var(--material-surface);
+  box-shadow: var(--material-control);
+}
+[data-theme^="clay-"] .btn-primary {
+  background: var(--material-primary);
+  border-color: rgb(255 255 255 / 0.18);
+  box-shadow: var(--material-primary-depth);
+}
+[data-theme^="clay-"] .btn-secondary,
+[data-theme^="clay-"] .icon-btn-secondary,
+[data-theme^="clay-"] .theme-option,
+[data-theme^="clay-"] .badge {
+  background: var(--material-surface);
+  border-color: var(--material-edge);
+  box-shadow: var(--material-control);
+}
+[data-theme^="clay-"] .btn-danger {
+  background: linear-gradient(
+    145deg,
+    var(--danger-soft),
+    color-mix(in srgb, var(--danger-soft) 82%, var(--danger))
+  );
+  box-shadow: var(--material-control);
+}
+[data-theme^="clay-"] .btn-primary:hover:not(:disabled) {
+  background: var(--material-primary-hover);
+  box-shadow:
+    var(--material-primary-depth),
+    0 12px 22px -12px var(--material-color-shadow);
+  transform: translateY(-2px);
+}
+[data-theme^="clay-"] .btn-secondary:hover:not(:disabled),
+[data-theme^="clay-"] .icon-btn:hover:not(:disabled),
+[data-theme^="clay-"] .theme-option:hover:not(:disabled) {
+  background: var(--material-surface-hover);
+  box-shadow: var(--material-raised);
+  transform: translateY(-2px);
+}
+[data-theme^="clay-"] .btn:active:not(:disabled),
+[data-theme^="clay-"] .icon-btn:active:not(:disabled),
+[data-theme^="clay-"] .theme-option:active:not(:disabled),
+[data-theme^="clay-"] .tab:active:not(:disabled) {
+  background: var(--material-inset);
+  box-shadow: var(--material-well);
+  transform: translateY(1px) scale(0.985);
+}
+[data-theme^="clay-"] .btn-primary:active:not(:disabled) {
+  color: var(--text);
+}
+[data-theme^="clay-"] .btn:disabled,
+[data-theme^="clay-"] .icon-btn:disabled {
+  background: var(--surface-inset);
+  box-shadow: none;
+  transform: none;
+  border-color: var(--border);
+}
+[data-theme^="clay-"] .input {
+  background: var(--material-inset);
+  border-color: var(--material-edge);
+  box-shadow: var(--material-well);
+}
+[data-theme^="clay-"] .input:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+[data-theme^="clay-"] .input:focus {
+  background: var(--material-surface);
+  box-shadow:
+    var(--material-well),
+    0 0 0 3px var(--primary-soft);
+}
+[data-theme^="clay-"] .input:disabled {
+  box-shadow: none;
+  opacity: 0.6;
+}
+[data-theme^="clay-"] .tab-list,
+[data-theme^="clay-"] .toggle {
+  background: var(--material-inset);
+  box-shadow: var(--material-well);
+  border-color: var(--material-edge);
+}
+[data-theme^="clay-"] .tab-active,
+[data-theme^="clay-"] .view-active,
+[data-theme^="clay-"] .theme-option-active,
+[data-theme^="clay-"] .icon-btn-active,
+[data-theme^="clay-"] .account-choice-selected {
+  background: var(--material-surface);
+  box-shadow: var(--material-control);
+  border-color: var(--primary);
+}
+[data-theme^="clay-"] .toggle-thumb {
+  background: var(--material-surface);
+  box-shadow: var(--material-control);
+}
+[data-theme^="clay-"] .toggle-on {
+  background: var(--material-primary);
+  box-shadow: var(--material-well);
+}
+[data-theme^="clay-"] .toggle-on .toggle-thumb {
+  background: var(--material-surface);
+}
+[data-theme^="clay-"] .dialog,
+[data-theme^="clay-"] .popover-panel {
+  background: var(--material-surface);
+  border-color: var(--material-edge);
+  box-shadow: var(--material-floating);
+}
+[data-theme^="clay-"] .dialog-footer {
+  background: var(--material-inset);
+  box-shadow: inset 0 2px 4px var(--material-occlusion);
+}
+[data-theme^="clay-"] .badge-primary,
+[data-theme^="clay-"] .badge-accent,
+[data-theme^="clay-"] .badge-success,
+[data-theme^="clay-"] .badge-warning,
+[data-theme^="clay-"] .badge-danger {
+  box-shadow:
+    inset 1px 1px 2px var(--material-highlight),
+    inset -1px -1px 2px var(--material-occlusion),
+    0 2px 3px -2px var(--material-contact);
+}
+[data-theme^="clay-"] .badge-primary {
+  background: linear-gradient(
+    145deg,
+    var(--primary-soft),
+    color-mix(in srgb, var(--primary-soft) 82%, var(--primary))
+  );
+}
+[data-theme^="clay-"] .badge-accent {
+  background: var(--material-accent);
+}
+[data-theme^="clay-"] .badge-success {
+  background: linear-gradient(
+    145deg,
+    var(--success-soft),
+    color-mix(in srgb, var(--success-soft) 85%, var(--success))
+  );
+}
+[data-theme^="clay-"] .badge-warning {
+  background: linear-gradient(
+    145deg,
+    var(--warning-soft),
+    color-mix(in srgb, var(--warning-soft) 85%, var(--warning))
+  );
+}
+[data-theme^="clay-"] .badge-danger {
+  background: linear-gradient(
+    145deg,
+    var(--danger-soft),
+    color-mix(in srgb, var(--danger-soft) 85%, var(--danger))
+  );
+}
+
+/* Screen-level tactile details, shared by every destination rather than Overview alone. */
+[data-theme^="clay-"] .video-artwork,
+[data-theme^="clay-"] .upload-zone,
+[data-theme^="clay-"] .date-tile,
+[data-theme^="clay-"] .selection-bar,
+[data-theme^="clay-"] .save-notice,
+[data-theme^="clay-"] .preview-notice,
+[data-theme^="clay-"] .account-choice,
+[data-theme^="clay-"] .observation-card,
+[data-theme^="clay-"] .marker-detail,
+[data-theme^="clay-"] .experiment-question {
+  border-color: var(--material-edge);
+  box-shadow: var(--material-control);
+}
+[data-theme^="clay-"] .video-card {
+  transition:
+    transform var(--motion-base),
+    box-shadow var(--motion-base);
+}
+[data-theme^="clay-"] .video-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--material-floating);
+}
+[data-theme^="clay-"] .video-select,
+[data-theme^="clay-"] .art-label {
+  background: var(--material-surface);
+  box-shadow: var(--material-control);
+}
+[data-theme^="clay-"] .metric-value {
+  text-shadow: 0 2px 0 var(--material-highlight);
+}
+[data-theme^="clay-"] .dialog::backdrop {
+  background: rgb(16 12 29 / 0.58);
+  backdrop-filter: blur(5px);
+}
+
+@media (max-width: 1023px) {
+  [data-theme^="clay-"] .bottom-nav {
+    background: var(--material-surface);
+    border-top-color: var(--material-edge);
+    box-shadow:
+      0 -10px 28px -18px var(--material-ambient),
+      inset 0 2px 2px var(--material-highlight);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-theme^="clay-"] .btn:hover,
+  [data-theme^="clay-"] .icon-btn:hover,
+  [data-theme^="clay-"] .theme-option:hover,
+  [data-theme^="clay-"] .video-card:hover,
+  [data-theme^="clay-"] .workspace-switch:hover {
+    transform: none;
+  }
+}
+@media (prefers-contrast: more) {
+  [data-theme^="clay-"] .card,
+  [data-theme^="clay-"] .btn,
+  [data-theme^="clay-"] .input,
+  [data-theme^="clay-"] .icon-btn {
+    border-color: var(--border-strong);
+  }
+}

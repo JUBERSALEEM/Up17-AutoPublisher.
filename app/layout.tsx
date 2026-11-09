@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { ThemeScript } from "@/components/theme/theme-script";
 import "./globals.css";
+import "./clay.css";
 
 export const metadata: Metadata = {
   title: { default: "Up17 AutoPublisher — Creator Studio", template: "%s — Up17 AutoPublisher" },
@@ -24,10 +25,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" data-theme="clay-light" suppressHydrationWarning>
-      <head>
-        <ThemeScript />
-      </head>
       <body>
+        <ThemeScript />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

@@ -1,6 +1,6 @@
 # Claymorphism UX and design system
 
-**Status:** Batch 1 foundation IMPLEMENTED / TESTED locally; application screens IN PROGRESS. The goal is a distinctive creator workflow studio, not a generic analytics/admin template.
+**Status:** Batch B material engine COMPLETE for local technical scope; see [current Clay report](BATCH_B_CLAY_REPORT.md). Real product workflows remain tracked separately. The goal is a distinctive creator workflow studio, not a generic analytics/admin template.
 
 ## 1. Experience principles
 
@@ -29,11 +29,11 @@ Central CSS variables, consumed by reusable components and Tailwind utilities. P
 | `--danger` | `#B44747` | `#FFAAAA` | Destructive/error |
 | `--border` | `#DED9EB` | `#35405A` | Subtle edge definition |
 
-Additional required tokens: `--shadow-raised`, `--shadow-inset`, `--focus-ring`, `--primary-foreground`, semantic foreground/background pairs, spacing, radius, typography and motion. Raised shadows combine a soft ambient shadow and subtle top highlight; dark theme uses surface separation rather than enormous black glows. No more than one restrained gradient in a focal area.
+Additional required tokens: `--shadow-raised`, `--shadow-inset`, `--focus-ring`, `--primary-foreground`, semantic foreground/background pairs, spacing, radius, typography and motion. Raised shadows combine a soft ambient shadow and subtle top highlight; dark theme uses surface separation rather than enormous black glows. Batch B supersedes the earlier one-gradient limit for Clay materials: layered surface gradients are permitted when they encode physical depth. Bento remains flat.
 
 ## 3. Geometry, typography and motion
 
-- Cards: 24px default radius within required 20–28px range; compact panels 20px. Buttons/badges pill-shaped; inputs 14–16px.
+- Batch B Clay cards use 28px radius, panels 22px and inputs 17px; Bento retains 18/14/10px. Buttons/badges remain pill-shaped.
 - Spacing scale: 4/8/12/16/24/32/48px. Mobile page gutter 16px, minimum 12px at 320px only when needed.
 - Touch targets at least 44×44px, preferred 48px; adequate separation for destructive actions.
 - Body 16px minimum for primary mobile content; supporting text generally 14px, never tiny critical instructions. Strong heading scale and short line lengths.

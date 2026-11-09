@@ -15,8 +15,8 @@
 
 | Batch | Requirement | Status | What exists / what remains |
 |---|---|---|---|
-| A | Baseline, environments and deployment repair | PARTIAL | Exact Supabase project and Vercel team/project verified. Actual preview failure diagnosed as npm 10.9.9 versus required 11.21.2. Version-controlled hosted commands and compatible-node regression tests added; fresh hosted build/browser verification pending. Production still serves the old docs-only main commit. |
-| B | Rich sculptural Clay Light/Dark; flat Bento Light/Dark; all screens and devices | PARTIAL | Four semantic themes and shared primitives exist, with local browser/a11y coverage. Clay depth is currently too restrained for the new brief; richer material/state tokens and a dedicated visual-regression gate remain. |
+| A | Baseline, environments and deployment repair | PARTIAL | Exact identities verified; npm root cause repaired; fresh Vercel preview `dpl_9w3SZMZsVDUjrWf2NKjcqEQ3rKdA` READY from verified commit `6ad7ae4776479d826ccfee8482d811ea4196da3d`. Anonymous hosted browser check blocked by Vercel SSO. Production still serves the old docs-only main commit. |
+| B | Rich sculptural Clay Light/Dark; flat Bento Light/Dark; all screens and devices | COMPLETE | Central sculptural material engine applied across all 12 screens; Bento explicitly flat. 62 dedicated checks and 12 reviewed screenshot baselines pass, plus 116 E2E / 82 axe / 150 viewport checks. Local technical scope verified; owner/hosted visual acceptance separate. |
 | C | Real authentication, relational persistence, RLS and private storage | MISSING | Supabase project is healthy, but it has no application migrations. Current profiles, drafts, settings and inbox are browser-local demo data. Auth, schema, policies, storage and multi-user tests remain. |
 | D | Official multi-account YouTube/Instagram/TikTok OAuth | MISSING | No provider credentials or real connected accounts. Server-side state/PKCE, encrypted token custody, refresh/revoke/health and provider review documentation remain. |
 | E | Upload, private video playback, game/category selection and versioned metadata | DEMO | Library/draft screens work with labelled sample data and browser storage. Real private upload/storage/playback and durable video records remain. BGMI and PUBG Mobile must remain distinct. |
@@ -26,7 +26,7 @@
 | I | Real analytics and research provenance | MISSING | Analytics explicitly unavailable; research briefs are local notes/examples. No platform metrics or retrieved research are represented as real. |
 | J | Security/browser gates, production launch and live smoke verification | MISSING | Local frontend gates pass; full product security/integration gates and a real-app production release have not run. A READY docs-only deployment is not a live product launch. |
 
-**Totals: 10 batches — COMPLETE 0; PARTIAL 2; DEMO 4; BLOCKED 0; MISSING 4; NOT REQUIRED 0.** Batch statuses are not additive feature percentages. External authorization blockers will be recorded explicitly as implementation reaches them; deployment itself is now authorized.
+**Totals: 10 batches — COMPLETE 1; PARTIAL 1; DEMO 4; BLOCKED 0; MISSING 4; NOT REQUIRED 0.** Batch statuses are not additive feature percentages. External authorization blockers will be recorded explicitly as implementation reaches them; deployment itself is now authorized.
 
 ## What works now
 
@@ -51,4 +51,4 @@ Video library, analysis, metadata suggestions, drafts, scheduling, queue, accoun
 
 ## What remains / is it live?
 
-Real auth/database/storage, provider connections, uploads, workers, grounded intelligence, confirmed publishing, real analytics and production acceptance remain. **The functional product is not live yet.** The production alias currently points to the initial documentation commit on `main`; the working application is on the fixed Arena branch. Preview build repair is in progress. See [deployment evidence](evidence/batch-a-deployment.txt) for executed checks and blockers.
+Real auth/database/storage, provider connections, uploads, workers, grounded intelligence, confirmed publishing, real analytics and production acceptance remain. **The functional product is not live yet.** The production alias currently points to the initial documentation commit on `main`; the working application is on the fixed Arena branch. Preview build repair is verified; anonymous preview browser testing is blocked by team SSO. See [Batch B report](BATCH_B_CLAY_REPORT.md) and [deployment evidence](evidence/batch-a-deployment.txt) for executed checks and blockers.

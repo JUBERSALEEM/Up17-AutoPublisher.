@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — Batch B sculptural Clay engine (2026-11-08)
+
+- Added family-scoped Clay Light/Dark material tokens and tactile shared-component states across all 12 screens; Bento remains flat.
+- Added 62 dedicated material/screenshot/accessibility checks with 12 committed viewport baselines; full local browser gates pass.
+- Moved the stable theme script out of the head without lint suppression. See the Batch B report for exact evidence and remaining acceptance boundaries.
+
 ## Unreleased — local navigation repair (2026-11-08)
 
 - Investigated the reported development-server menu/screen defect with real Chromium on localhost, desktop and mobile, all twelve destinations, refresh/direct/history and four themes. The exact stale-screen symptom was not reproduced in a clean browser; a transient HMR hydration mismatch in a long-lived preview cleared on reload/clean restart.
