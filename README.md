@@ -2,11 +2,13 @@
 
 AI-powered, multi-platform creator automation studio for YouTube, Instagram and TikTok. Automates gameplay video analysis, metadata generation, smart scheduling, publishing and performance analytics.
 
-## Current status — M1.1 foundation hardening
+## Current status — frontend UI delivery
 
-The owner approved the Phase 0 plan and recommended safe defaults on **2026-11-08**. This repository has a **local Next.js/TypeScript application foundation**, not a working publishing product. The current page is a temporary toolchain check. No product dashboard, database, cloud project, social connection, AI provider or deployment has been created.
+The owner approved the Phase 0 plan on **2026-11-08** and subsequently authorized a six-batch, **frontend-only** UI implementation. Batch 1 adds four token-driven themes (Clay Light default), local Inter/Lucide assets, reusable tactile primitives and an interactive design-system preview. The responsive application shell and ten product screens are the next batches; this is not yet a connected publishing product.
 
-M1.1 hardening adds a server-only foundation boundary, fail-on-empty integration gating, expanded Git artifact/credential validation, exact npm enforcement, portable local scripts and a real axe accessibility test. **Browser and accessibility assertions remain NOT RUN in this sandbox** because the Playwright browser download is blocked. M1.1 is not marked owner-accepted or fully complete while that required evidence is missing.
+No database, cloud project, social connection, AI provider, publishing engine or deployment has been created. Sample content remains explicitly labelled; unavailable actions explain their dependency rather than simulating success.
+
+Real production-build browser checks now run using a documented registry-only Chromium fallback: theme/keyboard interactions, four-theme axe scans and a 320px overflow smoke pass. The standard Playwright CDN download remains blocked; full-application accessibility/viewport acceptance is still pending. See [current sprint](docs/SPRINT_STATUS.md) and [executed evidence](docs/TEST_EVIDENCE.md).
 
 The first configurable workspace is **Up17 Gaming** (`@up17longshotyt`); gaming is a workspace configuration, not a product-wide restriction. The original brief is preserved unchanged at [docs/PLAN.md](docs/PLAN.md).
 
@@ -85,9 +87,9 @@ npm run test:a11y
 npm run test:visual
 ```
 
-`test:a11y` runs a real `@axe-core/playwright` scan of the main foundation screen against WCAG 2 A/AA, 2.1 A/AA and 2.2 AA tags, with no disabled rules. Automated scanning does not replace manual keyboard/screen-reader review.
+Each browser command builds the current application first, then starts and stops its own production server on port 3100 (`UP17_TEST_PORT` overrides it). It does not reuse a stale development server. The live development preview remains on port 3000. `test:a11y` runs real axe scans with WCAG 2 A/AA, 2.1 A/AA and 2.2 AA tags and no disabled rules. Automated scans do not replace manual keyboard/screen-reader review.
 
-In this sandbox, `npx --yes npm@11.21.2 exec -- playwright install chromium` failed with `ECONNRESET` to `cdn.playwright.dev` while downloading Chromium v1254. The browser executable is absent, so E2E/axe/visual commands fail at launch and their assertions are **NOT RUN**. HTTP/build checks are not browser evidence. See [test evidence](docs/TEST_EVIDENCE.md).
+The standard Chromium v1254 download still fails with `ECONNRESET` to `cdn.playwright.dev`. Local verification instead uses a separately extracted registry package `@sparticuz/chromium@153.0.0`, Chromium 153.0.8010.0, with its bundled AL2023 NSS/NSPR libraries. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to the executable and `LD_LIBRARY_PATH` to the extracted library directory on Linux. Only safe launch flags are used; the package's insecure default flags are not imported. These temporary tools are outside Git and application dependencies. Exact results and limitations are in [test evidence](docs/TEST_EVIDENCE.md).
 
 ## Documentation
 

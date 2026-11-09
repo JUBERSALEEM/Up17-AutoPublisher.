@@ -1,20 +1,35 @@
-import { getFoundationStatus } from "@/lib/foundation";
+import { Layers } from "lucide-react";
+import { Badge, Card, CardHeader, DemoBadge } from "@/components/ui";
+import { PreviewControls } from "@/components/design-system/preview-controls";
+import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 
-/** Temporary toolchain smoke screen, not the approved product dashboard. */
 export default function FoundationPage() {
-  const status = getFoundationStatus();
   return (
-    <main className="foundation">
-      <span className="foundation-badge">
-        {status.mode} · {status.milestone}
-      </span>
-      <h1>{status.product}</h1>
-      <p>The local application foundation is ready for the next approved milestone.</p>
-      <p className="foundation-note">
-        Accounts: {status.integrations.replaceAll("_", " ").toLowerCase()}. Publishing:{" "}
-        {status.publishing.toLowerCase()}. This is a toolchain check, not a working automation
-        product.
-      </p>
+    <main className="page" style={{ maxWidth: 960, margin: "0 auto", padding: "32px 16px" }}>
+      <div className="page-header">
+        <div>
+          <p className="eyebrow">Design system preview</p>
+          <h1 className="page-title">Up17 AutoPublisher</h1>
+          <p className="page-subtitle">
+            Clay-first creator studio foundation. This is a local interface preview, not a connected
+            product.
+          </p>
+        </div>
+        <DemoBadge label="Demo mode" />
+      </div>
+      <Card>
+        <CardHeader
+          title="Theme engine"
+          description="Four token-driven appearances. Clay Light is the default; an unsaved preference follows system appearance."
+          action={
+            <Badge tone="primary" icon={<Layers size={14} />}>
+              4 themes
+            </Badge>
+          }
+        />
+        <ThemeSwitcher />
+      </Card>
+      <PreviewControls />
     </main>
   );
 }

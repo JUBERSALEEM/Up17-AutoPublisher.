@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — UI Batch 1: four-theme design system (2026-11-08)
+
+- Added centralized Clay Light/Dark and Bento Light/Dark tokens, pre-paint theme resolution, local persistence/system mode, and shared tactile UI primitives.
+- Added local Inter Variable/Lucide assets and an interactive primitive review with honest unavailable states.
+- Corrected real axe contrast failures; added CSS-source contrast tests, theme/keyboard browser tests and four-theme axe coverage.
+- Browser gates now build and own a fresh production server; documented registry-only Chromium fallback and safe launch configuration. No backend, publishing, OAuth or cloud work.
+
 ## Unreleased — M1.1 foundation hardening (2026-11-08)
 
 - Added `server-only` protection and a real browser-condition bundle regression test; DEMO behavior unchanged.

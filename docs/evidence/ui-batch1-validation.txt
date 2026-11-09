@@ -1,0 +1,444 @@
+UI BATCH 1 — EXECUTED VERIFICATION
+Date: 2026-11-08 UTC
+Scope: design-system preview only; no product/integration acceptance.
+Environment: Linux, Node 22.22.3, npm 11.21.2, Next 16.4.5.
+Browser: Chromium 153.0.8010.0 from registry-only @sparticuz/chromium 153.0.0 fallback.
+PLAYWRIGHT_CHROMIUM_EXECUTABLE=/tmp/chromium
+LD_LIBRARY_PATH=/tmp/up17-al2023/lib
+Safe args: --no-sandbox --disable-dev-shm-usage; no disabled web security.
+Standard Playwright CDN download remains blocked. Fallback artifacts are outside Git.
+
+=== Aggregate check (before final docs edits) ===
+
+> up17-autopublisher@0.1.0 check
+> node scripts/run-quality.mjs
+
+
+=== toolchain:check ===
+
+> up17-autopublisher@0.1.0 toolchain:check
+> node scripts/toolchain.mjs
+
+Toolchain verified: Node 22.22.3; npm 11.21.2
+
+=== format:check ===
+
+> up17-autopublisher@0.1.0 format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+=== lint ===
+
+> up17-autopublisher@0.1.0 lint
+> eslint . --max-warnings 0
+
+
+=== typecheck ===
+
+> up17-autopublisher@0.1.0 typecheck
+> tsc --noEmit
+
+
+=== test:unit ===
+
+> up17-autopublisher@0.1.0 test:unit
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.12 [39m[90m/home/user/Up17-AutoPublisher.[39m
+
+ [32m✓[39m tests/unit/security/server-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 884[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a real browser-condition bundle of the foundation module [33m 882[2mms[22m[39m
+ [32m✓[39m tests/unit/toolchain.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 623[2mms[22m[39m
+     [33m[2m✓[22m[39m uses decoded file URLs for aliases and fails an empty integration directory [33m 401[2mms[22m[39m
+ [32m✓[39m tests/unit/foundation.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/unit/themes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/unit/security/secret-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m11 passed[39m[22m[90m (11)[39m
+[2m   Start at [22m 05:03:10
+[2m   Duration [22m 2.64s[2m (transform 115ms, setup 0ms, import 450ms, tests 1.52s, environment 1ms)[22m
+
+
+=== test:security ===
+
+> up17-autopublisher@0.1.0 test:security
+> node scripts/run-python.mjs -B scripts/check_docs.py && node scripts/run-python.mjs -B -m unittest discover -s scripts -p test_*.py -v && node scripts/run-npm.mjs test:unit -- tests/unit/security
+
+Required documents: 14
+Requirements: 155; unique IDs and references checked
+Local links checked: 47
+Git-index/worktree artifact candidates checked: 65
+Status counts: IN PROGRESS=1, PLANNED=144, TESTED=10
+PASS: documentation structure, traceability, links, preserved brief and Git artifact policy
+Boundary: heuristic artifact/credential check, not a complete security audit or live integration test.
+test_broken_local_link_is_rejected (test_check_docs.DocumentationValidatorTests.test_broken_local_link_is_rejected) ... ok
+test_changed_source_brief_is_rejected (test_check_docs.DocumentationValidatorTests.test_changed_source_brief_is_rejected) ... ok
+test_duplicate_requirement_is_rejected (test_check_docs.DocumentationValidatorTests.test_duplicate_requirement_is_rejected) ... ok
+test_force_added_build_artifact_is_rejected (test_check_docs.DocumentationValidatorTests.test_force_added_build_artifact_is_rejected) ... ok
+test_high_confidence_token_in_documentation_is_rejected (test_check_docs.DocumentationValidatorTests.test_high_confidence_token_in_documentation_is_rejected) ... ok
+test_ignored_local_env_is_not_a_git_artifact (test_check_docs.DocumentationValidatorTests.test_ignored_local_env_is_not_a_git_artifact) ... ok
+test_invalid_status_is_rejected (test_check_docs.DocumentationValidatorTests.test_invalid_status_is_rejected) ... ok
+test_missing_required_document_is_rejected (test_check_docs.DocumentationValidatorTests.test_missing_required_document_is_rejected) ... ok
+test_missing_source_coverage_is_rejected (test_check_docs.DocumentationValidatorTests.test_missing_source_coverage_is_rejected) ... ok
+test_nested_env_example_is_not_implicitly_approved (test_check_docs.DocumentationValidatorTests.test_nested_env_example_is_not_implicitly_approved) ... ok
+test_npmrc_token_is_rejected (test_check_docs.DocumentationValidatorTests.test_npmrc_token_is_rejected) ... ok
+test_oauth_download_is_rejected (test_check_docs.DocumentationValidatorTests.test_oauth_download_is_rejected) ... ok
+test_other_cloud_state_is_rejected (test_check_docs.DocumentationValidatorTests.test_other_cloud_state_is_rejected) ... ok
+test_placeholder_credential_assignment_is_allowed (test_check_docs.DocumentationValidatorTests.test_placeholder_credential_assignment_is_allowed) ... ok
+test_populated_credential_assignment_is_rejected (test_check_docs.DocumentationValidatorTests.test_populated_credential_assignment_is_rejected) ... ok
+test_populated_root_example_is_rejected (test_check_docs.DocumentationValidatorTests.test_populated_root_example_is_rejected) ... ok
+test_premature_application_artifact_is_rejected (test_check_docs.DocumentationValidatorTests.test_premature_application_artifact_is_rejected) ... ok
+test_private_key_is_rejected_without_printing_it (test_check_docs.DocumentationValidatorTests.test_private_key_is_rejected_without_printing_it) ... ok
+test_root_example_is_allowed (test_check_docs.DocumentationValidatorTests.test_root_example_is_allowed) ... ok
+test_safe_documentation_mention_is_allowed (test_check_docs.DocumentationValidatorTests.test_safe_documentation_mention_is_allowed) ... ok
+test_safe_npmrc_is_allowed (test_check_docs.DocumentationValidatorTests.test_safe_npmrc_is_allowed) ... ok
+test_service_role_jwt_is_rejected (test_check_docs.DocumentationValidatorTests.test_service_role_jwt_is_rejected) ... ok
+test_staged_secret_is_rejected_even_if_worktree_was_cleaned (test_check_docs.DocumentationValidatorTests.test_staged_secret_is_rejected_even_if_worktree_was_cleaned) ... ok
+test_supabase_config_is_rejected (test_check_docs.DocumentationValidatorTests.test_supabase_config_is_rejected) ... ok
+test_supabase_generated_client_is_rejected (test_check_docs.DocumentationValidatorTests.test_supabase_generated_client_is_rejected) ... ok
+test_supabase_temp_artifact_is_rejected (test_check_docs.DocumentationValidatorTests.test_supabase_temp_artifact_is_rejected) ... ok
+test_tracked_env_is_rejected (test_check_docs.DocumentationValidatorTests.test_tracked_env_is_rejected) ... ok
+test_tracked_env_variant_is_rejected_even_when_ignored (test_check_docs.DocumentationValidatorTests.test_tracked_env_variant_is_rejected_even_when_ignored) ... ok
+test_unknown_milestone_is_rejected (test_check_docs.DocumentationValidatorTests.test_unknown_milestone_is_rejected) ... ok
+test_unknown_test_is_rejected (test_check_docs.DocumentationValidatorTests.test_unknown_test_is_rejected) ... ok
+test_untracked_non_ignored_credential_file_is_rejected (test_check_docs.DocumentationValidatorTests.test_untracked_non_ignored_credential_file_is_rejected) ... ok
+test_valid_baseline_passes (test_check_docs.DocumentationValidatorTests.test_valid_baseline_passes) ... ok
+test_vercel_config_is_rejected (test_check_docs.DocumentationValidatorTests.test_vercel_config_is_rejected) ... ok
+test_vercel_generated_artifact_is_rejected (test_check_docs.DocumentationValidatorTests.test_vercel_generated_artifact_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 34 tests in 11.723s
+
+OK
+
+> up17-autopublisher@0.1.0 test:unit
+> vitest run tests/unit/security
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.12 [39m[90m/home/user/Up17-AutoPublisher.[39m
+
+ [32m✓[39m tests/unit/security/server-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 881[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a real browser-condition bundle of the foundation module [33m 879[2mms[22m[39m
+ [32m✓[39m tests/unit/security/secret-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 05:03:26
+[2m   Duration [22m 1.30s[2m (transform 37ms, setup 0ms, import 175ms, tests 885ms, environment 0ms)[22m
+
+
+=== build ===
+
+> up17-autopublisher@0.1.0 build
+> node scripts/run-next.mjs build
+
+▲ Next.js 16.4.5 (Turbopack)
+✓ Running next.config.ts took 22ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 140ms
+  Running TypeScript ...
+  Finished TypeScript in 2.3s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/3) ...
+✓ Generating static pages using 1 worker (3/3) in 136ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+└ ○ /_not-found
+
+
+○  (Static)  prerendered as static content
+
+
+
+=== Production E2E ===
+
+> up17-autopublisher@0.1.0 pretest:e2e
+> node scripts/run-npm.mjs build
+
+
+> up17-autopublisher@0.1.0 build
+> node scripts/run-next.mjs build
+
+▲ Next.js 16.4.5 (Turbopack)
+✓ Running next.config.ts took 25ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 385ms
+  Running TypeScript ...
+  Finished TypeScript in 2.6s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/3) ...
+✓ Generating static pages using 1 worker (3/3) in 134ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+└ ○ /_not-found
+
+
+○  (Static)  prerendered as static content
+
+
+> up17-autopublisher@0.1.0 test:e2e
+> playwright test --grep-invert @visual
+
+
+Running 4 tests using 1 worker
+
+  ✓  1 [chromium] › tests/e2e/foundation.spec.ts:16:1 › main screen has no automated accessibility violations @a11y (803ms)
+  ✓  2 [chromium] › tests/e2e/foundation.spec.ts:33:1 › theme selection updates tokens and persists @e2e (443ms)
+  ✓  3 [chromium] › tests/e2e/foundation.spec.ts:43:1 › preview controls and modal work with keyboard @e2e (444ms)
+  ✓  4 [chromium] › tests/e2e/foundation.spec.ts:56:1 › system mode follows appearance changes and clears saved preference @e2e (324ms)
+
+  4 passed (3.1s)
+
+
+=== Four-theme axe ===
+
+> up17-autopublisher@0.1.0 pretest:a11y
+> node scripts/run-npm.mjs build
+
+
+> up17-autopublisher@0.1.0 build
+> node scripts/run-next.mjs build
+
+▲ Next.js 16.4.5 (Turbopack)
+✓ Running next.config.ts took 28ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 390ms
+  Running TypeScript ...
+  Finished TypeScript in 2.6s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/3) ...
+✓ Generating static pages using 1 worker (3/3) in 146ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+└ ○ /_not-found
+
+
+○  (Static)  prerendered as static content
+
+
+> up17-autopublisher@0.1.0 test:a11y
+> playwright test --grep @a11y
+
+
+Running 4 tests using 1 worker
+
+  ✓  1 [chromium] › tests/e2e/foundation.spec.ts:18:3 › clay-light preview has no automated accessibility violations @a11y (848ms)
+  ✓  2 [chromium] › tests/e2e/foundation.spec.ts:18:3 › clay-dark preview has no automated accessibility violations @a11y (769ms)
+  ✓  3 [chromium] › tests/e2e/foundation.spec.ts:18:3 › bento-light preview has no automated accessibility violations @a11y (785ms)
+  ✓  4 [chromium] › tests/e2e/foundation.spec.ts:18:3 › bento-dark preview has no automated accessibility violations @a11y (800ms)
+
+  4 passed (4.6s)
+
+
+=== 320px visual/overflow smoke ===
+
+> up17-autopublisher@0.1.0 pretest:visual
+> node scripts/run-npm.mjs build
+
+
+> up17-autopublisher@0.1.0 build
+> node scripts/run-next.mjs build
+
+▲ Next.js 16.4.5 (Turbopack)
+✓ Running next.config.ts took 27ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 145ms
+  Running TypeScript ...
+  Finished TypeScript in 2.3s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/3) ...
+✓ Generating static pages using 1 worker (3/3) in 133ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+└ ○ /_not-found
+
+
+○  (Static)  prerendered as static content
+
+
+> up17-autopublisher@0.1.0 test:visual
+> playwright test --grep @visual
+
+
+Running 1 test using 1 worker
+
+  ✓  1 [chromium] › tests/e2e/foundation.spec.ts:4:1 › foundation is honest and has no page overflow @visual (302ms)
+
+  1 passed (1.4s)
+
+
+Dependency audit: npm audit exited 0; found 0 vulnerabilities.
+Rendered review: four desktop theme screenshots inspected. Screenshots are outside Git.
+Historical corrections: initial badge contrast failures fixed; stale-server/config setup timeout corrected; final browser runs above passed.
+Limitations: preview-only axe coverage; full app/six widths/manual screen reader/Windows/live integrations NOT RUN.
+Final docs/security/format/build rerun is recorded below after documentation updates.
+=== Final aggregate check after docs edits ===
+EXIT=0
+
+> up17-autopublisher@0.1.0 check
+> node scripts/run-quality.mjs
+
+
+=== toolchain:check ===
+
+> up17-autopublisher@0.1.0 toolchain:check
+> node scripts/toolchain.mjs
+
+Toolchain verified: Node 22.22.3; npm 11.21.2
+
+=== format:check ===
+
+> up17-autopublisher@0.1.0 format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+=== lint ===
+
+> up17-autopublisher@0.1.0 lint
+> eslint . --max-warnings 0
+
+
+=== typecheck ===
+
+> up17-autopublisher@0.1.0 typecheck
+> tsc --noEmit
+
+
+=== test:unit ===
+
+> up17-autopublisher@0.1.0 test:unit
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.12 [39m[90m/home/user/Up17-AutoPublisher.[39m
+
+ [32m✓[39m tests/unit/security/server-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 931[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a real browser-condition bundle of the foundation module [33m 929[2mms[22m[39m
+ [32m✓[39m tests/unit/toolchain.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 625[2mms[22m[39m
+     [33m[2m✓[22m[39m uses decoded file URLs for aliases and fails an empty integration directory [33m 403[2mms[22m[39m
+ [32m✓[39m tests/unit/foundation.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/unit/themes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/unit/security/secret-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m11 passed[39m[22m[90m (11)[39m
+[2m   Start at [22m 05:06:28
+[2m   Duration [22m 2.68s[2m (transform 112ms, setup 0ms, import 478ms, tests 1.57s, environment 0ms)[22m
+
+
+=== test:security ===
+
+> up17-autopublisher@0.1.0 test:security
+> node scripts/run-python.mjs -B scripts/check_docs.py && node scripts/run-python.mjs -B -m unittest discover -s scripts -p test_*.py -v && node scripts/run-npm.mjs test:unit -- tests/unit/security
+
+Required documents: 14
+Requirements: 155; unique IDs and references checked
+Local links checked: 48
+Git-index/worktree artifact candidates checked: 67
+Status counts: IN PROGRESS=3, PLANNED=139, TESTED=13
+PASS: documentation structure, traceability, links, preserved brief and Git artifact policy
+Boundary: heuristic artifact/credential check, not a complete security audit or live integration test.
+test_broken_local_link_is_rejected (test_check_docs.DocumentationValidatorTests.test_broken_local_link_is_rejected) ... ok
+test_changed_source_brief_is_rejected (test_check_docs.DocumentationValidatorTests.test_changed_source_brief_is_rejected) ... ok
+test_duplicate_requirement_is_rejected (test_check_docs.DocumentationValidatorTests.test_duplicate_requirement_is_rejected) ... ok
+test_force_added_build_artifact_is_rejected (test_check_docs.DocumentationValidatorTests.test_force_added_build_artifact_is_rejected) ... ok
+test_high_confidence_token_in_documentation_is_rejected (test_check_docs.DocumentationValidatorTests.test_high_confidence_token_in_documentation_is_rejected) ... ok
+test_ignored_local_env_is_not_a_git_artifact (test_check_docs.DocumentationValidatorTests.test_ignored_local_env_is_not_a_git_artifact) ... ok
+test_invalid_status_is_rejected (test_check_docs.DocumentationValidatorTests.test_invalid_status_is_rejected) ... ok
+test_missing_required_document_is_rejected (test_check_docs.DocumentationValidatorTests.test_missing_required_document_is_rejected) ... ok
+test_missing_source_coverage_is_rejected (test_check_docs.DocumentationValidatorTests.test_missing_source_coverage_is_rejected) ... ok
+test_nested_env_example_is_not_implicitly_approved (test_check_docs.DocumentationValidatorTests.test_nested_env_example_is_not_implicitly_approved) ... ok
+test_npmrc_token_is_rejected (test_check_docs.DocumentationValidatorTests.test_npmrc_token_is_rejected) ... ok
+test_oauth_download_is_rejected (test_check_docs.DocumentationValidatorTests.test_oauth_download_is_rejected) ... ok
+test_other_cloud_state_is_rejected (test_check_docs.DocumentationValidatorTests.test_other_cloud_state_is_rejected) ... ok
+test_placeholder_credential_assignment_is_allowed (test_check_docs.DocumentationValidatorTests.test_placeholder_credential_assignment_is_allowed) ... ok
+test_populated_credential_assignment_is_rejected (test_check_docs.DocumentationValidatorTests.test_populated_credential_assignment_is_rejected) ... ok
+test_populated_root_example_is_rejected (test_check_docs.DocumentationValidatorTests.test_populated_root_example_is_rejected) ... ok
+test_premature_application_artifact_is_rejected (test_check_docs.DocumentationValidatorTests.test_premature_application_artifact_is_rejected) ... ok
+test_private_key_is_rejected_without_printing_it (test_check_docs.DocumentationValidatorTests.test_private_key_is_rejected_without_printing_it) ... ok
+test_root_example_is_allowed (test_check_docs.DocumentationValidatorTests.test_root_example_is_allowed) ... ok
+test_safe_documentation_mention_is_allowed (test_check_docs.DocumentationValidatorTests.test_safe_documentation_mention_is_allowed) ... ok
+test_safe_npmrc_is_allowed (test_check_docs.DocumentationValidatorTests.test_safe_npmrc_is_allowed) ... ok
+test_service_role_jwt_is_rejected (test_check_docs.DocumentationValidatorTests.test_service_role_jwt_is_rejected) ... ok
+test_staged_secret_is_rejected_even_if_worktree_was_cleaned (test_check_docs.DocumentationValidatorTests.test_staged_secret_is_rejected_even_if_worktree_was_cleaned) ... ok
+test_supabase_config_is_rejected (test_check_docs.DocumentationValidatorTests.test_supabase_config_is_rejected) ... ok
+test_supabase_generated_client_is_rejected (test_check_docs.DocumentationValidatorTests.test_supabase_generated_client_is_rejected) ... ok
+test_supabase_temp_artifact_is_rejected (test_check_docs.DocumentationValidatorTests.test_supabase_temp_artifact_is_rejected) ... ok
+test_tracked_env_is_rejected (test_check_docs.DocumentationValidatorTests.test_tracked_env_is_rejected) ... ok
+test_tracked_env_variant_is_rejected_even_when_ignored (test_check_docs.DocumentationValidatorTests.test_tracked_env_variant_is_rejected_even_when_ignored) ... ok
+test_unknown_milestone_is_rejected (test_check_docs.DocumentationValidatorTests.test_unknown_milestone_is_rejected) ... ok
+test_unknown_test_is_rejected (test_check_docs.DocumentationValidatorTests.test_unknown_test_is_rejected) ... ok
+test_untracked_non_ignored_credential_file_is_rejected (test_check_docs.DocumentationValidatorTests.test_untracked_non_ignored_credential_file_is_rejected) ... ok
+test_valid_baseline_passes (test_check_docs.DocumentationValidatorTests.test_valid_baseline_passes) ... ok
+test_vercel_config_is_rejected (test_check_docs.DocumentationValidatorTests.test_vercel_config_is_rejected) ... ok
+test_vercel_generated_artifact_is_rejected (test_check_docs.DocumentationValidatorTests.test_vercel_generated_artifact_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 34 tests in 12.035s
+
+OK
+
+> up17-autopublisher@0.1.0 test:unit
+> vitest run tests/unit/security
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.12 [39m[90m/home/user/Up17-AutoPublisher.[39m
+
+ [32m✓[39m tests/unit/security/server-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 885[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a real browser-condition bundle of the foundation module [33m 883[2mms[22m[39m
+ [32m✓[39m tests/unit/security/secret-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 05:06:44
+[2m   Duration [22m 1.32s[2m (transform 40ms, setup 0ms, import 176ms, tests 889ms, environment 0ms)[22m
+
+
+=== build ===
+
+> up17-autopublisher@0.1.0 build
+> node scripts/run-next.mjs build
+
+▲ Next.js 16.4.5 (Turbopack)
+✓ Running next.config.ts took 23ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 841ms
+  Running TypeScript ...
+  Finished TypeScript in 3.9s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/4) ...
+  Generating static pages using 1 worker (1/4)
+  Generating static pages using 1 worker (2/4)
+  Generating static pages using 1 worker (3/4)
+✓ Generating static pages using 1 worker (4/4) in 169ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+└ ○ /design-system
+
+
+○  (Static)  prerendered as static content
+
+
+Final rendered review: /design-system at 1440px in all four themes and 320px Clay Light; screenshots inspected outside Git; no page overflow in each capture.

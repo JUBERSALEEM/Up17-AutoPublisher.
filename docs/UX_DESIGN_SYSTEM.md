@@ -1,6 +1,6 @@
 # Claymorphism UX and design system
 
-**Status:** PROPOSED design specification, not implemented screens. The goal is a distinctive creator workflow studio, not a generic analytics/admin template.
+**Status:** Batch 1 foundation IMPLEMENTED / TESTED locally; application screens IN PROGRESS. The goal is a distinctive creator workflow studio, not a generic analytics/admin template.
 
 ## 1. Experience principles
 
@@ -99,3 +99,12 @@ Errors explain what happened, whether work is safe to retry and the next action.
 Manifest and original icons, install instructions and public-shell offline fallback; no offline publishing or sensitive response caching. Respect safe areas and mobile keyboard overlap. Maintain heading/landmark structure, focus order and readable zoom/reflow. Target WCAG 2.2 AA contrast and operability; record automated and manual evidence.
 
 Each screen milestone includes populated/demo, applicable loading/empty/error and unavailable states; keyboard operation; 320/360/390/430/768/1440 checks; theme checks and no overflow. Visual review checks premium clay surfaces without legibility loss. Screenshots alone do not establish accessible behavior or working integrations.
+
+
+## 9. Implemented foundation — UI Batch 1 (2026-11-08)
+
+- Source of truth: `app/globals.css`; resolution/persistence contract: `lib/themes.ts` and `components/theme`. Four complete surfaces: Clay Light (default), Clay Dark, Bento Light, Bento Dark. Explicit saved choice wins; no saved choice follows system appearance within the Clay family. System mode removes the stored choice. A pre-paint script prevents the common initial flash; storage denial retains an in-memory choice.
+- Implementation token names include `--surface-raised`, `--surface-inset`, `--shadow-raised`, `--shadow-pressed`, `--shadow-popover`, `--primary-soft`, `--accent`, and semantic soft backgrounds. The proposed `--secondary` cyan role is named `--accent` in implementation; `--secondary` is a neutral supporting text role. No screen-specific palette is introduced.
+- Light accent/danger text was darkened to `#0f6b75` / `#a03535` after real axe contrast failures. Unit tests read the actual CSS and check core text across all surfaces and all semantic badge pairs in all four themes.
+- Local Inter Variable and Lucide icons; no font CDN. Cards/buttons/fields/badges/dialog/tabs/empty/unavailable/skeleton primitives are available. Primitive examples perform real local interactions, not simulated publishing. Full menu/toast/chart and screen-state coverage continues in later batches.
+- Evidence: [Batch 1 validation](evidence/ui-batch1-validation.txt). Four-theme preview axe scans pass; this does not imply the unfinished application has passed accessibility acceptance.

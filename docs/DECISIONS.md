@@ -88,3 +88,14 @@ Owner requested maintenance within M1.1 only. Implemented without changing the a
 - Empty integration suites fail closed. The expected exit-1 result is documented and kept outside the aggregate `check` script until real approved integration tests exist; no placeholder tests were created.
 - Expanded the Git artifact/credential validator and ignore policy for the current local-only stage. Future approved local Supabase migrations or other provider code will require an explicit gate update rather than silently weakening this guard.
 - Browser/axe/visual assertions remain NOT RUN because Chromium download is blocked. This is a verification blocker, not a reason to claim accessibility success or mark M1.1 owner-accepted.
+
+
+## Frontend-only UI authorization and Batch 1 variance — 2026-11-08
+
+The owner explicitly requested autonomous implementation of the visible application in six batches: design system, shell, core screens, supporting screens, polish/accessibility, then full verification. This authorizes local frontend/demo work only. It does not authorize backend/publishing work, cloud resources, OAuth, external providers, deployment or spending. No architecture change is made: typed demo presentation data stays separate from future service/provider ports.
+
+- Four themes are implemented as centralized CSS semantic surfaces. Clay Light is the product default; an unsaved/system preference follows device appearance in the Clay family. This resolves the default-versus-system requirement without ignoring either.
+- The existing product name is used in a simple typographic brand mark. No final logo/license decision is invented on the owner's behalf.
+- Added exact local-only UI assets `lucide-react@1.70.0` and `@fontsource-variable/inter@5.3.0`; strict install/build/peer checks pass.
+- Standard Playwright browser download remains blocked. A registry-only Chromium fallback executes real production-build tests; it is not added to runtime dependencies or Git. Browser results explicitly identify this environment variance. Development HMR was unreliable with the fallback, so browser gates now own a fresh production server and build first. Loopback development origins are explicitly allowed alongside the Arena preview wildcard.
+- Initial real axe failures in light accent/danger badges were fixed, not suppressed. Four-theme preview scans subsequently passed. Full application/viewport/keyboard acceptance remains pending; no owner acceptance is recorded.

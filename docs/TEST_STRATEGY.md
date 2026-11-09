@@ -66,7 +66,7 @@ Fixtures carry stable IDs, source=`demo`/`fixture`, scenario and requirement ref
 | ID | Assertions |
 |---|---|
 | `T-UI` | Primitive variants/states; labels/described errors; focus/keyboard menus/dialogs; pressed/loading/disabled behavior; semantic tokens |
-| `T-A11Y` | Real axe scan zero violations on tested routes (foundation scan implemented, NOT RUN until browser available); manual keyboard/focus/landmark/zoom/screen-reader checks; contrast and reduced motion |
+| `T-A11Y` | Real axe scan zero violations on tested routes (four-theme foundation preview PASS with documented browser fallback; full app pending); manual keyboard/focus/landmark/zoom/screen-reader checks; contrast and reduced motion |
 | `T-VIEWPORT` | Required six widths, both themes; no page-level horizontal overflow; 44px targets; primary workflows usable without hover/drag |
 | `T-SHELL` | All ten routes reachable; mobile More menu; desktop sidebar; context switching; theme persistence; notifications/profile controls |
 | `T-PWA` | Valid manifest/icons/installability where browser supports; public-shell offline fallback/update; authenticated/API/OAuth/media routes never cached; no offline publish |

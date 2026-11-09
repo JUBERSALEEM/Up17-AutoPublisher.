@@ -2,6 +2,17 @@
 
 This ledger records executed checks, not aspirational test names. See [TEST_STRATEGY.md](TEST_STRATEGY.md) for the future application catalog.
 
+## UI Batch 1 — design system (2026-11-08)
+
+**Scope:** four-theme engine, local font/icons, reusable primitives and interactive review surface. No product workflow or integration is claimed. See [executed gate output](evidence/ui-batch1-validation.txt).
+
+- Browser execution is now available through a registry-only `@sparticuz/chromium` 153.0.0 fallback (Chromium 153.0.8010.0), outside application dependencies/Git. The original Playwright CDN download remains blocked. Safe launch arguments only; no disabled web security.
+- Production-build E2E: **4 passed** (theme persistence, system appearance changes, honest preview notice/reset, native dialog Escape/focus return). Axe: **4 passed**, one scan per theme, zero violations for the tested preview. Mobile smoke: **1 passed at 320px**, no page overflow. Unit: **5 files / 11 tests passed**, including actual CSS token completeness/contrast.
+- Aggregate `npm run check`: PASS (format, zero-warning lint, strict types, unit, 34 Python + 2 TS security checks, preserved brief, production build). Dependency audit: zero known vulnerabilities.
+- Visual review: all four desktop themes rendered and inspected; mobile screenshot captured separately outside Git. This is a rendered review, not a six-width/full-application acceptance claim. Subsequent batches expand viewport and keyboard coverage.
+- Corrections retained: initial axe found low-contrast accent/danger badges; tokens were darkened and regression-tested. Development-server hydration was unreliable in the fallback; production tests now build first and own a fresh port-3100 server. A stale-server/configuration mistake caused a setup timeout and was corrected before the final passing runs. Local dev origins now explicitly include loopback hosts as well as the Arena preview wildcard.
+- Browser fallback artifacts live in `/tmp` and the ignored user cache, not Git. Recreate them or install standard Playwright Chromium on another machine. No Windows, screen-reader, live-provider or owner acceptance result is claimed.
+
 ## Phase 0 final pre-commit gate (historical)
 
 At the Phase 0 gate the documentation run reported **154 requirements: 8 TESTED, 1 IN PROGRESS, 145 PLANNED; 0 ACCEPTED**. The eight TESTED items are Phase 0 documentation deliverables only. Owner approval remains in progress; recurring commit/audit controls are not claimed complete for future milestones. All product requirements remain planned.

@@ -1,41 +1,36 @@
 # Sprint and delivery status
 
 **Updated:** 2026-11-08 UTC
-**Current phase:** Phase 1 — design system and application shell
-**Current milestone:** M1.1 foundation hardening implemented; full verification blocked by browser availability
-**Approval:** owner approved Phase 0 plan/defaults and M1.1 local development on 2026-11-08; this hardening request is maintenance within M1.1, not M1.2 authorization
-**Product workflows/integrations/deployment:** NOT IMPLEMENTED / NOT CONNECTED
+**Current phase:** frontend-only UI delivery, six autonomous batches
+**Current batch:** 1 design system — TESTED locally; 2 shell — IN PROGRESS
+**Owner acceptance:** NOT RECORDED; technical tests are not owner acceptance
+**Product integrations/deployment:** NOT IMPLEMENTED / NOT CONNECTED / NOT AUTHORIZED
 
-## Hardening changes in this milestone
+## Active UI batches
 
-- Added `server-only` 0.0.1 to `lib/foundation.ts` and a real browser-condition bundle regression test; DEMO/no-connection/disabled-publishing behavior is unchanged.
-- Removed `--passWithNoTests`; the empty integration command now exits 1 with “No test files found.” No fake integration tests were added.
-- Expanded the documentation/security validator to inspect Git-index and non-ignored worktree artifacts, reject populated env/credential/key/cloud configuration files, and redact matched values. Added 34 Python positive/negative tests.
-- Declared exact npm 11.21.2 through `packageManager`, engines and `engine-strict=true`; added an executing-toolchain check and matched the inactive CI template. No existing dependency versions were upgraded/downgraded.
-- Replaced POSIX-only script prefixes and URL pathname aliases with portable Node wrappers and `fileURLToPath`; Python detection supports Windows launchers.
-- Added a real `@axe-core/playwright` scan and `test:a11y` script. Browser download remains blocked, so browser/axe/visual assertions are NOT RUN.
+| Batch | Scope | State | Evidence / limitation |
+|---|---|---|---|
+| 1 | Central tokens, four themes, local type/icons, primitives | TESTED (local scope) | Unit 11 PASS; production E2E 4 PASS; four-theme axe 4 PASS; 320px smoke PASS; rendered review complete |
+| 2 | Responsive shell, ten destinations, PWA public shell | IN PROGRESS | Theme engine available; navigation/install verification pending |
+| 3 | Dashboard, library, workspace, queue, accounts | PLANNED | Frontend demo only; no upload/publishing/OAuth |
+| 4 | Analytics, AI analysis, research, notifications, settings | PLANNED | Unavailable/live data clearly distinguished |
+| 5 | Interaction completeness, accessibility, motion, visual polish | PLANNED | Full keyboard/viewport/reduced-motion review pending |
+| 6 | Full verification, evidence, delivery report | PLANNED | No acceptance claim before executed gates |
 
-Evidence: [hardening validation](evidence/m1-1-hardening-validation.txt) and [test ledger](TEST_EVIDENCE.md). The prior foundation evidence remains historical at [M1.1 validation](evidence/m1-1-validation.txt).
+The current UI request explicitly authorizes these frontend batches, not backend M1.2/publishing work. Existing M1.2/M1.3 and Phase 2 traceability rows remain the canonical requirement mapping; some broader rows stay IN PROGRESS until all their states/interactions are tested. The temporary root primitive preview will be replaced by the dashboard; design-system review remains available at `/design-system`.
 
-## Remaining blockers / unfinished work
+## Browser verification update
 
-| Item | State | Next action |
-|---|---|---|
-| Playwright browser / axe execution | BLOCKED in sandbox | Chromium v1254 download fails with TLS ECONNRESET; executable absent. Run browser/axe/visual suites on a machine with browser access before M1.1 full acceptance |
-| Empty integration suite | EXPECTED FAIL | Keep fail-on-empty behavior; add real approved local adapter tests at the relevant milestone, never placeholders |
-| GitHub workflow push | BLOCKED | Current GitHub App lacks workflow permission; template preserved in `docs/ci/quality.yml.example`, not active CI |
-| Windows runtime | NOT RUN | Portable scripts/aliases are implemented and unit-probed; sandbox is Linux, so no Windows execution PASS is claimed |
-| npm / lint maintenance | Known warning | npm 11.21.2 clean install works; ESLint 9 upstream deprecated, Next plugins do not yet declare ESLint 10 peers; reviewed minimatch override retained |
-| M1.2 clay primitives/themes | PLANNED | Not started; requires the next approved small milestone |
-| M1.3 shell/PWA | PLANNED | All ten destinations, responsive navigation, safe public-shell caching |
-| Phases 2–12 product requirements | PLANNED | Follow matrix; demo first, then local domain/security/media/integrations |
-| Hosted/cloud resources | Not authorized | Separate explicit permission required |
-| Social/AI/research providers | Not connected | Per-provider approval, budgets and real test evidence required |
-| Brand/license/retention/jurisdiction/cadence | Deferred decisions | Resolve at named gates; no invented values |
+The original Playwright CDN remains blocked, but a registry-only Chromium fallback now executes real production-build browser assertions. It is verification tooling outside Git/runtime dependencies, not a replacement for standard Playwright setup. See [Batch 1 evidence](evidence/ui-batch1-validation.txt). Earlier M1.1 browser-blocked records are historical, not the current result. M1.1 local technical gates now pass; owner acceptance remains separate.
 
-## Requirement snapshot
+## Remaining boundaries
 
-The authoritative counts are generated by `npm run docs:check` from the 155-row matrix. GOV-016 has tested foundation-scope artifact/secret evidence. ARC-001 is IN PROGRESS: local stack/toolchain/security/build gates pass, but required browser/axe evidence is NOT RUN. No product workflow row is complete. **M1.1 is not genuinely ready for owner acceptance yet** because browser/accessibility verification remains unverified; owner acceptance is not recorded.
+- No backend, database, cloud resource, OAuth, publishing, worker, paid provider or deployment work.
+- Empty integration suite still intentionally fails; no fake integration tests.
+- Active GitHub CI remains blocked by workflow permission; inactive template preserved.
+- Windows runtime and manual screen-reader testing remain NOT RUN.
+- Full ten-screen, six-width, both-family accessibility/interaction verification is pending later batches.
+- Brand wordmark uses the existing product name; final brand/license decisions remain owner decisions.
 
 ## Delivery and audit history
 

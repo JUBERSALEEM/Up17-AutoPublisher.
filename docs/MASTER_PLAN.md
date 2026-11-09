@@ -2,7 +2,7 @@
 
 **Version:** 1.0 proposed delivery plan
 **Prepared:** 2026-11-08 UTC
-**Status:** APPROVED 2026-11-08; M1.1 HARDENING IMPLEMENTED, LOCAL GATES PASSED (BROWSER/AXE EVIDENCE PENDING); PHASE 1 IN PROGRESS
+**Status:** APPROVED 2026-11-08; M1.1 LOCAL TECHNICAL GATES PASSED (INCLUDING FALLBACK-BROWSER PREVIEW); FRONTEND UI BATCH 1 TESTED, BATCHES 2–6 IN PROGRESS/PLANNED; OWNER ACCEPTANCE NOT RECORDED
 **Authority:** the unchanged [original master brief](PLAN.md), plus the owner's Phase 0 instruction. This document translates it into repository-specific work; it does not silently replace requirements.
 
 ## 1. Audit conclusion and planning decisions
