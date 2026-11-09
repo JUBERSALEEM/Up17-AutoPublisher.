@@ -2,9 +2,9 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { themeIds } from "../../lib/themes";
 
-test("foundation is honest and has no page overflow @visual", async ({ page }) => {
+test("design-system preview is honest and has no page overflow @visual", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
-  await page.goto("/");
+  await page.goto("/design-system");
   await expect(
     page.getByRole("heading", { name: "Up17 AutoPublisher", exact: true }),
   ).toBeVisible();
@@ -17,7 +17,7 @@ test("foundation is honest and has no page overflow @visual", async ({ page }) =
 for (const theme of themeIds) {
   test(`${theme} preview has no automated accessibility violations @a11y`, async ({ page }) => {
     await page.addInitScript((id) => localStorage.setItem("up17.theme.preference.v1", id), theme);
-    await page.goto("/");
+    await page.goto("/design-system");
     await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
     await expect(
       page.getByRole("heading", { name: "Up17 AutoPublisher", exact: true }),
@@ -36,7 +36,7 @@ for (const theme of themeIds) {
 }
 
 test("theme selection updates tokens and persists @e2e", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/design-system");
   await page.getByRole("button", { name: "Bento Dark" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "bento-dark");
   await page.reload();
@@ -46,7 +46,7 @@ test("theme selection updates tokens and persists @e2e", async ({ page }) => {
 });
 
 test("preview controls and modal work with keyboard @e2e", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/design-system");
   await page.getByRole("button", { name: "Preview notice" }).click();
   await expect(page.getByRole("status")).toContainText("Nothing was published");
   await page.getByRole("button", { name: "Reset", exact: true }).click();
@@ -62,7 +62,7 @@ test("system mode follows appearance changes and clears saved preference @e2e", 
   page,
 }) => {
   await page.emulateMedia({ colorScheme: "dark" });
-  await page.goto("/");
+  await page.goto("/design-system");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "clay-dark");
   await page.getByRole("button", { name: "Bento Light", exact: true }).click();
   await page.emulateMedia({ colorScheme: "light" });

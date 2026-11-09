@@ -4,11 +4,11 @@ AI-powered, multi-platform creator automation studio for YouTube, Instagram and 
 
 ## Current status — frontend UI delivery
 
-The owner approved the Phase 0 plan on **2026-11-08** and subsequently authorized a six-batch, **frontend-only** UI implementation. Batch 1 adds four token-driven themes (Clay Light default), local Inter/Lucide assets, reusable tactile primitives and an interactive design-system preview. The responsive application shell and ten product screens are the next batches; this is not yet a connected publishing product.
+The owner approved the Phase 0 plan on **2026-11-08** and subsequently authorized a six-batch, **frontend-only** UI implementation. Batches 1–2 add four token-driven themes, local Inter/Lucide assets, tactile primitives, a responsive desktop/mobile shell, the ten canonical destinations, and a safe public-shell PWA. Product screens are currently honest placeholders while the core-screen batch is implemented; this is not yet a connected publishing product.
 
 No database, cloud project, social connection, AI provider, publishing engine or deployment has been created. Sample content remains explicitly labelled; unavailable actions explain their dependency rather than simulating success.
 
-Real production-build browser checks now run using a documented registry-only Chromium fallback: theme/keyboard interactions, four-theme axe scans and a 320px overflow smoke pass. The standard Playwright CDN download remains blocked; full-application accessibility/viewport acceptance is still pending. See [current sprint](docs/SPRINT_STATUS.md) and [executed evidence](docs/TEST_EVIDENCE.md).
+Real production-build browser checks now run using a documented registry-only Chromium fallback: theme/keyboard/navigation interactions, 19 axe scans, six-width shell checks, and PWA manifest/cache/offline behavior pass. The standard Playwright CDN download remains blocked; full-application accessibility/viewport acceptance is still pending. See [current sprint](docs/SPRINT_STATUS.md) and [executed evidence](docs/TEST_EVIDENCE.md).
 
 The first configurable workspace is **Up17 Gaming** (`@up17longshotyt`); gaming is a workspace configuration, not a product-wide restriction. The original brief is preserved unchanged at [docs/PLAN.md](docs/PLAN.md).
 

@@ -99,3 +99,11 @@ The owner explicitly requested autonomous implementation of the visible applicat
 - Added exact local-only UI assets `lucide-react@1.70.0` and `@fontsource-variable/inter@5.3.0`; strict install/build/peer checks pass.
 - Standard Playwright browser download remains blocked. A registry-only Chromium fallback executes real production-build tests; it is not added to runtime dependencies or Git. Browser results explicitly identify this environment variance. Development HMR was unreliable with the fallback, so browser gates now own a fresh production server and build first. Loopback development origins are explicitly allowed alongside the Arena preview wildcard.
 - Initial real axe failures in light accent/danger badges were fixed, not suppressed. Four-theme preview scans subsequently passed. Full application/viewport/keyboard acceptance remains pending; no owner acceptance is recorded.
+
+
+## UI Batch 2 shell/PWA decisions — 2026-11-08
+
+- Kept the exact ten main navigation labels from the immutable brief. Notifications remains a shell utility so the requested notification area is visible without inventing an eleventh main destination.
+- Replaced the temporary root primitive preview with the Overview route; `/design-system` preserves the review surface. This is the planned transition, not deletion of product work.
+- PWA follows ADR-009's proposed safe direction within the authorized frontend scope: public static shell/icons/offline fallback only, network-only navigations, no API/auth/media caching, no offline mutations. Original SVG icons are rasterized reproducibly by `scripts/render-icons.mjs`; required PNG icons are intentional small product assets, not build/media artifacts.
+- Real axe runs caught visible-label/name mismatches in workspace/search controls; redundant overriding labels were removed rather than suppressing the rule. Development indicators are disabled for a clean product preview; dialog centering was corrected after rendered review.

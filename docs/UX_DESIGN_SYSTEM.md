@@ -108,3 +108,12 @@ Each screen milestone includes populated/demo, applicable loading/empty/error an
 - Light accent/danger text was darkened to `#0f6b75` / `#a03535` after real axe contrast failures. Unit tests read the actual CSS and check core text across all surfaces and all semantic badge pairs in all four themes.
 - Local Inter Variable and Lucide icons; no font CDN. Cards/buttons/fields/badges/dialog/tabs/empty/unavailable/skeleton primitives are available. Primitive examples perform real local interactions, not simulated publishing. Full menu/toast/chart and screen-state coverage continues in later batches.
 - Evidence: [Batch 1 validation](evidence/ui-batch1-validation.txt). Four-theme preview axe scans pass; this does not imply the unfinished application has passed accessibility acceptance.
+
+
+## 10. Implemented shell — UI Batch 2 (2026-11-08)
+
+Canonical PLAN.md §7 navigation is preserved exactly: Overview, Video Studio, AI Content, Smart Scheduler, Publishing Queue, Creator Studio, Research Centre, Performance Lab, Accounts, Settings. Notifications is a persistent shell utility, not an eleventh main destination. Mapping to the requested visible areas: Video Studio supplies the library; Creator Studio supplies the video/metadata workspace; AI Content supplies gameplay analysis; Performance Lab supplies analytics/comparisons; Smart Scheduler and Publishing Queue remain separate as the brief requires.
+
+Desktop uses a persistent grouped sidebar; below 1024px a five-slot bottom bar exposes Overview/Videos/Queue/Accounts/More. More contains all ten destinations plus Notifications and workspace context. Search is local navigation only (Ctrl/Cmd+K), not a fake global data query. Workspace/profile menus state that no authentication or additional workspace backend exists.
+
+PWA caching is deliberately narrow: versioned `/_next/static/` assets, original icons and a data-free offline HTML fallback. Navigations are network-only with offline fallback; API/auth/query-string/media responses are never cached. Updates require an explicit user action. The offline fallback follows system light/dark rather than pretending to be the full themed application. Device-level install acceptance is not claimed from headless manifest/service-worker tests.

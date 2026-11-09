@@ -2,7 +2,7 @@
 
 **Updated:** 2026-11-08 UTC
 **Current phase:** frontend-only UI delivery, six autonomous batches
-**Current batch:** 1 design system — TESTED locally; 2 shell — IN PROGRESS
+**Current batch:** 1 design system — TESTED locally; 2 shell — TESTED locally (device install prompt pending); 3 core screens — IN PROGRESS
 **Owner acceptance:** NOT RECORDED; technical tests are not owner acceptance
 **Product integrations/deployment:** NOT IMPLEMENTED / NOT CONNECTED / NOT AUTHORIZED
 
@@ -11,8 +11,8 @@
 | Batch | Scope | State | Evidence / limitation |
 |---|---|---|---|
 | 1 | Central tokens, four themes, local type/icons, primitives | TESTED (local scope) | Unit 11 PASS; production E2E 4 PASS; four-theme axe 4 PASS; 320px smoke PASS; rendered review complete |
-| 2 | Responsive shell, ten destinations, PWA public shell | IN PROGRESS | Theme engine available; navigation/install verification pending |
-| 3 | Dashboard, library, workspace, queue, accounts | PLANNED | Frontend demo only; no upload/publishing/OAuth |
+| 2 | Responsive shell, ten destinations, PWA public shell | TESTED (local shell scope) | 14 unit PASS; 27 E2E PASS; 19 axe PASS; 7 viewport PASS; manifest/cache/offline PASS; OS install prompt not exercised |
+| 3 | Dashboard, library, workspace, queue, accounts | IN PROGRESS | Frontend demo only; no upload/publishing/OAuth |
 | 4 | Analytics, AI analysis, research, notifications, settings | PLANNED | Unavailable/live data clearly distinguished |
 | 5 | Interaction completeness, accessibility, motion, visual polish | PLANNED | Full keyboard/viewport/reduced-motion review pending |
 | 6 | Full verification, evidence, delivery report | PLANNED | No acceptance claim before executed gates |
@@ -21,7 +21,7 @@ The current UI request explicitly authorizes these frontend batches, not backend
 
 ## Browser verification update
 
-The original Playwright CDN remains blocked, but a registry-only Chromium fallback now executes real production-build browser assertions. It is verification tooling outside Git/runtime dependencies, not a replacement for standard Playwright setup. See [Batch 1 evidence](evidence/ui-batch1-validation.txt). Earlier M1.1 browser-blocked records are historical, not the current result. M1.1 local technical gates now pass; owner acceptance remains separate.
+The original Playwright CDN remains blocked, but a registry-only Chromium fallback now executes real production-build browser assertions. It is verification tooling outside Git/runtime dependencies, not a replacement for standard Playwright setup. See [Batch 1](evidence/ui-batch1-validation.txt) and [Batch 2](evidence/ui-batch2-validation.txt) evidence. Earlier M1.1 browser-blocked records are historical, not the current result. M1.1 local technical gates now pass; owner acceptance remains separate.
 
 ## Remaining boundaries
 

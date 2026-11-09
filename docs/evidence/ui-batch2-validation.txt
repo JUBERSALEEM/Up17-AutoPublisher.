@@ -1,0 +1,412 @@
+UI BATCH 2 — EXECUTED VERIFICATION
+Date: 2026-11-08 UTC
+Scope: responsive shell, canonical destinations, public PWA shell; product screens remain honest placeholders.
+Environment: Linux, Node 22.22.3, npm 11.21.2, Next 16.4.5; Chromium 153.0.8010.0 registry-only fallback.
+PLAYWRIGHT_CHROMIUM_EXECUTABLE=/tmp/chromium; LD_LIBRARY_PATH=/tmp/up17-al2023/lib; safe args only.
+
+=== Unit ===
+
+> up17-autopublisher@0.1.0 test:unit
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.12 [39m[90m/home/user/Up17-AutoPublisher.[39m
+
+ [32m✓[39m tests/unit/security/server-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 869[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a real browser-condition bundle of the foundation module [33m 867[2mms[22m[39m
+ [32m✓[39m tests/unit/toolchain.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 591[2mms[22m[39m
+     [33m[2m✓[22m[39m uses decoded file URLs for aliases and fails an empty integration directory [33m 381[2mms[22m[39m
+ [32m✓[39m tests/unit/foundation.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/unit/themes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/unit/navigation.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/unit/security/secret-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 7[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[32m14 passed[39m[22m[90m (14)[39m
+[2m   Start at [22m 05:21:44
+[2m   Duration [22m 2.69s[2m (transform 114ms, setup 0ms, import 477ms, tests 1.48s, environment 1ms)[22m
+
+
+
+=== Production E2E including PWA ===
+
+> up17-autopublisher@0.1.0 pretest:e2e
+> node scripts/run-npm.mjs build
+
+
+> up17-autopublisher@0.1.0 build
+> node scripts/run-next.mjs build
+
+▲ Next.js 16.4.5 (Turbopack)
+✓ Running next.config.ts took 24ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 501ms
+  Running TypeScript ...
+  Finished TypeScript in 4.2s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/15) ...
+  Generating static pages using 1 worker (3/15)
+  Generating static pages using 1 worker (7/15)
+  Generating static pages using 1 worker (11/15)
+✓ Generating static pages using 1 worker (15/15) in 521ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /accounts
+├ ○ /ai-content
+├ ○ /creator-studio
+├ ○ /design-system
+├ ○ /manifest.webmanifest
+├ ○ /notifications
+├ ○ /performance
+├ ○ /queue
+├ ○ /research
+├ ○ /scheduler
+├ ○ /settings
+└ ○ /video-studio
+
+
+○  (Static)  prerendered as static content
+
+
+> up17-autopublisher@0.1.0 test:e2e
+> playwright test --grep-invert @visual
+
+
+Running 27 tests using 1 worker
+
+  ✓   1 [chromium] › tests/e2e/foundation.spec.ts:18:3 › clay-light preview has no automated accessibility violations @a11y (881ms)
+  ✓   2 [chromium] › tests/e2e/foundation.spec.ts:18:3 › clay-dark preview has no automated accessibility violations @a11y (820ms)
+  ✓   3 [chromium] › tests/e2e/foundation.spec.ts:18:3 › bento-light preview has no automated accessibility violations @a11y (777ms)
+  ✓   4 [chromium] › tests/e2e/foundation.spec.ts:18:3 › bento-dark preview has no automated accessibility violations @a11y (743ms)
+  ✓   5 [chromium] › tests/e2e/foundation.spec.ts:38:1 › theme selection updates tokens and persists @e2e (482ms)
+  ✓   6 [chromium] › tests/e2e/foundation.spec.ts:48:1 › preview controls and modal work with keyboard @e2e (458ms)
+  ✓   7 [chromium] › tests/e2e/foundation.spec.ts:61:1 › system mode follows appearance changes and clears saved preference @e2e (401ms)
+  ✓   8 [chromium] › tests/e2e/shell.spec.ts:8:1 › desktop sidebar reaches every canonical destination @e2e (1.5s)
+  ✓   9 [chromium] › tests/e2e/shell.spec.ts:24:1 › phone More menu reaches supporting destinations @e2e (483ms)
+  ✓  10 [chromium] › tests/e2e/shell.spec.ts:37:1 › search, workspace details and profile menu have real behavior @e2e (756ms)
+  ✓  11 [chromium] › tests/e2e/shell.spec.ts:53:1 › shell theme menu persists and dismisses accessibly @e2e (813ms)
+  ✓  12 [chromium] › tests/e2e/shell.spec.ts:67:3 › Overview shell has no automated accessibility violations @a11y (1.1s)
+  ✓  13 [chromium] › tests/e2e/shell.spec.ts:67:3 › Video Studio shell has no automated accessibility violations @a11y (1.0s)
+  ✓  14 [chromium] › tests/e2e/shell.spec.ts:67:3 › AI Content shell has no automated accessibility violations @a11y (1.0s)
+  ✓  15 [chromium] › tests/e2e/shell.spec.ts:67:3 › Smart Scheduler shell has no automated accessibility violations @a11y (1.0s)
+  ✓  16 [chromium] › tests/e2e/shell.spec.ts:67:3 › Publishing Queue shell has no automated accessibility violations @a11y (1.0s)
+  ✓  17 [chromium] › tests/e2e/shell.spec.ts:67:3 › Creator Studio shell has no automated accessibility violations @a11y (999ms)
+  ✓  18 [chromium] › tests/e2e/shell.spec.ts:67:3 › Research Centre shell has no automated accessibility violations @a11y (1.0s)
+  ✓  19 [chromium] › tests/e2e/shell.spec.ts:67:3 › Performance Lab shell has no automated accessibility violations @a11y (995ms)
+  ✓  20 [chromium] › tests/e2e/shell.spec.ts:67:3 › Accounts shell has no automated accessibility violations @a11y (1.1s)
+  ✓  21 [chromium] › tests/e2e/shell.spec.ts:67:3 › Settings shell has no automated accessibility violations @a11y (1.0s)
+  ✓  22 [chromium] › tests/e2e/shell.spec.ts:67:3 › Notifications shell has no automated accessibility violations @a11y (1.1s)
+  ✓  23 [chromium] › tests/e2e/shell.spec.ts:78:3 › overview shell passes axe in clay-light @a11y (1.0s)
+  ✓  24 [chromium] › tests/e2e/shell.spec.ts:78:3 › overview shell passes axe in clay-dark @a11y (1.0s)
+  ✓  25 [chromium] › tests/e2e/shell.spec.ts:78:3 › overview shell passes axe in bento-light @a11y (1.0s)
+  ✓  26 [chromium] › tests/e2e/shell.spec.ts:78:3 › overview shell passes axe in bento-dark @a11y (959ms)
+  ✓  27 [chromium] › tests/e2e/shell.spec.ts:111:1 › PWA manifest, safe cache and offline fallback work @e2e (526ms)
+
+  27 passed (25.9s)
+
+
+=== Axe ===
+
+> up17-autopublisher@0.1.0 pretest:a11y
+> node scripts/run-npm.mjs build
+
+
+> up17-autopublisher@0.1.0 build
+> node scripts/run-next.mjs build
+
+▲ Next.js 16.4.5 (Turbopack)
+✓ Running next.config.ts took 23ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 479ms
+  Running TypeScript ...
+  Finished TypeScript in 2.3s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/15) ...
+  Generating static pages using 1 worker (3/15)
+  Generating static pages using 1 worker (7/15)
+  Generating static pages using 1 worker (11/15)
+✓ Generating static pages using 1 worker (15/15) in 466ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /accounts
+├ ○ /ai-content
+├ ○ /creator-studio
+├ ○ /design-system
+├ ○ /manifest.webmanifest
+├ ○ /notifications
+├ ○ /performance
+├ ○ /queue
+├ ○ /research
+├ ○ /scheduler
+├ ○ /settings
+└ ○ /video-studio
+
+
+○  (Static)  prerendered as static content
+
+
+> up17-autopublisher@0.1.0 test:a11y
+> playwright test --grep @a11y
+
+
+Running 19 tests using 1 worker
+
+  ✓   1 [chromium] › tests/e2e/foundation.spec.ts:18:3 › clay-light preview has no automated accessibility violations @a11y (783ms)
+  ✓   2 [chromium] › tests/e2e/foundation.spec.ts:18:3 › clay-dark preview has no automated accessibility violations @a11y (751ms)
+  ✓   3 [chromium] › tests/e2e/foundation.spec.ts:18:3 › bento-light preview has no automated accessibility violations @a11y (793ms)
+  ✓   4 [chromium] › tests/e2e/foundation.spec.ts:18:3 › bento-dark preview has no automated accessibility violations @a11y (772ms)
+  ✓   5 [chromium] › tests/e2e/shell.spec.ts:67:3 › Overview shell has no automated accessibility violations @a11y (1.0s)
+  ✓   6 [chromium] › tests/e2e/shell.spec.ts:67:3 › Video Studio shell has no automated accessibility violations @a11y (1.0s)
+  ✓   7 [chromium] › tests/e2e/shell.spec.ts:67:3 › AI Content shell has no automated accessibility violations @a11y (1.0s)
+  ✓   8 [chromium] › tests/e2e/shell.spec.ts:67:3 › Smart Scheduler shell has no automated accessibility violations @a11y (1.1s)
+  ✓   9 [chromium] › tests/e2e/shell.spec.ts:67:3 › Publishing Queue shell has no automated accessibility violations @a11y (1.2s)
+  ✓  10 [chromium] › tests/e2e/shell.spec.ts:67:3 › Creator Studio shell has no automated accessibility violations @a11y (1.1s)
+  ✓  11 [chromium] › tests/e2e/shell.spec.ts:67:3 › Research Centre shell has no automated accessibility violations @a11y (1.0s)
+  ✓  12 [chromium] › tests/e2e/shell.spec.ts:67:3 › Performance Lab shell has no automated accessibility violations @a11y (1.1s)
+  ✓  13 [chromium] › tests/e2e/shell.spec.ts:67:3 › Accounts shell has no automated accessibility violations @a11y (1.1s)
+  ✓  14 [chromium] › tests/e2e/shell.spec.ts:67:3 › Settings shell has no automated accessibility violations @a11y (983ms)
+  ✓  15 [chromium] › tests/e2e/shell.spec.ts:67:3 › Notifications shell has no automated accessibility violations @a11y (1.0s)
+  ✓  16 [chromium] › tests/e2e/shell.spec.ts:78:3 › overview shell passes axe in clay-light @a11y (1.0s)
+  ✓  17 [chromium] › tests/e2e/shell.spec.ts:78:3 › overview shell passes axe in clay-dark @a11y (1.1s)
+  ✓  18 [chromium] › tests/e2e/shell.spec.ts:78:3 › overview shell passes axe in bento-light @a11y (1.0s)
+  ✓  19 [chromium] › tests/e2e/shell.spec.ts:78:3 › overview shell passes axe in bento-dark @a11y (1.0s)
+
+  19 passed (20.4s)
+
+
+=== Viewport/touch-target smoke ===
+
+> up17-autopublisher@0.1.0 pretest:visual
+> node scripts/run-npm.mjs build
+
+
+> up17-autopublisher@0.1.0 build
+> node scripts/run-next.mjs build
+
+▲ Next.js 16.4.5 (Turbopack)
+✓ Running next.config.ts took 25ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 196ms
+  Running TypeScript ...
+  Finished TypeScript in 2.7s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/15) ...
+  Generating static pages using 1 worker (3/15)
+  Generating static pages using 1 worker (7/15)
+  Generating static pages using 1 worker (11/15)
+✓ Generating static pages using 1 worker (15/15) in 462ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /accounts
+├ ○ /ai-content
+├ ○ /creator-studio
+├ ○ /design-system
+├ ○ /manifest.webmanifest
+├ ○ /notifications
+├ ○ /performance
+├ ○ /queue
+├ ○ /research
+├ ○ /scheduler
+├ ○ /settings
+└ ○ /video-studio
+
+
+○  (Static)  prerendered as static content
+
+
+> up17-autopublisher@0.1.0 test:visual
+> playwright test --grep @visual
+
+
+Running 7 tests using 1 worker
+
+  ✓  1 [chromium] › tests/e2e/foundation.spec.ts:5:1 › design-system preview is honest and has no page overflow @visual (347ms)
+  ✓  2 [chromium] › tests/e2e/shell.spec.ts:90:3 › shell fits 320px without page overflow @visual (470ms)
+  ✓  3 [chromium] › tests/e2e/shell.spec.ts:90:3 › shell fits 360px without page overflow @visual (432ms)
+  ✓  4 [chromium] › tests/e2e/shell.spec.ts:90:3 › shell fits 390px without page overflow @visual (409ms)
+  ✓  5 [chromium] › tests/e2e/shell.spec.ts:90:3 › shell fits 430px without page overflow @visual (471ms)
+  ✓  6 [chromium] › tests/e2e/shell.spec.ts:90:3 › shell fits 768px without page overflow @visual (451ms)
+  ✓  7 [chromium] › tests/e2e/shell.spec.ts:90:3 › shell fits 1440px without page overflow @visual (345ms)
+
+  7 passed (4.3s)
+
+
+Rendered review: desktop Clay Light/Dark, tablet Bento Light, mobile 390px, More dialog and 320px Bento Dark captured outside Git. Dialog centering and dev-indicator overlap corrected.
+Corrections retained: canonical order unit assertion fixed; axe visible-label/name mismatches fixed by removing redundant labels; no rules disabled.
+Limitations: OS/device install prompt and update-banner interaction NOT RUN; populated product screens, manual screen reader, Windows and live integrations NOT RUN.
+Final aggregate check after evidence creation recorded below.
+=== Final aggregate check ===
+EXIT=0
+
+> up17-autopublisher@0.1.0 check
+> node scripts/run-quality.mjs
+
+
+=== toolchain:check ===
+
+> up17-autopublisher@0.1.0 toolchain:check
+> node scripts/toolchain.mjs
+
+Toolchain verified: Node 22.22.3; npm 11.21.2
+
+=== format:check ===
+
+> up17-autopublisher@0.1.0 format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+=== lint ===
+
+> up17-autopublisher@0.1.0 lint
+> eslint . --max-warnings 0
+
+
+=== typecheck ===
+
+> up17-autopublisher@0.1.0 typecheck
+> tsc --noEmit
+
+
+=== test:unit ===
+
+> up17-autopublisher@0.1.0 test:unit
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.12 [39m[90m/home/user/Up17-AutoPublisher.[39m
+
+ [32m✓[39m tests/unit/security/server-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 963[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a real browser-condition bundle of the foundation module [33m 961[2mms[22m[39m
+ [32m✓[39m tests/unit/toolchain.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 602[2mms[22m[39m
+     [33m[2m✓[22m[39m uses decoded file URLs for aliases and fails an empty integration directory [33m 378[2mms[22m[39m
+ [32m✓[39m tests/unit/foundation.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/unit/themes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/unit/security/secret-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/unit/navigation.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[32m14 passed[39m[22m[90m (14)[39m
+[2m   Start at [22m 05:23:31
+[2m   Duration [22m 2.82s[2m (transform 124ms, setup 0ms, import 488ms, tests 1.59s, environment 1ms)[22m
+
+
+=== test:security ===
+
+> up17-autopublisher@0.1.0 test:security
+> node scripts/run-python.mjs -B scripts/check_docs.py && node scripts/run-python.mjs -B -m unittest discover -s scripts -p test_*.py -v && node scripts/run-npm.mjs test:unit -- tests/unit/security
+
+Required documents: 14
+Requirements: 155; unique IDs and references checked
+Local links checked: 49
+Git-index/worktree artifact candidates checked: 97
+Status counts: IN PROGRESS=7, PLANNED=132, TESTED=16
+PASS: documentation structure, traceability, links, preserved brief and Git artifact policy
+Boundary: heuristic artifact/credential check, not a complete security audit or live integration test.
+test_broken_local_link_is_rejected (test_check_docs.DocumentationValidatorTests.test_broken_local_link_is_rejected) ... ok
+test_changed_source_brief_is_rejected (test_check_docs.DocumentationValidatorTests.test_changed_source_brief_is_rejected) ... ok
+test_duplicate_requirement_is_rejected (test_check_docs.DocumentationValidatorTests.test_duplicate_requirement_is_rejected) ... ok
+test_force_added_build_artifact_is_rejected (test_check_docs.DocumentationValidatorTests.test_force_added_build_artifact_is_rejected) ... ok
+test_high_confidence_token_in_documentation_is_rejected (test_check_docs.DocumentationValidatorTests.test_high_confidence_token_in_documentation_is_rejected) ... ok
+test_ignored_local_env_is_not_a_git_artifact (test_check_docs.DocumentationValidatorTests.test_ignored_local_env_is_not_a_git_artifact) ... ok
+test_invalid_status_is_rejected (test_check_docs.DocumentationValidatorTests.test_invalid_status_is_rejected) ... ok
+test_missing_required_document_is_rejected (test_check_docs.DocumentationValidatorTests.test_missing_required_document_is_rejected) ... ok
+test_missing_source_coverage_is_rejected (test_check_docs.DocumentationValidatorTests.test_missing_source_coverage_is_rejected) ... ok
+test_nested_env_example_is_not_implicitly_approved (test_check_docs.DocumentationValidatorTests.test_nested_env_example_is_not_implicitly_approved) ... ok
+test_npmrc_token_is_rejected (test_check_docs.DocumentationValidatorTests.test_npmrc_token_is_rejected) ... ok
+test_oauth_download_is_rejected (test_check_docs.DocumentationValidatorTests.test_oauth_download_is_rejected) ... ok
+test_other_cloud_state_is_rejected (test_check_docs.DocumentationValidatorTests.test_other_cloud_state_is_rejected) ... ok
+test_placeholder_credential_assignment_is_allowed (test_check_docs.DocumentationValidatorTests.test_placeholder_credential_assignment_is_allowed) ... ok
+test_populated_credential_assignment_is_rejected (test_check_docs.DocumentationValidatorTests.test_populated_credential_assignment_is_rejected) ... ok
+test_populated_root_example_is_rejected (test_check_docs.DocumentationValidatorTests.test_populated_root_example_is_rejected) ... ok
+test_premature_application_artifact_is_rejected (test_check_docs.DocumentationValidatorTests.test_premature_application_artifact_is_rejected) ... ok
+test_private_key_is_rejected_without_printing_it (test_check_docs.DocumentationValidatorTests.test_private_key_is_rejected_without_printing_it) ... ok
+test_root_example_is_allowed (test_check_docs.DocumentationValidatorTests.test_root_example_is_allowed) ... ok
+test_safe_documentation_mention_is_allowed (test_check_docs.DocumentationValidatorTests.test_safe_documentation_mention_is_allowed) ... ok
+test_safe_npmrc_is_allowed (test_check_docs.DocumentationValidatorTests.test_safe_npmrc_is_allowed) ... ok
+test_service_role_jwt_is_rejected (test_check_docs.DocumentationValidatorTests.test_service_role_jwt_is_rejected) ... ok
+test_staged_secret_is_rejected_even_if_worktree_was_cleaned (test_check_docs.DocumentationValidatorTests.test_staged_secret_is_rejected_even_if_worktree_was_cleaned) ... ok
+test_supabase_config_is_rejected (test_check_docs.DocumentationValidatorTests.test_supabase_config_is_rejected) ... ok
+test_supabase_generated_client_is_rejected (test_check_docs.DocumentationValidatorTests.test_supabase_generated_client_is_rejected) ... ok
+test_supabase_temp_artifact_is_rejected (test_check_docs.DocumentationValidatorTests.test_supabase_temp_artifact_is_rejected) ... ok
+test_tracked_env_is_rejected (test_check_docs.DocumentationValidatorTests.test_tracked_env_is_rejected) ... ok
+test_tracked_env_variant_is_rejected_even_when_ignored (test_check_docs.DocumentationValidatorTests.test_tracked_env_variant_is_rejected_even_when_ignored) ... ok
+test_unknown_milestone_is_rejected (test_check_docs.DocumentationValidatorTests.test_unknown_milestone_is_rejected) ... ok
+test_unknown_test_is_rejected (test_check_docs.DocumentationValidatorTests.test_unknown_test_is_rejected) ... ok
+test_untracked_non_ignored_credential_file_is_rejected (test_check_docs.DocumentationValidatorTests.test_untracked_non_ignored_credential_file_is_rejected) ... ok
+test_valid_baseline_passes (test_check_docs.DocumentationValidatorTests.test_valid_baseline_passes) ... ok
+test_vercel_config_is_rejected (test_check_docs.DocumentationValidatorTests.test_vercel_config_is_rejected) ... ok
+test_vercel_generated_artifact_is_rejected (test_check_docs.DocumentationValidatorTests.test_vercel_generated_artifact_is_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 34 tests in 15.487s
+
+OK
+
+> up17-autopublisher@0.1.0 test:unit
+> vitest run tests/unit/security
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.12 [39m[90m/home/user/Up17-AutoPublisher.[39m
+
+ [32m✓[39m tests/unit/security/server-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 933[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a real browser-condition bundle of the foundation module [33m 931[2mms[22m[39m
+ [32m✓[39m tests/unit/security/secret-boundary.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 7[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 05:23:50
+[2m   Duration [22m 1.40s[2m (transform 44ms, setup 0ms, import 195ms, tests 940ms, environment 0ms)[22m
+
+
+=== build ===
+
+> up17-autopublisher@0.1.0 build
+> node scripts/run-next.mjs build
+
+▲ Next.js 16.4.5 (Turbopack)
+✓ Running next.config.ts took 25ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 611ms
+  Running TypeScript ...
+  Finished TypeScript in 2.6s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/15) ...
+  Generating static pages using 1 worker (3/15)
+  Generating static pages using 1 worker (7/15)
+  Generating static pages using 1 worker (11/15)
+✓ Generating static pages using 1 worker (15/15) in 540ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /accounts
+├ ○ /ai-content
+├ ○ /creator-studio
+├ ○ /design-system
+├ ○ /manifest.webmanifest
+├ ○ /notifications
+├ ○ /performance
+├ ○ /queue
+├ ○ /research
+├ ○ /scheduler
+├ ○ /settings
+└ ○ /video-studio
+
+
+○  (Static)  prerendered as static content

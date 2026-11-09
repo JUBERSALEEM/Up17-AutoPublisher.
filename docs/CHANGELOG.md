@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — UI Batch 2: responsive shell and PWA (2026-11-08)
+
+- Added the ten canonical destinations, desktop sidebar, mobile bottom navigation/More, workspace details, destination search, profile and theme controls.
+- Added original app icons, manifest, public-only service-worker cache, offline fallback and explicit update/install affordances.
+- Replaced the temporary root preview with the Overview shell placeholder; retained `/design-system` for primitive review.
+- Added navigation unit tests, shell/PWA browser tests, eleven-route axe coverage and six-width viewport checks. Corrected visible-label/accessibility-name mismatches found by axe.
+
 ## Unreleased — UI Batch 1: four-theme design system (2026-11-08)
 
 - Added centralized Clay Light/Dark and Bento Light/Dark tokens, pre-paint theme resolution, local persistence/system mode, and shared tactile UI primitives.

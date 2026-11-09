@@ -3,7 +3,7 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { themes, type ThemePreference } from "@/lib/themes";
-import { Badge } from "@/components/ui";
+import { Badge, Popover } from "@/components/ui";
 
 export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
   const { theme, preference, setPreference } = useTheme();
@@ -48,28 +48,32 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
 export function ThemeMenu() {
   const { theme, preference, setPreference } = useTheme();
   return (
-    <details className="theme-menu">
-      <summary
-        className="icon-btn icon-btn-secondary"
-        aria-label="Choose theme"
-        title="Choose theme"
-      >
-        {theme.endsWith("dark") ? <Moon size={19} /> : <Sun size={19} />}
-      </summary>
-      <div className="theme-menu-panel">
-        <p className="field-label">Theme</p>
-        {(["system", ...themes.map((t) => t.id)] as ThemePreference[]).map((id) => (
-          <button
-            key={id}
-            type="button"
-            className={`menu-item ${preference === id ? "menu-item-active" : ""}`}
-            onClick={() => setPreference(id)}
-          >
-            <span>{id === "system" ? "Match system" : themes.find((t) => t.id === id)?.label}</span>
-            {preference === id ? <Badge tone="primary">Active</Badge> : null}
-          </button>
-        ))}
-      </div>
-    </details>
+    <Popover
+      label="Choose theme"
+      trigger={theme.endsWith("dark") ? <Moon size={19} /> : <Sun size={19} />}
+    >
+      {(close) => (
+        <>
+          <p className="field-label menu-heading">Theme</p>
+          {(["system", ...themes.map((t) => t.id)] as ThemePreference[]).map((id) => (
+            <button
+              key={id}
+              type="button"
+              className={`menu-item ${preference === id ? "menu-item-active" : ""}`}
+              aria-pressed={preference === id}
+              onClick={() => {
+                setPreference(id);
+                close();
+              }}
+            >
+              <span>
+                {id === "system" ? "Match system" : themes.find((t) => t.id === id)?.label}
+              </span>
+              {preference === id ? <Badge tone="primary">Active</Badge> : null}
+            </button>
+          ))}
+        </>
+      )}
+    </Popover>
   );
 }
