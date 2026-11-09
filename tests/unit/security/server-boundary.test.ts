@@ -4,8 +4,14 @@ import { describe, expect, it } from "vitest";
 
 const root = fileURLToPath(new URL("../../..", import.meta.url));
 
-describe("foundation server-only boundary", () => {
-  it("rejects a real browser-condition bundle of the foundation module", async () => {
+describe.each([
+  "lib/foundation.ts",
+  "lib/supabase/config.ts",
+  "lib/supabase/server.ts",
+  "lib/auth/workspace.ts",
+  "lib/media-access.ts",
+])("%s server-only boundary", (module) => {
+  it("rejects a real browser-condition bundle", async () => {
     const result = await build({
       configFile: false,
       root,
@@ -15,7 +21,7 @@ describe("foundation server-only boundary", () => {
         write: false,
         minify: false,
         lib: {
-          entry: fileURLToPath(new URL("../../../lib/foundation.ts", import.meta.url)),
+          entry: fileURLToPath(new URL(`../../../${module}`, import.meta.url)),
           formats: ["es"],
         },
       },

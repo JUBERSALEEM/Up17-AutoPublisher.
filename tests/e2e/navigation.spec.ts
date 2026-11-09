@@ -43,9 +43,14 @@ function collectBrowserErrors(page: Page) {
   });
   page.on("requestfailed", (request) => {
     const failure = request.failure()?.errorText;
-    // Next.js cancels superseded RSC prefetches during real navigations; the final
-    // route/content assertions below still have to pass. Any other failure is real.
-    if (failure === "net::ERR_ABORTED" && request.url().includes("_rsc=")) return;
+    // Next.js cancels superseded RSC prefetches and in-flight static chunks when a
+    // real navigation/reload replaces the document. Final route/content assertions
+    // below still have to pass; console/page errors and HTTP >=400 remain failures.
+    if (
+      failure === "net::ERR_ABORTED" &&
+      (request.url().includes("_rsc=") || request.url().includes("/_next/static/"))
+    )
+      return;
     errors.push(`requestfailed: ${request.url()} ${failure ?? "unknown"}`);
   });
   return errors;

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — Batch C auth/data foundation (2026-11-08)
+
+- Added Supabase SSR authentication, protected workspace/preferences/inbox paths, five applied hosted migrations, private media bucket policies and a rollback multi-user RLS fixture.
+- Closed direct preference/workspace writes behind a revision-checked audited RPC; added category/platform integrity and multi-workspace selection fallback.
+- Local aggregate/browser/accessibility/viewport/clay/navigation gates and hosted DB isolation fixture pass; hosted email delivery, SSO-protected browser acceptance and Storage-API delete remain explicit unverified gates. See [Batch C report](BATCH_C_AUTH_REPORT.md).
+
 ## Unreleased — Batch B sculptural Clay engine (2026-11-08)
 
 - Added family-scoped Clay Light/Dark material tokens and tactile shared-component states across all 12 screens; Bento remains flat.

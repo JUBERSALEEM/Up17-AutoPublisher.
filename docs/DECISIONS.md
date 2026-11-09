@@ -115,3 +115,14 @@ The owner explicitly requested autonomous implementation of the visible applicat
 - Research prompts are explicitly evergreen editorial questions, not trends or verified news. Live updates/sources remain unavailable without a permitted integration.
 - AI timeline markers are generic fractions of demo duration, not gameplay detections. Observations/confidence remain unknown; no AI request, cost or result is fabricated.
 - Analytics filters are scope previews only. Missing metrics remain unavailable, never zero or interpolated. Local export/reset covers known app keys only; cloud privacy/security services remain later approved work.
+
+
+## Functional A–J authorization and Batch C decisions — 2026-11-08
+
+The owner authorized the functional A–J delivery sequence, including the named Supabase project, Vercel deployment repair/preview and official platform-connection work. Paid AI/services and publication to an actual creator account still require separate explicit approval; deployment authorization is not production acceptance.
+
+- Used Supabase project `hxgokimjdormlktxjsbg` and Vercel project `prj_uh7RosdHFABdfwRkSRg7JNmu67bK` only after connector identity verification. Preview environment receives only the public Supabase URL/publishable key and explicit DEMO mode; no privileged key is committed or browser-exposed.
+- Applied five reviewed migrations rather than reapplying failed monolithic/hardening attempts. Local/remote parity is canonical (comments/whitespace removed), not raw-byte parity.
+- Closed direct preference/workspace writes behind the audited revision RPC; added category/platform integrity and a multi-workspace selection cookie with membership fallback.
+- Deliberately allowlisted reviewed `supabase/migrations`, `supabase/tests` and `lib/supabase/database.types.ts` in the artifact guard; other cloud/generated artifacts remain rejected.
+- Hosted RLS fixture passes and rolls back. SMTP is absent, Vercel preview SSO blocks anonymous hosted browser acceptance, and Storage-API delete is untested; these remain explicit gates rather than claimed success.

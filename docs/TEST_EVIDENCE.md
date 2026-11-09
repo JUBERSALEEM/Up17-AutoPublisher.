@@ -2,6 +2,26 @@
 
 This ledger records executed checks, not aspirational test names. See [TEST_STRATEGY.md](TEST_STRATEGY.md) for the future application catalog.
 
+
+## Batch C — auth/data foundation (2026-11-08)
+
+**Scope:** Supabase SSR auth, relational workspace/preferences/inbox persistence, RLS/private storage policies and multi-user database isolation. See [Batch C report](BATCH_C_AUTH_REPORT.md) and [executed evidence](evidence/batch-c-auth.txt). Hosted email delivery, SSO-protected hosted browser acceptance and Storage-API delete are NOT VERIFIED.
+
+| Check | Actual result |
+|---|---|
+| Hosted `supabase/tests/rls.sql` | PASS — expected `P0001: ROLLBACK_FIXTURE_COMPLETE`; synthetic rows fully rolled back |
+| Migration parity | PASS — five local files match remote history after removing SQL line comments/whitespace; raw byte parity not claimed |
+| `npm run check` | PASS — 51 unit, 4 integration, 42 Python + 6 TS security, 23-route build |
+| `npm run test:e2e` | PASS — 123 |
+| `npm run test:a11y` | PASS — 85 |
+| `npm run test:visual` | PASS — 153 |
+| `npm run test:clay` | PASS — 62 |
+| `npm run test:navigation:dev` | PASS — 13 |
+| `npm audit` | PASS — 0 known vulnerabilities |
+| Hosted email/recovery | NOT VERIFIED — SMTP absent, default rate 2/hour |
+| Hosted browser/auth walkthrough | BLOCKED — Vercel preview SSO |
+| Storage-API delete | NOT TESTED — direct SQL delete blocked by Supabase guard; policy inspected only |
+
 ## Navigation repair — development-mode verification (2026-11-08)
 
 **Scope:** reported local-development menu/screen defect, twelve menu destinations, desktop/mobile, four themes, history/refresh/direct entry and inherited service-worker cleanup. No backend, deployment or live integration was exercised. See [executed gate output](evidence/navigation-repair-validation.txt) and the [repair report](NAVIGATION_REPAIR_REPORT.md).

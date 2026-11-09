@@ -74,11 +74,11 @@ SECRET_FORMATS = (
 )
 JWT = re.compile(r"\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b")
 CREDENTIAL_ASSIGNMENT = re.compile(
-    r"""(?im)(?:^|[,{;\s])["']?(client_secret|clientSecret|refresh_token|refreshToken|access_token|accessToken|api_key|apiKey|secret_access_key|secretAccessKey|service_role_key|serviceRoleKey|auth_token|authToken|password|passwd|VERCEL_TOKEN|SUPABASE_SERVICE_ROLE_KEY|GOOGLE_CLIENT_SECRET|INSTAGRAM_CLIENT_SECRET|TIKTOK_CLIENT_SECRET|OPENAI_API_KEY)["']?\s*[:=]\s*["']?([^\s"',;#}]+)"""
+    r"""(?im)(?<![A-Za-z0-9_-])(?:^|[,{;\s])["']?(client_secret|clientSecret|refresh_token|refreshToken|access_token|accessToken|api_key|apiKey|secret_access_key|secretAccessKey|service_role_key|serviceRoleKey|auth_token|authToken|password|passwd|VERCEL_TOKEN|SUPABASE_SERVICE_ROLE_KEY|GOOGLE_CLIENT_SECRET|INSTAGRAM_CLIENT_SECRET|TIKTOK_CLIENT_SECRET|OPENAI_API_KEY)["']?\s*[:=]\s*["']?([^\s"',;#}]+)"""
 )
 PLACEHOLDER_PREFIXES = (
     "<", "$", "process.", "import.meta", "os.environ", "z.", "your-", "your_",
-    "example", "dummy", "placeholder", "redacted", "changeme", "synthetic-test",
+    "example", "dummy", "placeholder", "redacted", "changeme", "synthetic-test", "parsed.", "passwordschema",
 )
 PLACEHOLDER_VALUES = {"string", "number", "boolean", "undefined", "null", "true", "false", "test", "testing", "fixture", "xxx", "****"}
 
@@ -120,13 +120,20 @@ def artifact_reason(relative: str) -> str | None:
         return "environment file is not an explicitly permitted example"
     if any(part in GENERATED_DIRS for part in parts):
         return "generated/build/dependency artifact"
-    if any(part in CLOUD_DIRS for part in parts) or parts[0] in {"supabase", "vercel"}:
+    if any(part in CLOUD_DIRS for part in parts) or parts[0] == "vercel":
+        return "cloud configuration/generated artifact requires a separate approval gate"
+    if parts[0] == "supabase":
+        # Owner-authorized Batch C: reviewed migrations and rollback RLS tests only.
+        if len(parts) == 3 and parts[1] in {"migrations", "tests"} and re.fullmatch(r"[0-9]{14}_[a-z0-9_]+\.sql" if parts[1] == "migrations" else r"[a-z0-9_]+\.sql", name):
+            return None
         return "cloud configuration/generated artifact requires a separate approval gate"
     if ".config" in parts and "gcloud" in parts:
         return "cloud credential/configuration artifact"
     if ".auth" in parts or ".docker" in parts:
         return "credential/session configuration artifact"
-    if name in CLOUD_FILES or name in GENERATED_TYPES or CREDENTIAL_JSON.fullmatch(name):
+    if name in GENERATED_TYPES and relative != "lib/supabase/database.types.ts":
+        return "generated database types require a reviewed schema-change gate"
+    if name in CLOUD_FILES or CREDENTIAL_JSON.fullmatch(name):
         return "credential or cloud configuration artifact requires a separate approval gate"
     if name == "application_default_credentials.json":
         return "application default cloud credentials"

@@ -75,14 +75,20 @@ function SearchDialog({ open, onClose }: { open: boolean; onClose: () => void })
   );
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  authAvailable = false,
+}: {
+  children: ReactNode;
+  authAvailable?: boolean;
+}) {
   const pathname = usePathname();
   const current = destinationForPath(pathname);
   const [searchOpen, setSearchOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const { canInstall, install, installed } = usePwa();
-  const { preferences } = usePreferences();
+  const { preferences, cloud } = usePreferences();
   useEffect(() => {
     document.documentElement.dataset.motion = preferences.reduceMotion ? "reduce" : "system";
   }, [preferences.reduceMotion]);
@@ -218,17 +224,21 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
             <ThemeMenu />
             <Popover
-              label="Local profile menu"
+              label={cloud ? "Account menu" : "Local profile menu"}
               trigger={<CircleUserRound size={20} />}
               className="profile-popover"
             >
               {(close) => (
                 <>
                   <div className="profile-summary">
-                    <span className="profile-avatar">JC</span>
+                    <span className="profile-avatar">
+                      {cloud ? cloud.displayName.slice(0, 2).toUpperCase() : "JC"}
+                    </span>
                     <div>
-                      <strong>Local creator</strong>
-                      <p className="field-hint">Demo profile · not signed in</p>
+                      <strong>{cloud?.displayName ?? "Local creator"}</strong>
+                      <p className="field-hint">
+                        {cloud ? cloud.email : "Demo profile · not signed in"}
+                      </p>
                     </div>
                   </div>
                   <Link className="menu-item" href="/settings" onClick={close}>
@@ -239,7 +249,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </Link>
                   <p className="menu-footnote">
                     <ShieldCheck size={15} aria-hidden="true" />
-                    No authentication is connected.
+                    {cloud ? (
+                      "Private session · social accounts not connected"
+                    ) : authAvailable ? (
+                      <Link href="/sign-in" onClick={close}>
+                        Sign in to your workspace
+                      </Link>
+                    ) : (
+                      "Authentication is not configured locally."
+                    )}
                   </p>
                 </>
               )}
@@ -253,7 +271,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span>Up17 AutoPublisher</span>
           <span>
             <span className="status-dot" aria-hidden="true" />
-            Local frontend · integrations not connected
+            {cloud
+              ? "Private workspace · creator workflows still demo"
+              : "Local frontend · integrations not connected"}
           </span>
         </footer>
       </div>
@@ -310,7 +330,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         open={workspaceOpen}
         onClose={() => setWorkspaceOpen(false)}
         title={preferences.name}
-        description="Your local creator workspace"
+        description={cloud ? "Your private creator workspace" : "Your local creator workspace"}
         footer={
           <Button variant="primary" onClick={() => setWorkspaceOpen(false)}>
             Done
@@ -331,8 +351,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Badge tone="warning">0 connected</Badge>
           </div>
           <p className="unavailable-note">
-            <strong>One local workspace.</strong> Additional workspaces, team membership and
-            authentication require the separately approved backend phase.
+            <strong>{cloud ? "Private workspace." : "One local workspace."}</strong>{" "}
+            {cloud
+              ? `Your role is ${cloud.role}. Social accounts and publishing are not connected.`
+              : "This is browser-local demo data. Sign in to use a private cloud workspace when authentication is configured."}
           </p>
           <Button disabled title="Workspace creation requires the backend phase">
             Create workspace unavailable

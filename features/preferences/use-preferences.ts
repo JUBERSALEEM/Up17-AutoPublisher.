@@ -1,14 +1,6 @@
 "use client";
-import { useBrowserValue, writeBrowserValue } from "@/lib/browser-store";
-import {
-  defaultPreferences,
-  parsePreferences,
-  PREFERENCES_KEY,
-  type WorkspacePreferences,
-} from "./model";
+import { useWorkspacePreferences } from "./preferences-provider";
+/** Cloud-backed when signed in; explicitly browser-local in the public demo. */
 export function usePreferences() {
-  const preferences = useBrowserValue(PREFERENCES_KEY, defaultPreferences, parsePreferences);
-  const update = (patch: Partial<WorkspacePreferences>) =>
-    writeBrowserValue(PREFERENCES_KEY, { ...preferences, ...patch });
-  return { preferences, update };
+  return useWorkspacePreferences();
 }

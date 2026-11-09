@@ -2,9 +2,9 @@
 
 **Updated:** 2026-11-08 UTC
 **Current phase:** functional product implementation, owner-authorized A–J batches
-**Current batch:** 1 design system — TESTED locally; 2 shell — TESTED locally (device install prompt pending); 3 core screens — TESTED locally; 4 supporting screens — TESTED locally; 5 polish/accessibility — TESTED locally; 6 final verification — TESTED locally; navigation repair — TESTED locally
+**Current batch:** A–J functional delivery. A deployment repair PARTIAL; B Clay engine COMPLETE locally; C auth/data foundation PARTIAL (hosted DB tests PASS; email/hosted browser/Storage-delete gates pending); D–J remain demo/missing unless separately recorded
 **Owner acceptance:** NOT RECORDED; technical tests are not owner acceptance
-**Product integrations/deployment:** Batch A IN PROGRESS; Supabase/Vercel identities verified; real app workflows not connected yet. See [owner balance](OWNER_REQUIREMENTS_BALANCE.md).
+**Product integrations/deployment:** Supabase auth/data foundation applied and DB-tested; Vercel preview build path repaired but SSO-protected; creator workflows not live. See [owner balance](OWNER_REQUIREMENTS_BALANCE.md) and [Batch C report](BATCH_C_AUTH_REPORT.md).
 
 ## Active UI batches
 
@@ -27,7 +27,7 @@ The original Playwright CDN remains blocked, but a registry-only Chromium fallba
 ## Remaining boundaries
 
 - Backend/deployment/official OAuth work is now authorized. Paid providers and actual creator-account publication still require their explicit approvals.
-- Empty integration suite still intentionally fails; no fake integration tests.
+- Integration suite now contains 4 local SSR-cookie adapter contract tests and passes; hosted DB isolation is evidenced separately by `supabase/tests/rls.sql`. OAuth/upload/queue integration tests remain pending.
 - Active GitHub CI remains blocked by workflow permission; inactive template preserved.
 - Windows runtime and manual screen-reader testing remain NOT RUN.
 - Full ten-screen plus Notifications, six-width and four-theme automated accessibility/viewport matrices have passed locally; manual screen-reader and OS install checks remain pending.
@@ -44,4 +44,4 @@ The original Playwright CDN remains blocked, but a registry-only Chromium fallba
 | M1.1 delivery-record update | `d9250a6` | same fixed branch | SUCCESS — remote matched `d9250a619801149ada8ed86aee281ea6f635535e`; immediate audit delivered |
 | M1.1 foundation hardening | `241d3aa` | same fixed branch | SUCCESS — remote matched `241d3aa5f4292ddb64a836ddfdcd57e028385d37`; immediate audit delivered; browser/axe verification still pending |
 
-A commit cannot contain its own final hash. The latest session audit reports the current commit. M1.2 remains **not started**; browser execution must be resolved before the relevant accessibility/viewport acceptance gates.
+A commit cannot contain its own final hash. The latest session audit reports the current commit. Frontend M1.2 browser execution is resolved locally; functional Batch C is recorded in [BATCH_C_AUTH_REPORT.md](BATCH_C_AUTH_REPORT.md) and [evidence](evidence/batch-c-auth.txt). Push/deployment audit for Batch C is reported in the session delivery audit after the commit is pushed.

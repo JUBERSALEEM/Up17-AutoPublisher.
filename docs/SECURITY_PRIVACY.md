@@ -1,6 +1,6 @@
 # Security, privacy and reliability plan
 
-**Status:** PROPOSED controls; none are represented as implemented. Phase 0 contains no credentials or personal media. External hosting/processing requires separate approval.
+**Status:** PARTIALLY IMPLEMENTED. Batch C auth/RLS/private-storage foundation is applied and DB-tested; remaining controls below are still proposed. See [Batch C report](BATCH_C_AUTH_REPORT.md). No privileged key is browser-exposed; hosted email delivery and production acceptance remain unverified.
 
 ## 1. Assets and trust boundaries
 
@@ -69,3 +69,13 @@ Structured logs carry correlation/job/attempt IDs and redacted provider error co
 - **Phases 6–8:** provider data terms, prompt-injection/claim tests, immutable versions and per-account consent.
 - **Phase 9:** crash/duplicate/retry/rate-limit/reconciliation and test-account-only publication.
 - **Phase 12:** restore, secret rotation, revocation, export/deletion, dependency/accessibility/performance review and explicit release approval.
+
+
+## Batch C implemented foundation — 2026-11-08
+
+- Supabase SSR sessions use protected cookie options and server-side user verification; auth redirects are same-application and callback/confirm URLs are allowlisted.
+- Five hosted migrations enable RLS on all 22 exposed public tables, scope rows by workspace membership and user identity, restrict browser-writable columns, and keep OAuth/credential tables in a private schema.
+- Preferences are written only through a revision-checked, fully type-validating, audited RPC; direct preference/workspace writes are revoked. Category/platform and draft-version integrity are enforced relationally.
+- `creator-media` is private with workspace-prefix policies and size/MIME limits; the app exposes only a short-lived signed-URL route after server membership checks. Storage-API delete remains untested because direct SQL delete is blocked by Supabase's guard.
+- The rollback hosted fixture verifies owner/editor/viewer and cross-workspace isolation, notification privacy, storage upload/read denial, RPC stale/malformed denial, role-elevation/audit-forgery/private-schema denial and anon grant denial.
+- Still pending: production SMTP/delivery verification, captcha/HIBP/app-level distributed rate limiting, cloud export/deletion/retention, OAuth token custody, upload scanning/workers and production release gates.

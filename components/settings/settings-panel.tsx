@@ -42,20 +42,25 @@ import { removeBrowserValue } from "@/lib/browser-store";
 function ProfileForm({
   preferences,
   onSave,
+  canRename = true,
+  cloud = false,
 }: {
   preferences: WorkspacePreferences;
-  onSave: (form: WorkspacePreferences) => boolean;
+  onSave: (form: WorkspacePreferences) => Promise<boolean>;
+  canRename?: boolean;
+  cloud?: boolean;
 }) {
   const [form, setForm] = useState(preferences);
   const [errors, setErrors] = useState<string[]>([]);
   const [notice, setNotice] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const update = <K extends keyof WorkspacePreferences>(key: K, value: WorkspacePreferences[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
     setNotice("");
   };
   return (
     <form
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
         const next = validateProfile(form);
         setErrors(next);
@@ -70,10 +75,15 @@ function ProfileForm({
           audience: form.audience.trim(),
         };
         setForm(trimmed);
+        setSubmitting(true);
+        const saved = await onSave(trimmed);
+        setSubmitting(false);
         setNotice(
-          onSave(trimmed)
-            ? "Workspace preferences saved in this browser."
-            : "Updated for this session only; browser storage is unavailable.",
+          saved
+            ? "Workspace preferences saved."
+            : cloud
+              ? "Preferences were not saved. Check your connection or reload before retrying."
+              : "Preferences were not saved. Browser storage is unavailable; changes are kept for this session only.",
         );
       }}
     >
@@ -93,6 +103,7 @@ function ProfileForm({
           value={form.name}
           onChange={(e) => update("name", e.target.value)}
           maxLength={48}
+          disabled={!canRename}
           required
         />
         <Input
@@ -139,8 +150,8 @@ function ProfileForm({
         </Select>
       </div>
       <p className="field-hint settings-field-note">
-        These are local profile preferences, not AI instructions sent to a provider. The interface
-        remains in English. Existing demo records keep their original timezone labels.
+        These are workspace profile preferences, not AI instructions sent to a provider. The
+        interface remains in English. Existing demo records keep their original timezone labels.
       </p>
       <div className="settings-save-row">
         {notice ? (
@@ -149,9 +160,19 @@ function ProfileForm({
             {notice}
           </p>
         ) : (
-          <span className="muted tiny">Saved on this device only · no cloud sync</span>
+          <span className="muted tiny">
+            {cloud
+              ? "Private workspace · database-backed"
+              : "Saved on this device only · no cloud sync"}
+          </span>
         )}
-        <Button type="submit" variant="primary" icon={<Save size={17} />}>
+        <Button
+          type="submit"
+          variant="primary"
+          loading={submitting}
+          disabled={submitting}
+          icon={<Save size={17} />}
+        >
           Save workspace
         </Button>
       </div>
@@ -168,7 +189,7 @@ export function SettingsPanel() {
     () => false,
   );
   const [profileRevision, setProfileRevision] = useState(0);
-  const { preferences, update } = usePreferences();
+  const { preferences, update, cloud, pending } = usePreferences();
   const { theme } = useTheme();
   const [resetOpen, setResetOpen] = useState(false);
   const [notice, setNotice] = useState("");
@@ -195,8 +216,12 @@ export function SettingsPanel() {
       <PageHeader
         eyebrow="A workspace that feels like yours"
         title="Settings"
-        description="Personalize the local experience. Keep automation, privacy and unavailable services clearly separated."
-        actions={<Badge tone="accent">Local preferences</Badge>}
+        description={
+          cloud
+            ? "Manage your private workspace. Creator workflows remain demos until their integration gates pass."
+            : "Personalize the local experience. Keep automation, privacy and unavailable services clearly separated."
+        }
+        actions={<Badge tone="accent">{cloud ? "Cloud preferences" : "Local preferences"}</Badge>}
       />
       <nav className="settings-jumps" aria-label="Settings sections">
         {[
@@ -237,14 +262,17 @@ export function SettingsPanel() {
               label="Reduce motion"
               description="Minimize transitions and animated effects. Your device’s reduced-motion setting is always respected."
               checked={preferences.reduceMotion}
-              onChange={(value) => {
-                const persisted = update({ reduceMotion: value });
+              disabled={pending}
+              onChange={async (value) => {
+                const persisted = await update({ reduceMotion: value });
                 setNotice(
-                  !persisted
-                    ? "Motion preference updated for this session only; browser storage is unavailable."
-                    : value
-                      ? "Reduced motion enabled on this device."
-                      : "Device motion preference restored.",
+                  persisted
+                    ? value
+                      ? "Reduced motion saved."
+                      : "Device motion preference restored."
+                    : cloud
+                      ? "Motion preference was not saved. Check your connection or reload before retrying."
+                      : "Motion preference updated for this session only; browser storage is unavailable.",
                 );
               }}
             />
@@ -259,6 +287,8 @@ export function SettingsPanel() {
                 key={profileRevision}
                 preferences={preferences}
                 onSave={(form) => update(form)}
+                canRename={!cloud || cloud.role === "owner" || cloud.role === "admin"}
+                cloud={Boolean(cloud)}
               />
             ) : (
               <p className="muted small">Loading local profile…</p>
@@ -267,7 +297,11 @@ export function SettingsPanel() {
           <Card id="notifications" className="settings-section">
             <CardHeader
               title="Notification preferences"
-              description="Choose which categories appear in the demo inbox. This does not subscribe you to a delivery service."
+              description={
+                cloud
+                  ? "Choose workflow categories for your private inbox. Security notices always remain visible."
+                  : "Choose which categories appear in the demo inbox. This does not subscribe you to a delivery service."
+              }
               action={
                 <Link href="/notifications" className="text-link small">
                   Open inbox
@@ -278,16 +312,23 @@ export function SettingsPanel() {
               <Toggle
                 key={category}
                 label={categoryLabels[category]}
-                description="Show labelled demo notices in this category."
+                description={
+                  cloud
+                    ? "Show workflow notices in this category."
+                    : "Show labelled demo notices in this category."
+                }
                 checked={preferences.notifications[category]}
-                onChange={(value) => {
-                  const persisted = update({
+                disabled={pending}
+                onChange={async (value) => {
+                  const persisted = await update({
                     notifications: { ...preferences.notifications, [category]: value },
                   });
                   setNotice(
                     persisted
-                      ? "Inbox preference saved locally. No delivery service was changed."
-                      : "Inbox preference updated for this session only; browser storage is unavailable.",
+                      ? "Inbox preference saved. No delivery service was changed."
+                      : cloud
+                        ? "Inbox preference was not saved. Check your connection or reload before retrying."
+                        : "Inbox preference updated for this session only; browser storage is unavailable.",
                   );
                 }}
               />
@@ -330,15 +371,24 @@ export function SettingsPanel() {
           <Card id="privacy" className="settings-section">
             <CardHeader
               title="Privacy & security"
-              description="You control the demo data stored in this browser."
+              description={
+                cloud
+                  ? "Manage your session and browser-local demo data separately."
+                  : "You control the demo data stored in this browser."
+              }
             />
             <div className="privacy-note">
               <LockKeyhole size={21} />
               <div>
-                <strong>No credentials. No cloud data.</strong>
+                <strong>
+                  {cloud
+                    ? "Private account. Separate demo data."
+                    : "No credentials. No cloud data."}
+                </strong>
                 <p className="muted small">
-                  No authentication, social passwords, OAuth tokens or real media are stored. Only
-                  the app’s known local keys are exported or reset.
+                  {cloud
+                    ? "Your session uses protected cookies. Workspace preferences are stored in the database; the export/reset controls below affect only known local demo keys. No social passwords or provider tokens are stored."
+                    : "No authentication, social passwords, OAuth tokens or real media are stored. Only the app’s known local keys are exported or reset."}
                 </p>
               </div>
             </div>
@@ -358,10 +408,22 @@ export function SettingsPanel() {
               Reset removes local drafts, briefs, slots, pause preferences and notification reads.
               Your workspace profile and theme are kept.
             </p>
-            <Unavailable
-              feature="Cloud export, account deletion and session management"
-              reason="No account or server data exists in this phase. Authentication and security services are not connected."
-            />
+            {cloud ? (
+              <>
+                <Link href="/account" className="text-link">
+                  Account security & session controls
+                </Link>
+                <Unavailable
+                  feature="Cloud export and account deletion"
+                  reason="The privacy workflow still requires a verified export/deletion gate. Local demo export does not export or delete cloud records."
+                />
+              </>
+            ) : (
+              <Unavailable
+                feature="Cloud export, account deletion and session management"
+                reason="Sign in to a configured private workspace to manage your session. Cloud export/deletion remains a separate privacy gate."
+              />
+            )}
           </Card>
           <Card id="about" className="settings-section">
             <CardHeader
@@ -383,7 +445,7 @@ export function SettingsPanel() {
               </div>
               <div>
                 <dt>Data mode</dt>
-                <dd>Local demo only</dd>
+                <dd>{cloud ? "Private account & settings · demo workflows" : "Local demo only"}</dd>
               </div>
             </dl>
             <div className="row row-wrap">
@@ -403,12 +465,13 @@ export function SettingsPanel() {
               Honest by default.
             </h2>
             <p className="muted small">
-              Theme, profile and demo edits stay in this browser. Storage denial falls back to
-              session memory.
+              {cloud
+                ? "Your profile and inbox preferences persist in your private workspace. Theme remains local to this browser."
+                : "Theme, profile and demo edits stay in this browser. Storage denial falls back to session memory."}
             </p>
             <div className="settings-boundary-line">
               <span>Cloud sync</span>
-              <Badge>Not connected</Badge>
+              <Badge>{cloud ? "Settings connected" : "Not connected"}</Badge>
             </div>
             <div className="settings-boundary-line">
               <span>Real publishing</span>
@@ -417,8 +480,9 @@ export function SettingsPanel() {
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => {
-                const persisted = update({
+              disabled={pending}
+              onClick={async () => {
+                const persisted = await update({
                   ...defaultPreferences,
                   reduceMotion: preferences.reduceMotion,
                 });

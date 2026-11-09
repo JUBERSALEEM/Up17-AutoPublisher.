@@ -1,0 +1,46 @@
+UP17 BATCH C — EXECUTED AUTH/DB EVIDENCE
+Date: 2026-11-08 UTC (sandbox execution crossed into 2026-11-09)
+
+Hosted Supabase project: hxgokimjdormlktxjsbg.
+Applied migrations: 20261109112755, 20261109112851, 20261109113102,
+20261109113904, 20261109122850.
+Canonical local/remote MD5 parity (SQL line comments and whitespace removed):
+20261109112755 e3f58a01da6ca90204ad11cf408f9fbb
+20261109112851 21aa7ef905f7ca32992e5f7b03b1b909
+20261109113102 28c06f0b1355e82690610fa9bbf69046
+20261109113904 26382349d2f57888eba567bcb0f70b0c
+20261109122850 51e5557d08abd77f3b8609f02f92c083
+
+Hosted RLS fixture: supabase/tests/rls.sql executed through authorized SQL endpoint.
+Final result: expected P0001 ROLLBACK_FIXTURE_COMPLETE after all inner assertions.
+Post-run cleanup counts: users=0 workspaces=0 videos=0 notifications=0
+storage_objects=0 audit=0 categories=0.
+Storage DELETE policy inspected via pg_policies/role predicate; direct SQL delete
+is blocked by storage.protect_delete(); Storage-API delete NOT TESTED.
+
+Local commands and final results:
+npm run check -> PASS (toolchain Node 22.22.3/npm 11.21.2; format; lint zero warnings;
+typecheck; unit 51; integration 4; security 42 Python + 6 TS; build 23 routes)
+npm run test:e2e -> PASS 123
+npm run test:a11y -> PASS 85
+npm run test:visual -> PASS 153
+npm run test:clay -> PASS 62
+npm run test:navigation:dev -> PASS 13
+npm audit -> 0 vulnerabilities
+
+Corrections retained:
+- Monolithic migration and first hardening attempt failed and rolled back; split
+  migrations and corrected hardening were applied. Do not reapply them.
+- RLS fixture bugs fixed: nested rollback invalid; endpoint statement splitting;
+  wrong PL/pgSQL condition name; storage owner UUID; workspace id != created_by;
+  signup trigger creates a workspace for every synthetic user.
+- Auth e2e adjusted for native email validity and Next route announcer strictness.
+- Navigation e2e ignores only aborted superseded RSC/static chunk requests; final
+  route/content assertions, console/page errors and HTTP >=400 remain failures.
+- Settings storage-denial notice restored to the existing session-only contract.
+
+Blockers / not claimed:
+SMTP absent; hosted email delivery/recovery NOT VERIFIED.
+Vercel preview SSO blocks anonymous hosted UI/auth walkthrough.
+No production promotion; production alias remains docs-only main b16202cc.
+No paid AI, social OAuth connection or actual creator-account publication.

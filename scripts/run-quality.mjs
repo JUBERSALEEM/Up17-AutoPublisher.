@@ -7,6 +7,7 @@ const gates = [
   "lint",
   "typecheck",
   "test:unit",
+  "test:integration",
   "test:security",
   "build",
 ];

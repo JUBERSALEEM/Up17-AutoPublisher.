@@ -167,7 +167,7 @@ class DocumentationValidatorTests(unittest.TestCase):
         self.assert_rejected(lambda root: self.force_add(root, "supabase/config.toml", 'project_id = "example"\n'), "cloud configuration")
 
     def test_supabase_generated_client_is_rejected(self):
-        self.assert_rejected(lambda root: self.force_add(root, "lib/database.types.ts", "export type Json = string;\n"), "cloud configuration")
+        self.assert_rejected(lambda root: self.force_add(root, "lib/database.types.ts", "export type Json = string;\n"), "reviewed schema-change gate")
 
     def test_supabase_temp_artifact_is_rejected(self):
         self.assert_rejected(lambda root: self.force_add(root, ".supabase/temp/project-ref", "example\n"), "cloud configuration")
@@ -227,6 +227,24 @@ class DocumentationValidatorTests(unittest.TestCase):
 
     def test_force_added_build_artifact_is_rejected(self):
         self.assert_rejected(lambda root: self.force_add(root, ".next/static/chunk.js", "export {};\n"), "generated/build/dependency artifact")
+
+    def test_reviewed_supabase_migration_is_allowed(self):
+        self.assert_accepted(lambda root: self.write(root, "supabase/migrations/20261109120000_reviewed_schema.sql", "create table public.example (id uuid primary key);\n"))
+
+    def test_supabase_migration_path_traversal_is_rejected(self):
+        self.assert_rejected(lambda root: self.force_add(root, "supabase/migrations/20261109120000_bad.toml", 'project_id="example"\n'), "cloud configuration")
+
+    def test_supabase_arbitrary_sql_is_rejected(self):
+        self.assert_rejected(lambda root: self.force_add(root, "supabase/seed.sql", "select 1;\n"), "cloud configuration")
+
+    def test_reviewed_database_types_are_allowed(self):
+        self.assert_accepted(lambda root: self.write(root, "lib/supabase/database.types.ts", "export type Json = string;\n"))
+
+    def test_unreviewed_database_types_are_rejected(self):
+        self.assert_rejected(lambda root: self.force_add(root, "lib/generated/database.types.ts", "export type Json = string;\n"), "reviewed schema-change gate")
+
+    def test_supabase_migration_credential_is_still_rejected(self):
+        self.assert_rejected(lambda root: self.write(root, "supabase/migrations/20261109120000_bad.sql", "select 'ghp_" + "A" * 36 + "';\n"), "GitHub token")
 
 
 if __name__ == "__main__":

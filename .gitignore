@@ -2,6 +2,8 @@
 node_modules/
 .next/
 .next-e2e-dev/
+.next-auth-dev/
+.next-*/
 out/
 dist/
 build/
@@ -83,6 +85,7 @@ cdk.out/
 .azure/
 .config/gcloud/
 database.types.ts
+!lib/supabase/database.types.ts
 supabase.types.ts
 storage.types.ts
 fly.toml

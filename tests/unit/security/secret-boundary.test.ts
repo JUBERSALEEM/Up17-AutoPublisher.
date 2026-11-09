@@ -7,7 +7,9 @@ describe("client source secret boundary", () => {
     const files = ["app", "lib"].flatMap(walk);
     for (const file of files) {
       const source = readFileSync(file, "utf8");
-      expect(source).not.toMatch(/NEXT_PUBLIC_.*(SECRET|TOKEN|KEY)/);
+      expect(source).not.toMatch(
+        /NEXT_PUBLIC_(?!SUPABASE_PUBLISHABLE_KEY\b|SUPABASE_URL\b).*(SECRET|TOKEN|KEY)/,
+      );
       expect(source).not.toMatch(
         /(?:ghp_[A-Za-z0-9]{30,}|sk-proj-[A-Za-z0-9_-]{24,}|-----BEGIN PRIVATE KEY-----)/,
       );
