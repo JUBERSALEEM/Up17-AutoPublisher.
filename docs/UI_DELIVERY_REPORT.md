@@ -5,6 +5,8 @@
 **Scope:** six autonomous frontend-only batches, local development/demo verification
 **Status:** IMPLEMENTED AND TESTED LOCALLY; owner acceptance NOT RECORDED; live integrations NOT IMPLEMENTED / NOT AUTHORIZED
 
+**Follow-up:** a reported local-development navigation defect was investigated separately. See [NAVIGATION_REPAIR_REPORT.md](NAVIGATION_REPAIR_REPORT.md) for development-mode evidence, utility-navigation repairs and limitations; this report remains the historical six-batch delivery record.
+
 ## 1. What is visible
 
 All ten canonical main destinations are populated, plus the Notifications utility and a retained `/design-system` review surface:

@@ -2,6 +2,26 @@
 
 This ledger records executed checks, not aspirational test names. See [TEST_STRATEGY.md](TEST_STRATEGY.md) for the future application catalog.
 
+## Navigation repair — development-mode verification (2026-11-08)
+
+**Scope:** reported local-development menu/screen defect, twelve menu destinations, desktop/mobile, four themes, history/refresh/direct entry and inherited service-worker cleanup. No backend, deployment or live integration was exercised. See [executed gate output](evidence/navigation-repair-validation.txt) and the [repair report](NAVIGATION_REPAIR_REPORT.md).
+
+| Check | Exact command | Result |
+|---|---|---|
+| Formatting | `npm run format:check` | PASS |
+| ESLint | `npm run lint` | PASS — zero warnings |
+| TypeScript | `npm run typecheck` | PASS |
+| Unit | `npm run test:unit` | PASS — 8 files / 24 tests |
+| Security/docs | `npm run test:security` | PASS — 34 Python + 2 TS checks; 155 requirements |
+| Production build | `npm run build` | PASS — 15 routes |
+| Production E2E | `npm run test:e2e` | PASS — 114 assertions |
+| Accessibility | `npm run test:a11y` | PASS — 80 axe scans, zero violations |
+| Viewport | `npm run test:visual` | PASS — 90 checks |
+| Development navigation | `npm run test:navigation:dev` | PASS — 13 assertions; 8 four-theme desktop/mobile matrices cover all 12 destinations with click, URL, unique content, active state, refresh, direct entry and back/forward |
+| Aggregate | `npm run check` | PASS |
+
+Limitations: the external Arena preview hostname could not be reached from the sandbox browser (`ERR_CONNECTION_CLOSED`); loopback development and the configured preview-origin wildcard were verified instead. Superseded Next.js RSC prefetch cancellations (`net::ERR_ABORTED`) were observed while final route/content assertions passed; they are not counted as runtime failures. A transient HMR hydration mismatch was seen in a long-lived preview after shell edits and cleared on reload/clean restart; the exact user-reported stale-screen symptom was not reproduced in a clean browser. Manual screen-reader, Windows and OS install checks remain NOT RUN; owner acceptance is separate.
+
 ## UI Batch 1 — design system (2026-11-08)
 
 **Scope:** four-theme engine, local font/icons, reusable primitives and interactive review surface. No product workflow or integration is claimed. See [executed gate output](evidence/ui-batch1-validation.txt).

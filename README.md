@@ -8,7 +8,7 @@ The owner approved the Phase 0 plan on **2026-11-08** and subsequently authorize
 
 No database, cloud project, social connection, AI provider, publishing engine or deployment has been created. Sample content remains explicitly labelled; unavailable actions explain their dependency rather than simulating success.
 
-Real production-build browser checks now run using a documented registry-only Chromium fallback: theme/keyboard/navigation interactions, 75 axe scans including four-theme all-destination coverage, 84 viewport checks including six-width all-destination coverage, and PWA manifest/cache/offline behavior pass. The standard Playwright CDN download remains blocked, so a documented registry-only Chromium fallback executes the browser gates. Automated four-theme accessibility and six-width viewport matrices pass; manual screen-reader review, OS install behavior and owner acceptance remain pending. See the [UI delivery report](docs/UI_DELIVERY_REPORT.md), [current sprint](docs/SPRINT_STATUS.md) and [executed evidence](docs/TEST_EVIDENCE.md).
+Real production-build browser checks now run using a documented registry-only Chromium fallback: theme/keyboard/navigation interactions, 80 axe scans including four-theme all-destination coverage, 90 viewport checks including six-width all-destination coverage, and PWA manifest/cache/offline behavior pass. A follow-up local-navigation repair adds development-mode route-content regressions (13 assertions), mobile access to the Design System utility, segment-aware active states and development service-worker cleanup; see the [navigation repair report](docs/NAVIGATION_REPAIR_REPORT.md). The standard Playwright CDN download remains blocked, so a documented registry-only Chromium fallback executes the browser gates. Automated four-theme accessibility and six-width viewport matrices pass; manual screen-reader review, OS install behavior and owner acceptance remain pending. See the [UI delivery report](docs/UI_DELIVERY_REPORT.md), [current sprint](docs/SPRINT_STATUS.md) and [executed evidence](docs/TEST_EVIDENCE.md).
 
 The first configurable workspace is **Up17 Gaming** (`@up17longshotyt`); gaming is a workspace configuration, not a product-wide restriction. The original brief is preserved unchanged at [docs/PLAN.md](docs/PLAN.md).
 
@@ -67,6 +67,7 @@ npm run test:unit
 npm run test:security
 npm run docs:check
 npm run build
+npm run test:navigation:dev
 npm audit
 ```
 
@@ -87,9 +88,20 @@ npm run test:a11y
 npm run test:visual
 ```
 
-Each browser command builds the current application first, then starts and stops its own production server on port 3100 (`UP17_TEST_PORT` overrides it). It does not reuse a stale development server. The live development preview remains on port 3000. `test:a11y` runs real axe scans with WCAG 2 A/AA, 2.1 A/AA and 2.2 AA tags and no disabled rules. Automated scans do not replace manual keyboard/screen-reader review.
+`test:e2e`, `test:a11y` and `test:visual` build the current application first, then start and stop their own production server on port 3100 (`UP17_TEST_PORT` overrides it). They do not reuse a stale development server. `test:navigation:dev` instead starts a real Turbopack development server on port 3101 (`UP17_DEV_TEST_PORT` overrides it) with the isolated ignored output directory `.next-e2e-dev`, so it can run beside the live preview on port 3000 without sharing Next.js's single-dev-server lock. It asserts route-specific content, active states, refresh/direct entry, back/forward, mobile More, theme persistence and navigation across all four themes. `test:a11y` runs real axe scans with WCAG 2 A/AA, 2.1 A/AA and 2.2 AA tags and no disabled rules. Automated scans do not replace manual keyboard/screen-reader review.
 
 The standard Chromium v1254 download still fails with `ECONNRESET` to `cdn.playwright.dev`. Local verification instead uses a separately extracted registry package `@sparticuz/chromium@153.0.0`, Chromium 153.0.8010.0, with its bundled AL2023 NSS/NSPR libraries. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to the executable and `LD_LIBRARY_PATH` to the extracted library directory on Linux. Only safe launch flags are used; the package's insecure default flags are not imported. These temporary tools are outside Git and application dependencies. Exact results and limitations are in [test evidence](docs/TEST_EVIDENCE.md).
+
+### Local navigation troubleshooting
+
+If a long-lived development tab appears stale after pulling changes or editing the shell, first reload the tab. If it still misbehaves, stop the dev server, remove only the generated development cache and restart with the documented command:
+
+```sh
+rm -rf .next/dev
+npm run dev -- --port 3000
+```
+
+On Windows PowerShell use `Remove-Item -Recurse -Force .next/dev`. Development mode also unregisters an inherited production `/sw.js` worker on the same origin so a previous `npm start` cannot cache-first serve stale chunks. Do not delete `.next` while a production server is running.
 
 ## Documentation
 

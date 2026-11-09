@@ -70,7 +70,31 @@ export function PwaProvider({ children }: { children: ReactNode }) {
     window.addEventListener("beforeinstallprompt", beforeInstall);
     window.addEventListener("appinstalled", onInstalled);
     let active = true;
-    if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
+    if (process.env.NODE_ENV !== "production") {
+      // A production worker previously registered on this localhost origin must not
+      // cache-first serve stale chunks or mask dev-server failures after a mode switch.
+      if ("serviceWorker" in navigator) {
+        void (async () => {
+          try {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            const appWorkers = registrations.filter((registration) =>
+              [registration.active, registration.waiting, registration.installing].some(
+                (worker) => worker?.scriptURL === `${location.origin}/sw.js`,
+              ),
+            );
+            await Promise.all(appWorkers.map((registration) => registration.unregister()));
+            // Cache removal is safe even if StrictMode's first effect cleanup ran.
+            if (!("caches" in window)) return;
+            const keys = await caches.keys();
+            await Promise.all(
+              keys.filter((key) => key.startsWith("up17-shell-")).map((key) => caches.delete(key)),
+            );
+          } catch {
+            /* Unsupported/denied service workers do not block local development. */
+          }
+        })();
+      }
+    } else if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js")
         .then((registration) => {

@@ -16,12 +16,13 @@ npm run test:integration
 npm run test:e2e
 npm run test:security
 npm run test:visual
+npm run test:navigation:dev
 npm run build
 ```
 
 Targeted runs may use `npm run test:unit -- <path>` or `npm run test:e2e -- --grep <suite-id>`. `npm run test:integration` deliberately exits 1 while `tests/integration/` is empty; it is outside `npm run check` until real approved integration tests exist. Integration tests must not silently substitute mocks when their name says local/live. Live suites are opt-in, require explicit resource/account authorization and refuse to run without an approved test environment. They default to private/test visibility and redact evidence. CI for ordinary PRs never receives production social credentials.
 
-Browser setup on a machine with browser-download access: `npx playwright install chromium`, then `npm run test:e2e`, `npm run test:a11y`, `npm run test:visual`. The axe scan uses WCAG 2 A/AA, 2.1 A/AA and 2.2 AA tags with no disabled rules; manual keyboard/screen-reader review remains separate.
+Browser setup on a machine with browser-download access: `npx playwright install chromium`, then `npm run test:e2e`, `npm run test:a11y`, `npm run test:visual`, `npm run test:navigation:dev`. The navigation regression config owns a fresh development server on port 3101 with isolated `.next-e2e-dev` output; production browser gates remain build-first on port 3100. Development assertions require route-specific headings/content and active states, not merely clicks or HTTP 200. The axe scan uses WCAG 2 A/AA, 2.1 A/AA and 2.2 AA tags with no disabled rules; manual keyboard/screen-reader review remains separate.
 
 Current portable validation commands:
 

@@ -5,9 +5,7 @@ import { themeIds } from "../../lib/themes";
 test("design-system preview is honest and has no page overflow @visual", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
   await page.goto("/design-system");
-  await expect(
-    page.getByRole("heading", { name: "Up17 AutoPublisher", exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Design System", exact: true })).toBeVisible();
   await expect(page.getByText("Demo mode", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
@@ -19,9 +17,7 @@ for (const theme of themeIds) {
     await page.addInitScript((id) => localStorage.setItem("up17.theme.preference.v1", id), theme);
     await page.goto("/design-system");
     await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-    await expect(
-      page.getByRole("heading", { name: "Up17 AutoPublisher", exact: true }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Design System", exact: true })).toBeVisible();
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
       .analyze();

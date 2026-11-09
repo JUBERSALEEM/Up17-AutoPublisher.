@@ -19,6 +19,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npx playwright install --with-deps chromium
+      - run: npm run test:navigation:dev
       - run: npm run test:e2e
       - run: npm run test:visual
       # test:integration deliberately fails while the suite is empty; add real

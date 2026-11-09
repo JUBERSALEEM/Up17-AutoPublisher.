@@ -1,0 +1,55 @@
+Up17 AutoPublisher — local navigation repair validation
+Date: 2026-11-08 UTC
+Branch: arena/698e4880-up17-autopublisher
+Scope: local development/demo navigation only. No backend, cloud, OAuth, publishing, paid service or deployment.
+Browser tooling: registry-only @sparticuz/chromium fallback, Chromium 153.0.8010.0, outside Git/runtime dependencies; PLAYWRIGHT_CHROMIUM_EXECUTABLE=/tmp/chromium and LD_LIBRARY_PATH=/tmp/up17-al2023/lib. Safe launch flags only.
+
+Investigation summary
+- Clean loopback development server: ten canonical sidebar clicks changed URL, heading, distinctive content and active state; exact persistent stale-screen symptom not reproduced.
+- Mobile baseline: Design System missing from More menu; generic Design System heading and no return link.
+- Controlled production-to-development same-origin experiment: inherited /sw.js controller reproduced; development cleanup now unregisters it. Cache deletion is best-effort; without a registration it cannot serve stale chunks.
+- Long-lived preview after shell edits: transient HMR hydration mismatch (old SSR text/class vs updated client) observed in dev log; cleared on reload/clean restart. Not claimed as the exact user's root cause.
+- External Arena preview hostname from sandbox browser: ERR_CONNECTION_CLOSED; not independently browser-tested. Loopback and configured allowedDevOrigins wildcard verified.
+
+Executed development navigation gate
+Command: npm run test:navigation:dev
+Result: PASS — 13 tests using 1 worker (3.7m)
+Included: desktop/mobile matrices in Clay Light, Clay Dark, Bento Light, Bento Dark; each matrix covers all 12 destinations with click, URL, unique heading/content, active state, reload, direct entry, back and forward. Also mobile More count, Design System return, search, rapid navigation final screen, inherited service-worker unregister.
+Console/network policy: fail on pageerror, console error, HTTP >=400 and non-aborted requestfailed. Superseded RSC prefetch net::ERR_ABORTED cancellations are excluded only when final route/content assertions pass. Final run: no counted errors.
+
+Executed production browser gates (final-source rerun after development cleanup/test stabilization)
+Command: npm run test:e2e
+Result: PASS — 114 passed (4.3m)
+Command: npm run test:a11y
+Result: PASS — 80 passed (1.7m), zero axe violations
+Command: npm run test:visual
+Result: PASS — 90 passed (36.5s)
+
+Executed static/unit/build gates
+Command: npm run test:unit
+Result: PASS — 8 files / 24 tests
+Command: npm run lint
+Result: PASS — zero warnings
+Command: npm run typecheck
+Result: PASS
+Command: npm run build
+Result: PASS — 15 routes
+
+Aggregate/security/docs and final whitespace/artifact checks are recorded below after the final pre-commit run.
+
+Final pre-commit aggregate run
+Command: npm run format:check
+Result: PASS — All matched files use Prettier code style.
+Command: npm run check
+Result: PASS — toolchain:check, format:check, lint, typecheck, test:unit (8 files / 24 tests), test:security (34 Python + 2 TS), build (15 routes).
+Command: npm run test:security
+Result: PASS — documentation/traceability/artifact checks and 2 TypeScript security tests.
+Command: npm audit --audit-level=moderate
+Result: PASS — found 0 vulnerabilities.
+Documentation checker: PASS — 14 required documents, 155 requirements, 69 local links, preserved docs/PLAN.md and Git artifact policy.
+
+Controlled clean development restart and live-preview smoke
+Procedure: stopped the dev server, removed only generated .next/dev, restarted the documented npm run dev on 0.0.0.0:3000, waited for client hydration via the theme popover, then clicked all twelve destinations on desktop and mobile with per-route URL and heading waits.
+Result: PASS — 24/24 route checks; zero page errors, console errors or HTTP >=400 responses.
+Origin allowlist probe against the running dev server: requested a real /_next/static development chunk with Host/Origin https://3000-ib70n5mposdtmo4ul7lnj.e2b.app -> HTTP 200; the same chunk with Origin https://evil.example -> HTTP 403. The external preview hostname itself remained unreachable from the sandbox browser (ERR_CONNECTION_CLOSED), so this is a server-side origin-policy probe, not an external-browser preview test.
+Generated test output (.next-e2e-dev, test-results, playwright-report) was removed after evidence capture; generated next-env.d.ts/tsconfig.json churn was restored. The live development preview remains running on port 3000.

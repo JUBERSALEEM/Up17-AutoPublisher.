@@ -14,10 +14,12 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import {
-  destinations,
+  allDestinations,
+  designSystemDestination,
   destinationForPath,
+  destinations,
+  isRouteActive,
   mobilePrimaryHrefs,
-  notificationsDestination,
   searchDestinations,
 } from "@/lib/navigation";
 import { Badge, Button, DemoBadge, Dialog, IconButton, Input, Popover } from "@/components/ui";
@@ -94,8 +96,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, []);
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => isRouteActive(pathname, href);
+  const moreActive = allDestinations.some(
+    (item) => !(mobilePrimaryHrefs as readonly string[]).includes(item.href) && isActive(item.href),
+  );
   const workspaceButton = (
     <button
       type="button"
@@ -205,10 +209,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </IconButton>
             <Link
               href="/notifications"
-              className="icon-btn icon-btn-secondary"
+              className={`icon-btn icon-btn-secondary ${isActive("/notifications") ? "icon-btn-active" : ""}`}
               aria-label="Notifications"
               title="Notifications"
-              aria-current={pathname === "/notifications" ? "page" : undefined}
+              aria-current={isActive("/notifications") ? "page" : undefined}
             >
               <NavIcon name="notifications" />
             </Link>
@@ -230,8 +234,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Link className="menu-item" href="/settings" onClick={close}>
                     Workspace settings
                   </Link>
-                  <Link className="menu-item" href="/design-system" onClick={close}>
-                    Design system
+                  <Link className="menu-item" href={designSystemDestination.href} onClick={close}>
+                    {designSystemDestination.label}
                   </Link>
                   <p className="menu-footnote">
                     <ShieldCheck size={15} aria-hidden="true" />
@@ -270,9 +274,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         })}
         <button
           type="button"
-          className={`bottom-link ${!mobilePrimaryHrefs.some(isActive) ? "bottom-link-active" : ""}`}
+          className={`bottom-link ${moreActive ? "bottom-link-active" : ""}`}
           onClick={() => setMoreOpen(true)}
           aria-label="More destinations"
+          aria-current={moreActive ? "page" : undefined}
         >
           <Menu size={21} aria-hidden="true" />
           <span>More</span>
@@ -285,7 +290,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         description="All sections, one tap away."
       >
         <div className="mobile-more-grid">
-          {[...destinations, notificationsDestination].map((item) => (
+          {allDestinations.map((item) => (
             <Link
               key={item.href}
               href={item.href}

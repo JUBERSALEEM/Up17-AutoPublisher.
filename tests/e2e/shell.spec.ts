@@ -27,7 +27,7 @@ test("phone More menu reaches supporting destinations @e2e", async ({ page }) =>
   await expect(page.getByRole("navigation", { name: "Mobile navigation" })).toBeVisible();
   await page.getByRole("button", { name: "More destinations" }).click();
   const dialog = page.getByRole("dialog");
-  await expect(dialog.getByRole("link")).toHaveCount(11);
+  await expect(dialog.getByRole("link")).toHaveCount(12);
   await dialog.getByRole("link", { name: "Research Centre", exact: true }).click();
   await expect(page).toHaveURL(/\/research$/);
   await expect(dialog).not.toBeVisible();
@@ -45,7 +45,7 @@ test("search, workspace details and profile menu have real behavior @e2e", async
   await expect(page.getByRole("button", { name: "Create workspace unavailable" })).toBeDisabled();
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Local profile menu" }).click();
-  await expect(page.getByRole("link", { name: "Design system", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Design System", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "Local profile menu" })).toBeFocused();
 });

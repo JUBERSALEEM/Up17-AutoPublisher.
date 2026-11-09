@@ -385,6 +385,11 @@ video {
   border-color: var(--border);
   box-shadow: var(--shadow-raised);
 }
+.icon-btn-active {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+}
 .icon-btn:disabled {
   opacity: 0.5;
 }
@@ -1320,6 +1325,24 @@ video {
 .placeholder-back {
   margin-top: var(--space-5);
   align-self: start;
+}
+.design-system-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: var(--space-5);
+}
+.design-system-nav .text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+}
+.design-system-nav [aria-current="page"] {
+  color: var(--primary);
+  font-weight: 650;
 }
 .pwa-banner {
   position: fixed;

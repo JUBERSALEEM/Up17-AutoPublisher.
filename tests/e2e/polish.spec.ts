@@ -29,7 +29,11 @@ for (const width of [320, 360, 390, 430, 768, 1440]) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );
-      if (width < 1024)
+      if (item.href === "/design-system") {
+        await expect(
+          page.getByRole("navigation", { name: "Design system navigation" }),
+        ).toBeVisible();
+      } else if (width < 1024)
         await expect(page.getByRole("navigation", { name: "Mobile navigation" })).toBeVisible();
       else
         await expect(

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — local navigation repair (2026-11-08)
+
+- Investigated the reported development-server menu/screen defect with real Chromium on localhost, desktop and mobile, all twelve destinations, refresh/direct/history and four themes. The exact stale-screen symptom was not reproduced in a clean browser; a transient HMR hydration mismatch in a long-lived preview cleared on reload/clean restart.
+- Added development-mode Playwright regressions with isolated `.next-e2e-dev` output, route-specific content/active-state assertions, mobile More coverage, theme persistence and inherited production service-worker cleanup.
+- Made Design System reachable from mobile More/search, gave it a unique heading and return link, added segment-aware active-state helper and visible Notifications/More active states.
+- Updated README troubleshooting, test strategy/evidence, sprint status and traceability. No backend, cloud, OAuth, publishing or deployment work; owner acceptance remains separate.
+
 ## Unreleased — UI Batch 6: final verification and delivery report (2026-11-08)
 
 - Completed final dependency audit (0 known vulnerabilities), security/documentation validation and consolidated frontend delivery report.

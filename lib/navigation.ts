@@ -9,7 +9,8 @@ export type NavigationIcon =
   | "performance"
   | "accounts"
   | "settings"
-  | "notifications";
+  | "notifications"
+  | "design";
 
 export interface Destination {
   href: string;
@@ -17,7 +18,7 @@ export interface Destination {
   shortLabel: string;
   description: string;
   icon: NavigationIcon;
-  group: "Workspace" | "Automation" | "Insights" | "Manage";
+  group: "Workspace" | "Automation" | "Insights" | "Manage" | "Reference";
 }
 
 /** The ten canonical main destinations from PLAN.md §7. Notifications is a shell utility. */
@@ -113,17 +114,26 @@ export const notificationsDestination: Destination = {
   group: "Manage",
 };
 
-export const allDestinations = [...destinations, notificationsDestination];
+export const designSystemDestination: Destination = {
+  href: "/design-system",
+  label: "Design System",
+  shortLabel: "Design",
+  description: "Theme tokens, primitives and interaction previews",
+  icon: "design",
+  group: "Reference",
+};
+
+/** Canonical workspace screens plus the two shell/reference utilities. */
+export const allDestinations = [...destinations, notificationsDestination, designSystemDestination];
 export const mobilePrimaryHrefs = ["/", "/video-studio", "/queue", "/accounts"] as const;
 
+/** Exact root matching and segment-aware child matching; never highlight a sibling prefix. */
+export function isRouteActive(pathname: string, href: string): boolean {
+  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function destinationForPath(pathname: string): Destination {
-  return (
-    allDestinations.find((item) => item.href === pathname) ??
-    [...allDestinations]
-      .reverse()
-      .find((item) => item.href !== "/" && pathname.startsWith(`${item.href}/`)) ??
-    destinations[0]
-  );
+  return allDestinations.find((item) => isRouteActive(pathname, item.href)) ?? destinations[0];
 }
 
 export function searchDestinations(query: string): Destination[] {

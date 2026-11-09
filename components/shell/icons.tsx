@@ -4,6 +4,7 @@ import {
   CalendarDays,
   Clapperboard,
   FileVideo,
+  Layers,
   LayoutDashboard,
   ListChecks,
   Search,
@@ -25,6 +26,7 @@ const icons = {
   accounts: UsersRound,
   settings: Settings2,
   notifications: Bell,
+  design: Layers,
 };
 export function NavIcon({ name, size = 19 }: { name: NavigationIcon; size?: number }) {
   const Icon = icons[name];
