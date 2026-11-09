@@ -3455,3 +3455,34 @@ input[type="radio"] {
     flex-direction: column;
   }
 }
+
+/* Comfortable touch targets without enlarging the desktop visual rhythm. */
+@media (pointer: coarse) {
+  .btn-sm,
+  .tab {
+    min-height: 44px;
+  }
+  .toggle {
+    width: 64px;
+    height: 44px;
+    padding: 6px;
+  }
+  .toggle-thumb {
+    width: 30px;
+    height: 30px;
+  }
+  .toggle-on .toggle-thumb {
+    transform: translateX(20px);
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 20px;
+    height: 20px;
+  }
+  .video-select {
+    min-width: 44px;
+    min-height: 44px;
+    display: grid;
+    place-items: center;
+  }
+}

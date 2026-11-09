@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — UI Batch 5: polish and accessibility verification (2026-11-08)
+
+- Added four-theme axe coverage for every main destination plus Notifications, and six-width overflow/navigation coverage for every destination.
+- Added keyboard skip-link/tab-arrow/dialog-focus checks, storage-denial session fallback checks, local/device reduced-motion checks, open-dialog/mobile-menu axe scans and a touch-phone library-to-draft journey.
+- Increased coarse-pointer touch targets for small buttons/tabs/toggles/checkboxes without changing desktop rhythm.
+- Corrected settings preference notices to report session-only fallback when storage is denied.
+
 ## Unreleased — UI Batch 4: supporting screens (2026-11-08)
 
 - Populated Settings, Notifications, Research Centre, AI Content and Performance Lab with honest local/demo or unavailable states.

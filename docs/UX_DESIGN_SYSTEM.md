@@ -135,3 +135,10 @@ Settings centralizes appearance, local workspace profile, inbox category prefere
 Notifications is a labelled demo inbox, not an event service. Read state and category visibility persist locally; no real publishing success, expiry or sync is implied. Research separates evergreen editorial prompts from unavailable live updates and stores user-authored briefs locally. AI Content shows generic timeline review points as an interface simulation, with unknown observations/confidence and no model run. Performance Lab keeps missing metrics unavailable while platform/account/date filters change only the report scope.
 
 Local export reads only known application keys, never unrelated browser storage. Reset is confirmed and removes demo content while preserving theme/profile. These are frontend conveniences, not cloud export/deletion or security services.
+
+
+## 13. Polish and verification — UI Batch 5 (2026-11-08)
+
+The full eleven-destination surface (ten main areas plus Notifications) passes automated axe scans in Clay Light, Clay Dark, Bento Light and Bento Dark, and page-overflow/navigation checks at 320, 360, 390, 430, 768 and 1440px. Keyboard checks cover skip navigation, tab arrows/Home, dialog Escape/focus return and popover dismissal. A touch-phone journey covers mobile navigation, library search/details and local draft saving with 44px target assertions.
+
+Reduced motion is respected both from the device media query and a saved local override. Storage denial keeps the app usable with explicit session-only notices. Coarse-pointer devices receive larger small-button/tab/toggle/checkbox targets while desktop density remains unchanged. These are automated local checks, not manual screen-reader or owner acceptance.

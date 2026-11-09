@@ -238,11 +238,13 @@ export function SettingsPanel() {
               description="Minimize transitions and animated effects. Your device’s reduced-motion setting is always respected."
               checked={preferences.reduceMotion}
               onChange={(value) => {
-                update({ reduceMotion: value });
+                const persisted = update({ reduceMotion: value });
                 setNotice(
-                  value
-                    ? "Reduced motion enabled on this device."
-                    : "Device motion preference restored.",
+                  !persisted
+                    ? "Motion preference updated for this session only; browser storage is unavailable."
+                    : value
+                      ? "Reduced motion enabled on this device."
+                      : "Device motion preference restored.",
                 );
               }}
             />
@@ -279,8 +281,14 @@ export function SettingsPanel() {
                 description="Show labelled demo notices in this category."
                 checked={preferences.notifications[category]}
                 onChange={(value) => {
-                  update({ notifications: { ...preferences.notifications, [category]: value } });
-                  setNotice("Inbox preference saved locally. No delivery service was changed.");
+                  const persisted = update({
+                    notifications: { ...preferences.notifications, [category]: value },
+                  });
+                  setNotice(
+                    persisted
+                      ? "Inbox preference saved locally. No delivery service was changed."
+                      : "Inbox preference updated for this session only; browser storage is unavailable.",
+                  );
                 }}
               />
             ))}
@@ -410,10 +418,15 @@ export function SettingsPanel() {
               size="sm"
               variant="ghost"
               onClick={() => {
-                update({ ...defaultPreferences, reduceMotion: preferences.reduceMotion });
+                const persisted = update({
+                  ...defaultPreferences,
+                  reduceMotion: preferences.reduceMotion,
+                });
                 setProfileRevision((value) => value + 1);
                 setNotice(
-                  "Workspace profile and inbox preferences restored. Theme and demo content were kept.",
+                  persisted
+                    ? "Workspace profile and inbox preferences restored. Theme and demo content were kept."
+                    : "Workspace defaults restored for this session only; browser storage is unavailable.",
                 );
               }}
             >

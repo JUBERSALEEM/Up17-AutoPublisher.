@@ -8,7 +8,7 @@ The owner approved the Phase 0 plan on **2026-11-08** and subsequently authorize
 
 No database, cloud project, social connection, AI provider, publishing engine or deployment has been created. Sample content remains explicitly labelled; unavailable actions explain their dependency rather than simulating success.
 
-Real production-build browser checks now run using a documented registry-only Chromium fallback: theme/keyboard/navigation interactions, 30 axe scans, all-screen 320px checks, six-width shell checks, and PWA manifest/cache/offline behavior pass. The standard Playwright CDN download remains blocked; full-application accessibility/viewport acceptance is still pending. See [current sprint](docs/SPRINT_STATUS.md) and [executed evidence](docs/TEST_EVIDENCE.md).
+Real production-build browser checks now run using a documented registry-only Chromium fallback: theme/keyboard/navigation interactions, 75 axe scans including four-theme all-destination coverage, 84 viewport checks including six-width all-destination coverage, and PWA manifest/cache/offline behavior pass. The standard Playwright CDN download remains blocked; full-application accessibility/viewport acceptance is still pending. See [current sprint](docs/SPRINT_STATUS.md) and [executed evidence](docs/TEST_EVIDENCE.md).
 
 The first configurable workspace is **Up17 Gaming** (`@up17longshotyt`); gaming is a workspace configuration, not a product-wide restriction. The original brief is preserved unchanged at [docs/PLAN.md](docs/PLAN.md).
 
