@@ -172,8 +172,15 @@ class DocumentationValidatorTests(unittest.TestCase):
     def test_supabase_temp_artifact_is_rejected(self):
         self.assert_rejected(lambda root: self.force_add(root, ".supabase/temp/project-ref", "example\n"), "cloud configuration")
 
-    def test_vercel_config_is_rejected(self):
-        self.assert_rejected(lambda root: self.force_add(root, "vercel.json", '{"framework":"nextjs"}\n'), "cloud configuration")
+    def test_reviewed_vercel_build_config_is_allowed(self):
+        config = json.dumps({"$schema": "https://openapi.vercel.sh/vercel.json", "framework": "nextjs", "installCommand": "npx --yes npm@11.21.2 ci", "buildCommand": "npx --yes npm@11.21.2 run build"})
+        self.assert_accepted(lambda root: self.write(root, "vercel.json", config))
+
+    def test_unreviewed_vercel_config_is_rejected(self):
+        self.assert_rejected(lambda root: self.force_add(root, "vercel.json", '{"framework":"nextjs"}\n'), "reviewed credential-free policy")
+
+    def test_vercel_config_cannot_smuggle_credentials(self):
+        self.assert_rejected(lambda root: self.force_add(root, "vercel.json", '{"framework":"nextjs","env":{"API_TOKEN":"synthetic-test-token"}}\n'), "reviewed credential-free policy")
 
     def test_vercel_generated_artifact_is_rejected(self):
         self.assert_rejected(lambda root: self.force_add(root, ".vercel/project.json", '{"projectId":"example"}\n'), "cloud configuration")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate traceability and the local-only Git artifact boundary.
+"""Validate traceability and the credential-free Git artifact boundary.
 
 This is documentation/repository tooling, not a product security audit. It scans
 Git-index content and non-ignored worktree files, never prints matched secrets,
@@ -42,7 +42,7 @@ GENERATED_DIRS = {
 }
 CLOUD_DIRS = {".supabase", ".vercel", ".netlify", ".wrangler", ".terraform", "cdk.out", ".aws", ".azure"}
 CLOUD_FILES = {
-    "vercel.json", "vercel.jsonc", ".vercelrc", ".vercelignore", "netlify.toml",
+    "vercel.jsonc", ".vercelrc", ".vercelignore", "netlify.toml",
     "wrangler.toml", "wrangler.json", "wrangler.jsonc", "firebase.json", ".firebaserc",
     "fly.toml", "render.yaml", "railway.json", "railway.toml", "amplify.yml",
     "apphosting.yaml", "cloudbuild.yaml", "serverless.yml", "serverless.yaml",
@@ -169,6 +169,22 @@ def content_reasons(relative: str, data: bytes) -> list[str]:
                 assignments.append(stripped)
         if assignments != ["UP17_APP_MODE=DEMO"]:
             return ["permitted environment example contains unapproved or populated settings"]
+        return []
+    if relative == "vercel.json":
+        # Deployment is owner-authorized, but only this reviewed, credential-free
+        # build configuration may enter Git. Account links and secrets stay in Vercel.
+        try:
+            config = json.loads(data)
+        except (ValueError, UnicodeDecodeError):
+            return ["hosted build configuration is not valid JSON"]
+        expected = {
+            "$schema": "https://openapi.vercel.sh/vercel.json",
+            "framework": "nextjs",
+            "installCommand": "npx --yes npm@11.21.2 ci",
+            "buildCommand": "npx --yes npm@11.21.2 run build",
+        }
+        if config != expected:
+            return ["hosted build configuration differs from the reviewed credential-free policy"]
         return []
     if path.name == ".npmrc":
         settings = []

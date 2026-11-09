@@ -1,0 +1,31 @@
+UP17 BATCH A — EXECUTED DEPLOYMENT EVIDENCE
+Date: 2026-11-08 UTC
+
+Identity (connector results, not inferred from names):
+Supabase project hxgokimjdormlktxjsbg; organization xjzpxfeqrdhjsyijotvh; ACTIVE_HEALTHY.
+Vercel project prj_uh7RosdHFABdfwRkSRg7JNmu67bK; team team_jEJR74nCGB4nVczqRwF0ljmM.
+GitHub repository JUBERSALEEM/Up17-AutoPublisher.; fixed Arena working branch.
+
+Observed failed preview dpl_KVrANwxw73cjCZJURmvJUp2xVNi2:
+Node 22.23.4 / npm 10.9.9; required npm 11.21.2; engine-strict caused EBADENGINE.
+Command npm install exited 1. This is an install failure, not an application runtime failure.
+
+Repair:
+Vercel framework set to nextjs through update_project; confirmed by get_project.
+Install: npx --yes npm@11.21.2 ci. Build: npx --yes npm@11.21.2 run build.
+Same configuration committed in vercel.json. Lockfile and exact local pins retained.
+Hosted Node check accepts only same-major Node at/above 22.22.3; npm remains exact.
+Preview public Supabase URL/publishable key configured; UP17_APP_MODE=DEMO.
+No privileged Supabase key added to browser configuration or Git.
+
+Local gates after repair:
+Unit: 33 passed (9 new hosted-toolchain assertions).
+Python security/documentation: 36 passed; documentation/artifact guard PASS.
+Targeted security TypeScript: 2 passed.
+First production build exposed missing TypeScript declarations for the new direct
+.mjs test import; declaration added, final rerun result recorded below.
+
+Pending at file creation: final build, commit/push, fresh hosted preview and browser check.
+Production has NOT been promoted. Existing READY production is docs-only b16202cc.
+Final local reruns: format PASS; lint PASS (zero warnings); typecheck PASS;
+production build PASS (15 routes); documentation checker PASS (155 requirements).

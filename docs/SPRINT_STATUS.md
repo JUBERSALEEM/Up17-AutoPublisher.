@@ -1,10 +1,10 @@
 # Sprint and delivery status
 
 **Updated:** 2026-11-08 UTC
-**Current phase:** frontend-only UI delivery, six autonomous batches
+**Current phase:** functional product implementation, owner-authorized A–J batches
 **Current batch:** 1 design system — TESTED locally; 2 shell — TESTED locally (device install prompt pending); 3 core screens — TESTED locally; 4 supporting screens — TESTED locally; 5 polish/accessibility — TESTED locally; 6 final verification — TESTED locally; navigation repair — TESTED locally
 **Owner acceptance:** NOT RECORDED; technical tests are not owner acceptance
-**Product integrations/deployment:** NOT IMPLEMENTED / NOT CONNECTED / NOT AUTHORIZED
+**Product integrations/deployment:** Batch A IN PROGRESS; Supabase/Vercel identities verified; real app workflows not connected yet. See [owner balance](OWNER_REQUIREMENTS_BALANCE.md).
 
 ## Active UI batches
 
@@ -18,7 +18,7 @@
 | 6 | Full verification, evidence, delivery report | TESTED (local scope) | npm audit 0 vulnerabilities; security/docs PASS; final report published; owner acceptance not recorded |
 | Repair | Local navigation defect investigation, utility access/active states, development-mode regressions | TESTED (local scope) | 24 unit PASS; 114 production E2E PASS; 80 axe PASS; 90 viewport PASS; 13 development navigation PASS; exact stale-screen symptom not reproduced in a clean browser; external preview origin unreachable from sandbox |
 
-The current UI request explicitly authorizes these frontend batches, not backend M1.2/publishing work. Existing M1.2/M1.3 and Phase 2 traceability rows remain the canonical requirement mapping; some broader rows stay IN PROGRESS until all their states/interactions are tested. The temporary root primitive preview will be replaced by the dashboard; design-system review remains available at `/design-system`.
+The table below records the completed frontend scope. The owner has subsequently authorized backend, deployment and official integration work; the active A–J balance supersedes the old frontend-only boundary. Existing M1.2/M1.3 and Phase 2 traceability rows remain the canonical requirement mapping; some broader rows stay IN PROGRESS until all their states/interactions are tested. The temporary root primitive preview will be replaced by the dashboard; design-system review remains available at `/design-system`.
 
 ## Browser verification update
 
@@ -26,7 +26,7 @@ The original Playwright CDN remains blocked, but a registry-only Chromium fallba
 
 ## Remaining boundaries
 
-- No backend, database, cloud resource, OAuth, publishing, worker, paid provider or deployment work.
+- Backend/deployment/official OAuth work is now authorized. Paid providers and actual creator-account publication still require their explicit approvals.
 - Empty integration suite still intentionally fails; no fake integration tests.
 - Active GitHub CI remains blocked by workflow permission; inactive template preserved.
 - Windows runtime and manual screen-reader testing remain NOT RUN.

@@ -56,13 +56,12 @@ id_ed25519
 id_ecdsa
 id_dsa
 
-# Cloud configuration/state/generated clients are not authorized in M1.1.
+# Hosted build config is reviewed and credential-free; account state remains local.
 .vercel/
 .supabase/
 supabase/.temp/
 supabase/.branches/
 supabase/config.toml
-vercel.json
 vercel.jsonc
 .vercelrc
 .vercelignore

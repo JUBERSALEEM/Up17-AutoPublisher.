@@ -2,11 +2,15 @@
 
 AI-powered, multi-platform creator automation studio for YouTube, Instagram and TikTok. Automates gameplay video analysis, metadata generation, smart scheduling, publishing and performance analytics.
 
-## Current status — frontend UI delivery
+## Current status — functional product implementation
+
+The owner has now authorized real Supabase/Vercel deployment and official platform integration work, superseding the earlier frontend-only boundary. The current A–J delivery balance is maintained in [owner requirements balance](docs/OWNER_REQUIREMENTS_BALANCE.md). The product is **not yet functionally live**: existing screens remain explicitly demo/local until real workflows pass their gates. The sections below describe the verified frontend baseline.
+
+## Frontend baseline (historical scope)
 
 The owner approved the Phase 0 plan on **2026-11-08** and subsequently authorized a six-batch, **frontend-only** UI implementation. All six frontend UI batches are implemented and locally verified: four token-driven themes, a responsive shell/PWA, and all ten main areas plus Notifications. Core screens include the Overview, Video Studio library, Creator Studio draft editor, Smart Scheduler, Publishing Queue and Accounts; supporting screens add local settings, a labelled demo inbox, research briefs, an explicitly simulated analysis timeline and honest unavailable analytics. This is not a connected publishing product.
 
-No database, cloud project, social connection, AI provider, publishing engine or deployment has been created. Sample content remains explicitly labelled; unavailable actions explain their dependency rather than simulating success.
+The frontend-only batches created no backend. The connected Supabase/Vercel resources have now been verified during Batch A; application persistence/auth is not yet connected. No social account, AI provider or publishing engine is connected. Sample content remains explicitly labelled.
 
 Real production-build browser checks now run using a documented registry-only Chromium fallback: theme/keyboard/navigation interactions, 80 axe scans including four-theme all-destination coverage, 90 viewport checks including six-width all-destination coverage, and PWA manifest/cache/offline behavior pass. A follow-up local-navigation repair adds development-mode route-content regressions (13 assertions), mobile access to the Design System utility, segment-aware active states and development service-worker cleanup; see the [navigation repair report](docs/NAVIGATION_REPAIR_REPORT.md). The standard Playwright CDN download remains blocked, so a documented registry-only Chromium fallback executes the browser gates. Automated four-theme accessibility and six-width viewport matrices pass; manual screen-reader review, OS install behavior and owner acceptance remain pending. See the [UI delivery report](docs/UI_DELIVERY_REPORT.md), [current sprint](docs/SPRINT_STATUS.md) and [executed evidence](docs/TEST_EVIDENCE.md).
 
@@ -36,7 +40,7 @@ npm.cmd ci
 
 If a sandbox cannot update global npm, `npx --yes npm@11.21.2 <command>` is a fallback. The toolchain check reads the executing npm CLI manifest because npx can inherit a stale outer user-agent.
 
-Optional local environment file—no secrets are required:
+Optional local environment file—the demo baseline requires no secrets:
 
 ```sh
 cp .env.example .env.local       # POSIX
@@ -116,7 +120,7 @@ On Windows PowerShell use `Remove-Item -Recurse -Force .next/dev`. Development m
 ## Operating rules
 
 - Work in small approved milestones on `arena/698e4880-up17-autopublisher`; verify pushes and send the prescribed audit.
-- Plan approval is **not** infrastructure authorization. No hosted resource creation/connection, deployment or purchase without separate explicit permission.
+- Supabase, Vercel, deployment and official platform connections are now explicitly authorized. Paid services still require a separate cost proposal and approval; actual creator-account publishing requires final content/action confirmation.
 - Official OAuth/API integrations only; never ask for social passwords or bypass platform restrictions.
 - Keep populated environment files, credentials, real media, local databases and build artifacts out of Git.
 - Label sample content **Demo data** / **Simulation**; never imply a demo action published anything.
