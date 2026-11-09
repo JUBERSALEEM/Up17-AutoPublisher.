@@ -107,3 +107,11 @@ The owner explicitly requested autonomous implementation of the visible applicat
 - Replaced the temporary root primitive preview with the Overview route; `/design-system` preserves the review surface. This is the planned transition, not deletion of product work.
 - PWA follows ADR-009's proposed safe direction within the authorized frontend scope: public static shell/icons/offline fallback only, network-only navigations, no API/auth/media caching, no offline mutations. Original SVG icons are rasterized reproducibly by `scripts/render-icons.mjs`; required PNG icons are intentional small product assets, not build/media artifacts.
 - Real axe runs caught visible-label/name mismatches in workspace/search controls; redundant overriding labels were removed rather than suppressing the rule. Development indicators are disabled for a clean product preview; dialog centering was corrected after rendered review.
+
+
+## UI Batch 4 supporting-screen boundaries — 2026-11-08
+
+- Workspace profile, inbox preferences, briefs and notification read state are browser-local demo state with validation and session-memory fallback. They do not create backend workspace/settings/event entities or authorize automation.
+- Research prompts are explicitly evergreen editorial questions, not trends or verified news. Live updates/sources remain unavailable without a permitted integration.
+- AI timeline markers are generic fractions of demo duration, not gameplay detections. Observations/confidence remain unknown; no AI request, cost or result is fabricated.
+- Analytics filters are scope previews only. Missing metrics remain unavailable, never zero or interpolated. Local export/reset covers known app keys only; cloud privacy/security services remain later approved work.

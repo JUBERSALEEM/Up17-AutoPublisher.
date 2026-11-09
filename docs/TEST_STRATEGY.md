@@ -1,6 +1,6 @@
 # Test strategy and acceptance evidence contract
 
-**Current status:** M1.1 local foundation hardening. Local static/unit/security/build gates have executed; browser/axe/visual assertions remain NOT RUN because the sandbox cannot download Chromium. Product/live-provider suites remain PLANNED / NOT RUN. A test name in this document is not evidence that it exists or passed.
+**Current status:** frontend UI Batches 1–4 tested locally with the documented registry-only Chromium fallback; Batch 5 polish/accessibility is in progress. Static/unit/security/build and production browser/axe/viewport gates have executed. Standard Playwright CDN download remains blocked; product/live-provider suites remain PLANNED / NOT RUN. A test name in this document is not evidence that it exists or passed.
 
 ## 1. Tooling and command contract
 
@@ -66,7 +66,7 @@ Fixtures carry stable IDs, source=`demo`/`fixture`, scenario and requirement ref
 | ID | Assertions |
 |---|---|
 | `T-UI` | Primitive variants/states; labels/described errors; focus/keyboard menus/dialogs; pressed/loading/disabled behavior; semantic tokens |
-| `T-A11Y` | Real axe scan zero violations on tested routes (foundation + eleven shell routes/four overview themes PASS with documented fallback; populated screens pending); manual keyboard/focus/landmark/zoom/screen-reader checks; contrast and reduced motion |
+| `T-A11Y` | Real axe scan zero violations on tested routes (foundation, shell, populated core/supporting screens and four overview themes PASS with documented fallback; full four-theme all-screen matrix pending); manual keyboard/focus/landmark/zoom/screen-reader checks; contrast and reduced motion |
 | `T-VIEWPORT` | Required six widths, both themes; no page-level horizontal overflow; 44px targets; primary workflows usable without hover/drag |
 | `T-SHELL` | All ten routes reachable; mobile More menu; desktop sidebar; context switching; theme persistence; notifications/profile controls |
 | `T-PWA` | Valid manifest/icons/installability where browser supports; public-shell offline fallback/update; authenticated/API/OAuth/media routes never cached; no offline publish |

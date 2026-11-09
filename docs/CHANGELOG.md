@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — UI Batch 4: supporting screens (2026-11-08)
+
+- Populated Settings, Notifications, Research Centre, AI Content and Performance Lab with honest local/demo or unavailable states.
+- Added validated browser-local workspace preferences, theme/motion controls, notification category/read state, research brief CRUD, known-key local export and confirmed demo reset.
+- Added explicitly simulated generic analysis markers (no detections/confidence invented), editorial prompts rather than fake trends, and analytics filters that never fabricate metrics.
+- Added supporting unit/browser/axe/phone tests; fixed brief create/edit identity, dialog labels and empty-state assertions found by browser tests.
+
 ## Unreleased — UI Batch 3: core creator screens (2026-11-08)
 
 - Populated Overview, Video Studio, Creator Studio, Smart Scheduler, Publishing Queue and Accounts with explicitly labelled demo presentation data.

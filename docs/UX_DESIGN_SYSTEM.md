@@ -126,3 +126,12 @@ Core screens use presentation-only fixtures under `features/demo`, not domain/da
 Video Studio implements local search/filter/sort, card/list views, selection and metadata details. Creator Studio edits independent per-platform browser-local drafts with validation, account selection, cover direction and optional demo timing; it never generates or publishes. Smart Scheduler provides day/week/month/agenda views and browser-local demo slots. Publishing Queue exposes independent demo job filters and attempt history with disabled live actions. Accounts shows multiple demo identities per platform, official OAuth requirements and local pause preferences without implying authorization.
 
 Browser-local state is an explicit demo convenience, not persistence architecture. Drafts/slots/pause preferences use versioned local keys and survive reload; storage denial falls back to session memory with an honest notice. Full service contracts, real media, durable jobs and provider capabilities remain later approved phases.
+
+
+## 12. Supporting screen implementation — UI Batch 4 (2026-11-08)
+
+Settings centralizes appearance, local workspace profile, inbox category preferences, privacy export/reset and explicit automation boundaries. Preferences use a versioned local key and shared hook so the shell/dashboard reflect the saved workspace name. Reduced motion is a local override in addition to the device media query.
+
+Notifications is a labelled demo inbox, not an event service. Read state and category visibility persist locally; no real publishing success, expiry or sync is implied. Research separates evergreen editorial prompts from unavailable live updates and stores user-authored briefs locally. AI Content shows generic timeline review points as an interface simulation, with unknown observations/confidence and no model run. Performance Lab keeps missing metrics unavailable while platform/account/date filters change only the report scope.
+
+Local export reads only known application keys, never unrelated browser storage. Reset is confirmed and removes demo content while preserving theme/profile. These are frontend conveniences, not cloud export/deletion or security services.

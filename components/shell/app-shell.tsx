@@ -24,6 +24,7 @@ import { Badge, Button, DemoBadge, Dialog, IconButton, Input, Popover } from "@/
 import { ThemeMenu } from "@/components/theme/theme-switcher";
 import { BrandMark, NavIcon } from "./icons";
 import { usePwa } from "./pwa-provider";
+import { usePreferences } from "@/features/preferences/use-preferences";
 
 function SearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState("");
@@ -79,6 +80,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const { canInstall, install, installed } = usePwa();
+  const { preferences } = usePreferences();
+  useEffect(() => {
+    document.documentElement.dataset.motion = preferences.reduceMotion ? "reduce" : "system";
+  }, [preferences.reduceMotion]);
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -100,7 +105,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     >
       <span className="workspace-avatar">U17</span>
       <span className="workspace-copy">
-        <strong>Up17 Gaming</strong>
+        <strong>{preferences.name}</strong>
         <span>Creator workspace</span>
       </span>
       <ChevronDown size={16} aria-hidden="true" />
@@ -299,7 +304,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <Dialog
         open={workspaceOpen}
         onClose={() => setWorkspaceOpen(false)}
-        title="Up17 Gaming"
+        title={preferences.name}
         description="Your local creator workspace"
         footer={
           <Button variant="primary" onClick={() => setWorkspaceOpen(false)}>
@@ -314,7 +319,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <div className="spread">
             <span className="muted small">Content focus</span>
-            <Badge>BGMI · PUBG</Badge>
+            <Badge>{preferences.niche}</Badge>
           </div>
           <div className="spread">
             <span className="muted small">Connected accounts</span>

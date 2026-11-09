@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePreferences } from "@/features/preferences/use-preferences";
 import {
   ArrowRight,
   CheckCheck,
@@ -31,6 +34,7 @@ import { platformLabels } from "@/features/demo/contracts";
 import { formatDateTime, formatDuration } from "@/features/demo/selectors";
 
 export function Dashboard() {
+  const { preferences } = usePreferences();
   const recent = [...demoVideos]
     .sort((a, b) => Date.parse(b.uploadedAt) - Date.parse(a.uploadedAt))
     .slice(0, 3);
@@ -43,7 +47,7 @@ export function Dashboard() {
       <PageHeader
         eyebrow="Sunday, 8 November · Demo workspace"
         title="Your next great clip starts here."
-        description="Welcome to Up17 Gaming. Prepare your content, keep every account in view, and know what needs your attention."
+        description={`Welcome to ${preferences.name}. Prepare your content, keep every account in view, and know what needs your attention.`}
         actions={
           <>
             <Link className="btn btn-secondary btn-md" href="/video-studio">

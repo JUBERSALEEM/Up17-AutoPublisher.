@@ -2,7 +2,7 @@
 
 **Updated:** 2026-11-08 UTC
 **Current phase:** frontend-only UI delivery, six autonomous batches
-**Current batch:** 1 design system — TESTED locally; 2 shell — TESTED locally (device install prompt pending); 3 core screens — TESTED locally; 4 supporting screens — IN PROGRESS
+**Current batch:** 1 design system — TESTED locally; 2 shell — TESTED locally (device install prompt pending); 3 core screens — TESTED locally; 4 supporting screens — TESTED locally; 5 polish/accessibility — IN PROGRESS
 **Owner acceptance:** NOT RECORDED; technical tests are not owner acceptance
 **Product integrations/deployment:** NOT IMPLEMENTED / NOT CONNECTED / NOT AUTHORIZED
 
@@ -13,15 +13,15 @@
 | 1 | Central tokens, four themes, local type/icons, primitives | TESTED (local scope) | Unit 11 PASS; production E2E 4 PASS; four-theme axe 4 PASS; 320px smoke PASS; rendered review complete |
 | 2 | Responsive shell, ten destinations, PWA public shell | TESTED (local shell scope) | 14 unit PASS; 27 E2E PASS; 19 axe PASS; 7 viewport PASS; manifest/cache/offline PASS; OS install prompt not exercised |
 | 3 | Dashboard, library, workspace, queue, scheduler, accounts | TESTED (local demo scope) | 18 unit PASS; 38 E2E PASS; 25 axe PASS; 13 viewport PASS; browser-local drafts/slots; no upload/publishing/OAuth |
-| 4 | Analytics, AI analysis, research, notifications, settings | IN PROGRESS | Unavailable/live data clearly distinguished |
-| 5 | Interaction completeness, accessibility, motion, visual polish | PLANNED | Full keyboard/viewport/reduced-motion review pending |
+| 4 | Analytics, AI analysis, research, notifications, settings | TESTED (local demo scope) | 22 unit PASS; 48 E2E PASS; 30 axe PASS; 18 viewport PASS; local preferences/briefs/inbox; no live data |
+| 5 | Interaction completeness, accessibility, motion, visual polish | IN PROGRESS | Full keyboard/viewport/reduced-motion/storage-denial review underway |
 | 6 | Full verification, evidence, delivery report | PLANNED | No acceptance claim before executed gates |
 
 The current UI request explicitly authorizes these frontend batches, not backend M1.2/publishing work. Existing M1.2/M1.3 and Phase 2 traceability rows remain the canonical requirement mapping; some broader rows stay IN PROGRESS until all their states/interactions are tested. The temporary root primitive preview will be replaced by the dashboard; design-system review remains available at `/design-system`.
 
 ## Browser verification update
 
-The original Playwright CDN remains blocked, but a registry-only Chromium fallback now executes real production-build browser assertions. It is verification tooling outside Git/runtime dependencies, not a replacement for standard Playwright setup. See [Batch 1](evidence/ui-batch1-validation.txt) and [Batch 2](evidence/ui-batch2-validation.txt) and [Batch 3](evidence/ui-batch3-validation.txt) evidence. Earlier M1.1 browser-blocked records are historical, not the current result. M1.1 local technical gates now pass; owner acceptance remains separate.
+The original Playwright CDN remains blocked, but a registry-only Chromium fallback now executes real production-build browser assertions. It is verification tooling outside Git/runtime dependencies, not a replacement for standard Playwright setup. See [Batch 1](evidence/ui-batch1-validation.txt) and [Batch 2](evidence/ui-batch2-validation.txt) and [Batch 3](evidence/ui-batch3-validation.txt) and [Batch 4](evidence/ui-batch4-validation.txt) evidence. Earlier M1.1 browser-blocked records are historical, not the current result. M1.1 local technical gates now pass; owner acceptance remains separate.
 
 ## Remaining boundaries
 
