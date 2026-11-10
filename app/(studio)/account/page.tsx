@@ -4,7 +4,7 @@ import { ShieldCheck, LogOut } from "lucide-react";
 import { Badge, Button, Card, CardHeader, Unavailable } from "@/components/ui";
 import { PageHeader } from "@/components/features/common";
 import { getWorkspaceContext } from "@/lib/auth/workspace";
-import { getSupabaseConfig } from "@/lib/supabase/config";
+import { supabaseConfigAvailable } from "@/lib/supabase/config";
 import { signOut } from "@/lib/auth/actions";
 import { selectWorkspace } from "@/lib/auth/workspace-actions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -14,7 +14,7 @@ export default async function Page({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  if (!getSupabaseConfig())
+  if (!supabaseConfigAvailable())
     return (
       <div className="page">
         <PageHeader
@@ -45,7 +45,7 @@ export default async function Page({
       <PageHeader
         eyebrow="Your private creator account"
         title="Account security"
-        description="Manage your authenticated session. Social-platform connections are a separate, not-yet-connected service."
+        description="Manage your authenticated session. Social-platform connections are managed on Accounts; publishing remains disabled."
         actions={<Badge tone="success">Signed in</Badge>}
       />
       {params.password === "updated" ? (
@@ -87,6 +87,9 @@ export default async function Page({
           </form>
           <Link href="/reset-password" className="btn btn-secondary btn-md">
             Change password by email
+          </Link>
+          <Link href="/accounts" className="btn btn-secondary btn-md">
+            Manage real connections
           </Link>
         </div>
       </Card>

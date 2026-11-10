@@ -163,8 +163,10 @@ export function AppShell({
           <div className="connection-note">
             <ShieldCheck size={18} aria-hidden="true" />
             <div>
-              <strong>Frontend preview</strong>
-              <span>No accounts connected</span>
+              <strong>
+                {connectedCount > 0 ? "Real connections" : "No real accounts connected"}
+              </strong>
+              <span>{connectedCount} connected · publishing disabled</span>
             </div>
           </div>
           <button
@@ -355,7 +357,7 @@ export function AppShell({
           <p className="unavailable-note">
             <strong>{cloud ? "Private workspace." : "One local workspace."}</strong>{" "}
             {cloud
-              ? `Your role is ${cloud.role}. Social accounts and publishing are not connected.`
+              ? `Your role is ${cloud.role}. ${connectedCount > 0 ? `${connectedCount} real account${connectedCount === 1 ? "" : "s"} connected` : "No real accounts connected"}; publishing remains disabled.`
               : "This is browser-local demo data. Sign in to use a private cloud workspace when authentication is configured."}
           </p>
           <Button disabled title="Workspace creation requires the backend phase">

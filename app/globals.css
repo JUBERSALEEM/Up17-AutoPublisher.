@@ -3538,3 +3538,129 @@ input[type="radio"] {
     padding: var(--space-5);
   }
 }
+
+/* Unified Accounts readiness and setup evidence */
+.wrap-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.accounts-section {
+  margin-top: var(--space-6);
+}
+.section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  min-width: 0;
+}
+.section-heading h2 {
+  font-size: var(--text-xl);
+  margin: 0;
+}
+.section-heading p {
+  margin: 5px 0 0;
+  max-width: 76ch;
+}
+.demo-mode-card {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.demo-mode-card .spread {
+  align-items: flex-start;
+}
+.demo-mode-card h2 {
+  font-size: var(--text-lg);
+  margin: 0 0 6px;
+}
+.demo-mode-card p {
+  margin: 0;
+}
+.demo-mode-card code {
+  font-size: var(--text-xs);
+}
+.real-account-card .account-note {
+  min-height: 5.5em;
+}
+.real-account-card .account-card-actions {
+  grid-template-columns: minmax(0, 1fr);
+}
+.account-meta dd {
+  min-width: 0;
+}
+.account-meta dd.wrap-anywhere {
+  max-width: 68%;
+  text-align: right;
+}
+.setup-missing {
+  display: grid;
+  gap: 7px;
+  padding: 12px 14px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-panel);
+  background: var(--surface-inset);
+  font-size: var(--text-sm);
+}
+.setup-missing ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.setup-missing li {
+  overflow-wrap: anywhere;
+}
+.setup-checklist {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.setup-check-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+}
+.setup-check-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.setup-check-copy p {
+  margin: 0;
+  line-height: 1.5;
+}
+.accounts-journey {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 22px;
+  line-height: 1.6;
+}
+.accounts-journey li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 480px) {
+  .section-heading {
+    flex-direction: column;
+  }
+  .setup-check-item {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .account-meta > div {
+    flex-wrap: wrap;
+  }
+  .account-meta dd.wrap-anywhere {
+    max-width: 100%;
+    text-align: left;
+  }
+}

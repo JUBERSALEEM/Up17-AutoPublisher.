@@ -27,6 +27,15 @@ export function getSupabaseConfig(): SupabaseConfig | null {
   return { url: parsed.origin, publishableKey };
 }
 
+/** Safe presence check for layouts: an incomplete public config fails closed instead of throwing. */
+export function supabaseConfigAvailable(): boolean {
+  try {
+    return Boolean(getSupabaseConfig());
+  } catch {
+    return false;
+  }
+}
+
 export function appOrigin(): string {
   const explicit = process.env.UP17_SITE_URL;
   const hosted =

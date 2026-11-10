@@ -89,26 +89,62 @@ test("scheduler switches views and saves a browser-local demo slot @e2e", async 
   await expect(page.locator(".agenda-list .calendar-item")).toHaveCount(5);
 });
 
-test("accounts expose requirements and honest disconnected states @e2e", async ({ page }) => {
+test("accounts show real OAuth cards and exact setup blockers @e2e", async ({ page }) => {
   await page.goto("/accounts");
-  await expect(page.locator(".account-card")).toHaveCount(4);
-  await page
-    .getByRole("group", { name: "Account platform" })
-    .getByRole("button", { name: "YouTube", exact: true })
-    .click();
-  await expect(page.locator(".account-card")).toHaveCount(2);
-  await page.locator(".account-card").first().getByRole("button", { name: "Requirements" }).click();
-  await expect(page.getByRole("dialog")).toContainText("approved OAuth application");
-  await expect(page.getByRole("button", { name: "OAuth unavailable" })).toBeDisabled();
-  await page.keyboard.press("Escape");
-  await page
-    .locator(".account-card")
-    .first()
-    .getByRole("button", { name: "Settings", exact: true })
-    .click();
-  await expect(page.getByRole("switch", { name: "Demo pause preference" })).toBeChecked();
-  await page.getByRole("switch", { name: "Demo pause preference" }).click();
-  await expect(page.getByRole("switch", { name: "Demo pause preference" })).not.toBeChecked();
+  const cards = page.locator(".real-account-card");
+  await expect(cards).toHaveCount(3);
+  for (const card of await cards.all()) {
+    await expect(card).toContainText("Not configured");
+  }
+  for (const label of [
+    "Connect Google / YouTube",
+    "Connect Instagram",
+    "Connect TikTok",
+  ] as const) {
+    const button = page.getByRole("button", { name: label, exact: true });
+    await expect(button).toBeVisible();
+    await expect(button).toBeDisabled();
+  }
+  await expect(page.getByRole("button", { name: "Connect an account" })).toBeDisabled();
+  await expect(page.getByText("Demo mode is active")).toBeVisible();
+  await expect(page.getByText("No real identity is connected", { exact: false })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Deployment and owner setup checklist" }),
+  ).toBeVisible();
+  for (const name of [
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+    "UP17_SITE_URL",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_SECRET_KEY",
+    "UP17_TOKEN_ACTIVE_KEY_ID",
+    "UP17_TOKEN_KEYS",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "INSTAGRAM_CLIENT_ID",
+    "INSTAGRAM_CLIENT_SECRET",
+    "TIKTOK_CLIENT_KEY",
+    "TIKTOK_CLIENT_SECRET",
+    "CRON_SECRET",
+  ]) {
+    await expect(page.getByText(name, { exact: false }).first()).toBeVisible();
+  }
+  await expect(page.getByRole("link", { name: "Create account" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "How to reach real connections" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "No real accounts connected" })).toBeVisible();
+});
+
+test("accounts never present demo identities as connections or simulate OAuth @e2e", async ({
+  page,
+}) => {
+  await page.goto("/accounts");
+  await expect(page.locator(".demo-account-card")).toHaveCount(0);
+  await expect(page.getByText("Demo identity", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Demo pause preference")).toHaveCount(0);
+  await expect(page.getByText("OAuth unavailable")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Requirements" })).toHaveCount(0);
+  await expect(page.getByText("No simulated authorization", { exact: false })).toBeVisible();
 });
 
 for (const route of [

@@ -16,6 +16,15 @@ describe("client source secret boundary", () => {
       expect(source).not.toContain("service_role");
     }
   });
+
+  it("keeps deployment readiness server-only and the Accounts board value-free", () => {
+    const readiness = readFileSync("lib/connections/deployment-readiness.ts", "utf8");
+    expect(readiness).toContain('import "server-only";');
+    const board = readFileSync("components/accounts/real-accounts-board.tsx", "utf8");
+    expect(board).not.toContain("process.env");
+    expect(board).not.toMatch(/SUPABASE_(?:SERVICE_ROLE|SECRET)_KEY\s*=/);
+    expect(board).not.toMatch(/UP17_TOKEN_KEYS\s*=/);
+  });
 });
 
 function walk(directory: string): string[] {
