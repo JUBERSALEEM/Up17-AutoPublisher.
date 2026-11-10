@@ -1,8 +1,14 @@
 # Official integration capability and approval register
 
-**Research date:** 2026-11-08 UTC. **Implementation status:** NOT CONNECTED / NOT TESTED for every provider. This is documentation research, not a live API capability test. Recheck official sources, app eligibility and granted scopes before each integration milestone; do not turn a documented endpoint into a promise of production access.
+**Research date:** 2026-11-08 UTC; **implementation update:** 2026-11-10 UTC. **Implementation status:** server-only OAuth broker implemented and database-tested, LIVE-NOT-RUN / BLOCKED for every provider. This is documentation research plus reviewed adapter code, not a live API capability test. Recheck official sources, app eligibility and granted scopes before each integration milestone; do not turn a documented endpoint into a promise of production access.
 
 Evidence classes: **DOC** = official documentation read/search result; **LIVE-NOT-RUN** = requires authorized app/account; **CONFLICT** = official pages/search extracts disagree; **ACCESS-LIMITED** = official page could not be fully fetched in this environment. No unofficial scraping, browser automation or commercial research-API assumption is allowed.
+
+## Batch D implementation boundary — 2026-11-10
+
+`lib/connections/providers.ts` uses the official Google OAuth web-server flow, Instagram Business Login and TikTok Login Kit authorization URLs. It requests YouTube `youtube.readonly` + `youtube.upload`, Instagram `instagram_business_basic` + `instagram_business_content_publish`, and TikTok `user.info.basic` + `video.publish`. Google uses base64url S256 PKCE; Instagram explicitly has no PKCE verifier; TikTok uses hex SHA256 S256. Token exchange, identity lookup, refresh and revocation use official endpoints only. Current references: [Google web-server OAuth](https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps), [Instagram Platform overview](https://developers.facebook.com/docs/instagram-platform/overview/), [Instagram Access Token](https://developers.facebook.com/docs/instagram-platform/reference/access_token/), [Instagram Refresh Access Token](https://developers.facebook.com/docs/instagram-platform/reference/refresh_access_token/), [TikTok Login Kit](https://developers.tiktok.com/doc/login-kit-desktop/) and [TikTok Direct Post prerequisites](https://developers.tiktok.com/docs/en/content-posting-api-get-started).
+
+The hosted rollback broker fixture verifies state/binding, single-use attempts, actor/workspace checks, encrypted synthetic credentials, refresh leases, health, disconnect and browser-write denial. It does not call a provider. Live connections require the owner to create the apps, configure exact redirect URIs, complete review/audit, supply secrets and test with real accounts; see [Batch D report](BATCH_D_CONNECTIONS_REPORT.md) and [owner setup](OWNER_SETUP.md). Publishing remains disabled and no capability/eligibility result is claimed.
 
 ## 1. YouTube — proposed first live integration
 

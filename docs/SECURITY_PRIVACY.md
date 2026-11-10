@@ -1,6 +1,6 @@
 # Security, privacy and reliability plan
 
-**Status:** PARTIALLY IMPLEMENTED. Batch C auth/RLS/private-storage foundation is applied and DB-tested; remaining controls below are still proposed. See [Batch C report](BATCH_C_AUTH_REPORT.md). No privileged key is browser-exposed; hosted email delivery and production acceptance remain unverified.
+**Status:** PARTIALLY IMPLEMENTED. Batch C auth/RLS/private-storage and Batch D server-only OAuth/token-custody foundations are applied and DB-tested; live provider authorization, owner secret configuration and production acceptance remain blocked. See [Batch C report](BATCH_C_AUTH_REPORT.md), [Batch D report](BATCH_D_CONNECTIONS_REPORT.md) and [owner setup](OWNER_SETUP.md). No privileged key is browser-exposed; hosted email delivery is unverified.
 
 ## 1. Assets and trust boundaries
 
@@ -34,7 +34,7 @@ Never request social passwords. Social connection is separate from app login. Th
 
 Server callback validates state, session, provider, expiry, single use and redirect URI before code exchange. Store tokens through the token broker only. Refresh single-flight per credential to avoid rotation races; update expiry/scopes and connection state. On revocation/failure mark `NEEDS_AUTHORISATION`, pause affected publishing and notify. Disconnect attempts provider revocation when supported, then removes local ciphertext regardless; record remote revocation failure honestly and provide manual remedy. Reconnect does not silently enable publishing.
 
-Initial encryption design: AES-256-GCM per credential with unique nonce and envelope data key; authenticated context includes credential/account/workspace/key version. A master/wrapping key lives in an approved KMS or server-only secret facility, **never in the database or source**. Limit decrypt permission to the worker broker; define rotation and re-wrapping before storing real tokens. Supabase Vault/managed Postgres encryption alone must not be assumed to make tokens safely readable by application roles. The concrete key host is an infrastructure decision, not provisioned now.
+Implemented Batch D design: AES-256-GCM per credential with a unique nonce and a versioned keyring of 32-byte keys. The authenticated envelope context contains version, purpose, workspace, platform, subject and key id; decryption rejects a tampered context, unknown key or bad tag. Only the server-only broker can decrypt, and no plaintext token is returned to the browser or stored in the private credential table. The owner supplies the keyring through a deployment secret manager, **never in the database or source**; old keys remain until all envelopes are rotated. Supabase Vault/managed Postgres encryption alone is not treated as making tokens safely readable by application roles. The concrete external KMS/host and real key material are owner infrastructure decisions, not provisioned by the agent.
 
 ## 4. Sessions, headers and abuse controls
 
@@ -76,6 +76,12 @@ Structured logs carry correlation/job/attempt IDs and redacted provider error co
 - Supabase SSR sessions use protected cookie options and server-side user verification; auth redirects are same-application and callback/confirm URLs are allowlisted.
 - Five hosted migrations enable RLS on all 22 exposed public tables, scope rows by workspace membership and user identity, restrict browser-writable columns, and keep OAuth/credential tables in a private schema.
 - Preferences are written only through a revision-checked, fully type-validating, audited RPC; direct preference/workspace writes are revoked. Category/platform and draft-version integrity are enforced relationally.
-- `creator-media` is private with workspace-prefix policies and size/MIME limits; the app exposes only a short-lived signed-URL route after server membership checks. Storage-API delete remains untested because direct SQL delete is blocked by Supabase's guard.
+- `creator-media` is private with workspace-prefix policies and size/MIME limits; the app exposes only a short-lived signed-URL route after server membership checks. A later challenge-gated Storage-API delete probe passed with a 30-second cached-download limitation; immediate signed-URL revocation is not claimed. Temporary SQL cleanup was blocked before execution by the connector provider security filter.
 - The rollback hosted fixture verifies owner/editor/viewer and cross-workspace isolation, notification privacy, storage upload/read denial, RPC stale/malformed denial, role-elevation/audit-forgery/private-schema denial and anon grant denial.
-- Still pending: production SMTP/delivery verification, captcha/HIBP/app-level distributed rate limiting, cloud export/deletion/retention, OAuth token custody, upload scanning/workers and production release gates.
+- Batch D adds service-only OAuth/credential RPCs, explicit actor authorization, short-lived single-use state and browser binding, PKCE where supported, encrypted token custody, refresh leases, connection audit events, a bearer-protected cron and a hosted rollback isolation fixture with zero synthetic rows afterwards.
+- Still pending: owner SMTP/delivery verification, provider app/secret/keyring configuration, live OAuth and app review, captcha/HIBP/app-level distributed rate limiting, cloud export/deletion/retention, immediate signed-URL revocation, upload scanning/workers and production release gates.
+
+
+## Batch D implemented controls — 2026-11-10
+
+The broker re-checks the actor/workspace role inside every service-role RPC because service keys do not carry `auth.uid()`. Anon/authenticated roles have no grants on the service RPCs or private schema. OAuth attempts are hashed, actor-bound, single-use, expire in ten minutes and are limited to 30 per user per hour. Refresh uses a five-minute lease; failures mark `needs_authorisation`, pause publishing and retain an honest error code. Disconnect clears state/token reference before deleting ciphertext, attempts remote revocation where supported, and reports unconfirmed revocation rather than claiming success. The hosted fixture validates these boundaries with synthetic ciphertext only. Live provider calls, real secrets, production cron and owner acceptance are NOT RUN/BLOCKED.

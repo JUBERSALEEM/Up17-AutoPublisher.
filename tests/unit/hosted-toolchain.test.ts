@@ -23,6 +23,7 @@ describe("hosted deployment toolchain", () => {
       framework: "nextjs",
       installCommand: `npx --yes npm@${requiredNpm} ci`,
       buildCommand: `npx --yes npm@${requiredNpm} run build`,
+      crons: [{ path: "/api/cron/connections", schedule: "0 3 * * *" }],
     });
     expect(() => checkToolchain(local)).not.toThrow();
   });

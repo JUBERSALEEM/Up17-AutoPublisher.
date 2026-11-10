@@ -52,6 +52,46 @@ export interface Database {
         mime_type: string;
         size_bytes: number;
       }>;
+      platform_connections: Table<{
+        id: string;
+        workspace_id: string;
+        platform: "youtube" | "instagram" | "tiktok";
+        provider_account_id: string | null;
+        display_name: string;
+        state:
+          | "pending"
+          | "connected"
+          | "limited_permissions"
+          | "needs_authorisation"
+          | "error"
+          | "disconnected";
+        granted_scopes: string[];
+        token_reference: string | null;
+        last_verified_at: string | null;
+        last_error_code: string | null;
+        created_by: string;
+        created_at: string;
+        updated_at: string;
+        social_accounts:
+          | { handle: string | null; paused: boolean; publishing_enabled: boolean }
+          | { handle: string | null; paused: boolean; publishing_enabled: boolean }[]
+          | null;
+      }>;
+      social_accounts: Table<{
+        id: string;
+        workspace_id: string;
+        connection_id: string;
+        platform: "youtube" | "instagram" | "tiktok";
+        display_name: string;
+        handle: string | null;
+        avatar_url: string | null;
+        capabilities: Json;
+        publishing_enabled: boolean;
+        paused: boolean;
+        timezone: string;
+        created_at: string;
+        updated_at: string;
+      }>;
       audit_logs: Table<{
         id: number;
         workspace_id: string;

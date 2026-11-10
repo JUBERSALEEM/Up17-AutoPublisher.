@@ -78,9 +78,11 @@ function SearchDialog({ open, onClose }: { open: boolean; onClose: () => void })
 export function AppShell({
   children,
   authAvailable = false,
+  connectedCount = 0,
 }: {
   children: ReactNode;
   authAvailable?: boolean;
+  connectedCount?: number;
 }) {
   const pathname = usePathname();
   const current = destinationForPath(pathname);
@@ -348,7 +350,7 @@ export function AppShell({
           </div>
           <div className="spread">
             <span className="muted small">Connected accounts</span>
-            <Badge tone="warning">0 connected</Badge>
+            <Badge tone={connectedCount ? "success" : "warning"}>{connectedCount} connected</Badge>
           </div>
           <p className="unavailable-note">
             <strong>{cloud ? "Private workspace." : "One local workspace."}</strong>{" "}

@@ -100,15 +100,17 @@ export async function updatePassword(
   const parsed = passwordSchema.safeParse(form.get("password"));
   if (!parsed.success || form.get("password") !== form.get("confirmPassword"))
     return { status: "error", message: "Passwords must match and contain 12–128 characters." };
+  let otherSessions: "revoked" | "unknown" = "unknown";
   try {
     const supabase = await client();
     const { error } = await supabase.auth.updateUser({ password: parsed.data });
     if (error) return unavailable;
-    await supabase.auth.signOut({ scope: "others" });
+    const { error: signOutError } = await supabase.auth.signOut({ scope: "others" });
+    otherSessions = signOutError ? "unknown" : "revoked";
   } catch {
     return unavailable;
   }
-  redirect("/account?password=updated");
+  redirect(`/account?password=updated&other_sessions=${otherSessions}`);
 }
 
 export async function signOut() {

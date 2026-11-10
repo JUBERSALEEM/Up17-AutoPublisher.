@@ -1,7 +1,7 @@
 # Batch C — authentication, relational persistence, RLS and private storage
 
 **Date:** 2026-11-08 UTC (sandbox clock crossed into 2026-11-09 during execution).
-**Status:** PARTIAL. Real Supabase-backed account/workspace/settings/inbox paths and hosted database isolation tests exist and pass at the tested boundaries. Hosted email delivery, hosted browser acceptance and Storage-API delete verification remain unverified. This is not a production launch and does not make demo creator workflows real.
+**Status:** PARTIAL. Real Supabase-backed account/workspace/settings/inbox paths, hosted database isolation and Storage-API delete acceptance pass at the tested boundaries. Hosted email delivery, hosted browser acceptance and temporary SQL cleanup remain unverified/blocked. This is not a production launch and does not make demo creator workflows real.
 
 ## Implemented
 
@@ -39,18 +39,22 @@ Raw byte-for-byte MD5 parity is not claimed: the migration endpoint stores norma
 | `npm run test:clay` | PASS — 62 material/baseline checks |
 | `npm run test:navigation:dev` | PASS — 13 development-mode assertions |
 | `npm audit` | PASS — 0 known vulnerabilities |
+| Later Storage-API probe | PASS with limitation — upload/download/signed URL/remove and one-object delete/list verified; authenticated download stayed readable during a 30-second cache/consistency poll — [evidence](evidence/batch-c-storage-api.txt) |
 
-The hosted RLS fixture covers signup bootstrap, owner/editor/viewer and cross-workspace isolation, notification per-user isolation, draft version/skip denial, storage upload/read and cross-tenant denial, preference RPC revision/stale/malformed-type denial, direct preference/workspace write denial, role-elevation/protected-column/audit-forgery/private-schema denial and anon grant denial.
+The hosted RLS fixture covers signup bootstrap, owner/editor/viewer and cross-workspace isolation, notification per-user isolation, draft version/skip denial, storage upload/read and cross-tenant denial, preference RPC revision/stale/malformed-type denial, direct preference/workspace write denial, role-elevation/protected-column/audit-forgery/private-schema denial and anon grant denial. A later challenge-gated probe exercised the real Storage API through a temporary Edge Function; its final run is recorded separately.
 
 ## Explicit limitations
 
 - **Email delivery/recovery:** Supabase SMTP is absent; default email rate is 2/hour. Confirmation is required, but real inbox delivery and recovery completion are NOT VERIFIED.
 - **Hosted browser acceptance:** Vercel previews are SSO-protected. Anonymous hosted UI/auth walkthrough is BLOCKED; READY deployment state is not browser acceptance.
-- **Storage delete:** direct SQL `DELETE` on `storage.objects` is blocked by Supabase's `storage.protect_delete()` guard. The delete policy and role predicate were inspected, but actual Storage-API delete behavior is NOT TESTED.
+- **Storage delete:** direct SQL `DELETE` on `storage.objects` is blocked by Supabase's `storage.protect_delete()` guard. The later challenge-gated Storage-API probe verified delete/list behavior, but an already-issued authenticated download stayed readable during a 30-second poll; immediate signed-URL revocation is NOT CLAIMED.
+- **Temporary cleanup:** the probe Edge Function was deleted, but the temporary SQL function/table and extensions `http`/`pg_net` remain. Cleanup SQL was blocked by the connector provider security filter before execution and was not retried or rewritten to bypass it. See [owner setup](OWNER_SETUP.md).
 - **Auth hardening still pending:** Supabase password minimum is 6 while the app requires 12; HIBP/captcha are disabled; no app-level distributed rate limiter beyond Supabase defaults exists.
 - **Privacy controls:** cloud export/account deletion/retention workflows remain unimplemented. Local demo reset/export must not be represented as cloud deletion/export.
-- **Creator workflows:** video upload/processing, AI analysis, metadata intelligence, OAuth connections, scheduling/publishing and analytics remain demo/missing until their own gates pass.
+- **Creator workflows:** video upload/processing, AI analysis, metadata intelligence, scheduling/publishing and analytics remain demo/missing until their own gates pass. Batch D implemented the OAuth broker foundation, but live provider authorization remains blocked by owner setup.
 
 ## Reproduce the hosted RLS fixture
+
+For the later Storage-API acceptance, see [batch-c-storage-api.txt](evidence/batch-c-storage-api.txt); its final probe run is `0a8352c8-162b-4a37-83dd-7f56886ad0d3`. Temporary SQL cleanup is an owner action documented in [owner setup](OWNER_SETUP.md).
 
 Run `supabase/tests/rls.sql` as the migration role through the authorized Supabase SQL endpoint. It is a single outer `DO` fixture that creates synthetic users/workspaces, exercises role/tenant assertions, then raises `ROLLBACK_FIXTURE_COMPLETE` so the entire fixture rolls back. The expected endpoint result is the sentinel error, not a silent success. Verify afterwards that synthetic row counts are zero. Do not replace the sentinel with a commit, and do not run it against production data.

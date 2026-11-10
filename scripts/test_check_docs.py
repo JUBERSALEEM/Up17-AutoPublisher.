@@ -143,6 +143,21 @@ class DocumentationValidatorTests(unittest.TestCase):
     def test_root_example_is_allowed(self):
         self.assert_accepted(lambda root: self.write(root, ".env.example", "# safe comment\nUP17_APP_MODE=DEMO\n"))
 
+    def test_reviewed_placeholder_env_names_are_allowed(self):
+        self.assert_accepted(
+            lambda root: self.write(
+                root,
+                ".env.example",
+                "# owner setup\nUP17_APP_MODE=DEMO\nGOOGLE_CLIENT_SECRET=your-google-oauth-client-secret\nCRON_SECRET=your-random-cron-secret\n",
+            )
+        )
+
+    def test_unreviewed_env_name_is_rejected_even_with_placeholder(self):
+        self.assert_rejected(
+            lambda root: self.write(root, ".env.example", "UP17_APP_MODE=DEMO\nUNREVIEWED_KEY=your-placeholder\n"),
+            "permitted environment example",
+        )
+
     def test_populated_root_example_is_rejected(self):
         self.assert_rejected(
             lambda root: self.write(root, ".env.example", "UP17_APP_MODE=DEMO\nGOOGLE_CLIENT_SECRET=populated-secret-value\n"),
@@ -173,8 +188,12 @@ class DocumentationValidatorTests(unittest.TestCase):
         self.assert_rejected(lambda root: self.force_add(root, ".supabase/temp/project-ref", "example\n"), "cloud configuration")
 
     def test_reviewed_vercel_build_config_is_allowed(self):
-        config = json.dumps({"$schema": "https://openapi.vercel.sh/vercel.json", "framework": "nextjs", "installCommand": "npx --yes npm@11.21.2 ci", "buildCommand": "npx --yes npm@11.21.2 run build"})
+        config = json.dumps({"$schema": "https://openapi.vercel.sh/vercel.json", "framework": "nextjs", "installCommand": "npx --yes npm@11.21.2 ci", "buildCommand": "npx --yes npm@11.21.2 run build", "crons": [{"path": "/api/cron/connections", "schedule": "0 3 * * *"}]})
         self.assert_accepted(lambda root: self.write(root, "vercel.json", config))
+
+    def test_unreviewed_cron_path_is_rejected(self):
+        config = json.dumps({"$schema": "https://openapi.vercel.sh/vercel.json", "framework": "nextjs", "installCommand": "npx --yes npm@11.21.2 ci", "buildCommand": "npx --yes npm@11.21.2 run build", "crons": [{"path": "/api/cron/other", "schedule": "0 3 * * *"}]})
+        self.assert_rejected(lambda root: self.write(root, "vercel.json", config), "reviewed credential-free policy")
 
     def test_unreviewed_vercel_config_is_rejected(self):
         self.assert_rejected(lambda root: self.force_add(root, "vercel.json", '{"framework":"nextjs"}\n'), "reviewed credential-free policy")
@@ -202,6 +221,15 @@ class DocumentationValidatorTests(unittest.TestCase):
 
     def test_placeholder_credential_assignment_is_allowed(self):
         self.assert_accepted(lambda root: self.write(root, "config.json", '{"client_secret":"<oauth-client-secret>"}\n'))
+
+    def test_typed_provider_adapter_expressions_are_allowed(self):
+        self.assert_accepted(
+            lambda root: self.write(
+                root,
+                "lib/provider-adapter.ts",
+                'const form = { client_secret: secrets.clientSecret, refresh_token: current.refreshToken };\nconst value = decryptSecret(row.access_ciphertext);\n',
+            )
+        )
 
     def test_safe_documentation_mention_is_allowed(self):
         self.assert_accepted(lambda root: self.write(root, "docs/SECURITY_PRIVACY.md", (root / "docs/SECURITY_PRIVACY.md").read_text() + "\nNever commit `client_secret` or a private key header such as -----BEGIN PRIVATE KEY-----.\n"))

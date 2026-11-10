@@ -105,6 +105,8 @@ UI catalog tests use semantic assertions plus visual baselines after M1.2. Each 
 | `T-AUTH` | Session expiry/revocation; workspace membership guards; origin/CSRF checks; sensitive endpoint rate limits |
 | `T-OAUTH` | State/session/provider binding, single use/expiry/replay, redirect allowlist, PKCE where supported, partial grants and code-exchange failures |
 | `T-TOKENS` | Envelope encryption/context/nonce; service-only access; rotation; concurrent refresh; revoke/disconnect/reauth; no plaintext leakage |
+| `T-CONNECTIONS` | AES-256-GCM keyring/AAD/tamper/rotation, random/PKCE encodings, provider URL origins/scopes/state, empty-200 revoke and Instagram remote-revoke honesty |
+| `T-MIGRATION-PARITY` | Applied hosted migration statements equal reviewed local SQL after comment/whitespace canonicalization; no repeated application |
 | `T-CAPABILITIES` | Granted scopes + app review + account eligibility map to actions; unsupported/unknown never enabled by optimism |
 | `T-STORAGE-POLICY` | Workspace/object-scoped upload/read/list/delete; signed URL expiry; cross-object denial; platform delivery object cleanup |
 | `T-AUDIT` | Connect/publish/delete/settings events; append-only; actor/correlation/reason; redacted before/after summaries |
@@ -161,3 +163,12 @@ Each live suite has a preflight checklist: owner authorization, current docs, ap
 | `T-OPS` | Alerts fire/recover; dashboards/logs redacted; runbooks/rollback executed; release notes list limitations; user guide matches product |
 
 Release acceptance is the union of applicable requirement gates, not a green build alone. Missing live authorization, unresolved duplicate-publish risk, unsupported causal claims or inaccessible core mobile flows block the relevant release scope.
+
+
+## Batch D executed evidence — 2026-11-10
+
+- `T-CONNECTIONS`: `tests/unit/connections.test.ts` covers the keyring, encryption context and provider adapters without live network calls.
+- `T-MIGRATION-PARITY`: nine applied hosted migrations matched local canonical MD5 values in [Batch D evidence](evidence/batch-d-connections.txt).
+- `T-OAUTH` / `T-TOKENS` / `T-RBAC` / `T-AUDIT`: `supabase/tests/oauth_broker.sql` reached `ROLLBACK_BROKER_FIXTURE_COMPLETE` after all assertions and rolled back; post-run synthetic inventory was zero.
+- `T-QUALITY` / `T-SECRET`: strict env-example, Vercel cron config, Git artifact and credential guards are covered by `scripts/test_check_docs.py` and `tests/unit/hosted-toolchain.test.ts`.
+- Live provider authorization, app review, SMTP delivery, owner browser acceptance and production cron remain NOT RUN/BLOCKED. A READY deployment is not a test result.

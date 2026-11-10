@@ -16,7 +16,10 @@ Final result: expected P0001 ROLLBACK_FIXTURE_COMPLETE after all inner assertion
 Post-run cleanup counts: users=0 workspaces=0 videos=0 notifications=0
 storage_objects=0 audit=0 categories=0.
 Storage DELETE policy inspected via pg_policies/role predicate; direct SQL delete
-is blocked by storage.protect_delete(); Storage-API delete NOT TESTED.
+is blocked by storage.protect_delete(). Later challenge-gated Storage-API delete
+acceptance PASS (see batch-c-storage-api.txt) with a 30-second cached-download limit.
+Temporary SQL cleanup blocked by connector security filter before execution; see
+OWNER_SETUP.md. No retry/bypass was attempted.
 
 Local commands and final results:
 npm run check -> PASS (toolchain Node 22.22.3/npm 11.21.2; format; lint zero warnings;
@@ -44,3 +47,4 @@ SMTP absent; hosted email delivery/recovery NOT VERIFIED.
 Vercel preview SSO blocks anonymous hosted UI/auth walkthrough.
 No production promotion; production alias remains docs-only main b16202cc.
 No paid AI, social OAuth connection or actual creator-account publication.
+Temporary Edge Function was deleted; temp SQL function/table and http/pg_net remain.

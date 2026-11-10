@@ -138,3 +138,19 @@ The real `@axe-core/playwright` scan is implemented with WCAG 2 A/AA, 2.1 A/AA a
 | Manual screen-reader / OS install / Windows / live providers | NOT RUN — outside executed local evidence or unauthorized |
 
 Detailed logs: [Batch 1](evidence/ui-batch1-validation.txt), [Batch 2](evidence/ui-batch2-validation.txt), [Batch 3](evidence/ui-batch3-validation.txt), [Batch 4](evidence/ui-batch4-validation.txt), [Batch 5](evidence/ui-batch5-validation.txt), [Batch 6](evidence/ui-batch6-validation.txt). Consolidated interpretation: [UI_DELIVERY_REPORT.md](UI_DELIVERY_REPORT.md). Owner acceptance remains NOT RECORDED.
+
+
+## Batch D — official connections broker (2026-11-10)
+
+**Scope:** server-only state/PKCE broker, encrypted credential custody, provider adapters, refresh/health/disconnect RPCs, real accounts UI, strict configuration guards and a hosted rollback isolation fixture. See [Batch D report](BATCH_D_CONNECTIONS_REPORT.md), [executed evidence](evidence/batch-d-connections.txt) and [owner setup](OWNER_SETUP.md).
+
+| Check | Actual result |
+|---|---|
+| Applied migration parity | PASS — nine local canonical MD5 values matched hosted statements; do not reapply |
+| Hosted broker rollback fixture | PASS — expected `P0001: ROLLBACK_BROKER_FIXTURE_COMPLETE`; synthetic users/connections/credentials/audit rows all zero afterwards |
+| Local aggregate gates | PASS — `npm run check`: 59 unit, 4 integration, 46 Python validator, 6 TypeScript security, 16 docs/155 requirements/143 links/206 artifacts, 25-route build |
+| Browser E2E/axe/visual/clay/navigation | PASS — 123 E2E, 85 axe, 153 viewport, 62 clay and 13 development navigation assertions; dev service-worker test corrected with a fresh page after unregister |
+| Live OAuth / provider app review / SMTP / owner browser | NOT RUN / BLOCKED — owner configuration required |
+| Production cron / publication / owner acceptance | NOT RUN / NOT RECORDED |
+
+Corrections retained: a 42702 ambiguous PL/pgSQL `connection_id` was fixed by `20261110042107`; a 23514 disconnect-state check violation was fixed by `20261110042815`; the development service-worker cleanup test now verifies a genuinely fresh page after registration removal. The Batch C Storage-API delete probe passed with a 30-second cached-download limitation. Its temporary SQL cleanup was blocked by the connector provider security filter before execution; owner-run instructions are in [owner setup](OWNER_SETUP.md).

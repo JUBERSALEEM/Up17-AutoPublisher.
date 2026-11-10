@@ -1,0 +1,86 @@
+UP17 BATCH D — EXECUTED CONNECTIONS / BROKER EVIDENCE
+Date: 2026-11-10 UTC
+Hosted Supabase project: hxgokimjdormlktxjsbg
+Vercel project: prj_uh7RosdHFABdfwRkSRg7JNmu67bK
+Branch: arena/698e4880-up17-autopublisher
+
+SCOPE
+Server-only OAuth state/PKCE broker, AES-256-GCM token keyring, provider adapters,
+refresh/health/disconnect lifecycle, real accounts UI, service-only hosted RPCs,
+daily production-only cron declaration, strict docs/env/vercel guards and tests.
+No live provider OAuth, real token, publication, paid service or production promotion.
+
+APPLIED HOSTED MIGRATIONS (local=remote canonical MD5, comments/whitespace removed)
+20261109112755 e3f58a01da6ca90204ad11cf408f9fbb
+20261109112851 21aa7ef905f7ca32992e5f7b03b1b909
+20261109113102 28c06f0b1355e82690610fa9bbf69046
+20261109113904 26382349d2f57888eba567bcb0f70b0c
+20261109122850 51e5557d08abd77f3b8609f02f92c083
+20261109143447 3e840869b00265e491cd66f133b7887f
+20261110041820 dd7c92e686c17439f57b24fd78473c06
+20261110042107 1c327a2515d8bac16f2573f963641c80
+20261110042815 420156e597a37b64e4b3fd734aadc318
+These nine migrations are APPLIED. Do not reapply any earlier version.
+
+HOSTED ROLLBACK BROKER FIXTURE
+File: supabase/tests/oauth_broker.sql
+Expected final result: P0001 ROLLBACK_BROKER_FIXTURE_COMPLETE after all inner assertions.
+Post-run inventory: synthetic_users=0, synthetic_connections=0, credentials=0,
+connection_audit_rows=0.
+Covered: fail-closed non-member service actor, no anon/authenticated RPC grants,
+authenticated RPC/private-credential denial, cross-workspace/viewer denial, binding
+and actor mismatch, replay, Instagram null verifier, PKCE null-verifier rejection,
+connection upsert, publishing-disabled defaults, token broker, refresh lease and stale
+lease denial, all-null failure payload, health, Instagram claimability, disconnect,
+owner read and browser direct-write denial. Synthetic ciphertext only; rollback sentinel
+is the expected endpoint error, not a commit.
+
+CORRECTIONS FOUND BY THE FIXTURE (retained in audit trail)
+- 42702 ambiguous connection_id in up17_connection_upsert: fixed by 20261110042107
+  with v_connection_id/v_credential_id; signature, auth checks and service-only grants preserved.
+- 23514 platform_connections_check during up17_connection_disconnect: credential deletion
+  fired ON DELETE SET NULL while the row was still connected. Fixed by 20261110042815,
+  which clears state/token_reference before deleting credentials.
+Earlier identical failing fixture calls were not repeated; diagnostic calls used changed SQL.
+
+HOSTED CLEANUP BLOCKER (carried from Batch C)
+Temporary Edge Function storage-acceptance was deleted. Cleanup SQL for
+public.tmp_consume_acceptance_challenge(p_digest text),
+up17_private.acceptance_challenges and extensions http/pg_net was blocked by the
+connector provider security filter before execution. It was never retried or rewritten
+to bypass the control. Owner-run instructions are in docs/OWNER_SETUP.md.
+
+LOCAL GATE RESULTS (Node 22.22.3, pinned npm 11.21.2, Linux)
+Command: env npm_execpath=<pinned npm cli> npm_config_user_agent='npm/11.21.2 node/v22.22.3' node scripts/run-quality.mjs
+PASS — toolchain, format:check, zero-warning lint, strict typecheck.
+PASS — 59 unit tests / 11 files; 4 integration tests / 1 file.
+PASS — strict docs/credential validator: 16 required docs, 155 requirement rows,
+143 local links, 206 Git-index/worktree artifact candidates; statuses
+BLOCKED=4, IN PROGRESS=38, PLANNED=91, TESTED=22.
+PASS — 46 Python validator tests; 6 TypeScript security tests / 2 files.
+PASS — production build: 25 routes/static pages, including four connection API routes.
+
+Browser gates used the reviewed fallback Chromium at /tmp/chromium with the
+documented /tmp/up17-al2023/lib library path. PLAYWRIGHT_CHROMIUM_EXECUTABLE and
+LD_LIBRARY_PATH were set for each run.
+PASS — npm run test:e2e: 123 assertions.
+PASS — npm run test:a11y: 85 axe scans.
+PASS — npm run test:visual: 153 viewport checks.
+PASS — npm run test:clay: 62 material/baseline checks.
+CORRECTED — npm run test:navigation:dev first returned 12 passed / 1 failed: an
+unregistered production service worker still controlled the original document, so
+navigator.serviceWorker.controller was not yet null. The test now opens a genuinely
+fresh page in the same context after the registration count reaches zero. Rerun
+PASS — 13 development-mode navigation assertions.
+PASS — npm audit --audit-level=moderate: 0 vulnerabilities.
+
+The strict docs gate was run after staging intended changes because it compares both
+Git-index and worktree versions of vercel.json; the reviewed cron/build config must
+match in both.
+
+BLOCKERS / NOT CLAIMED
+Owner SMTP, service key, token keyring, provider client IDs/secrets, cron bearer secret,
+provider apps/app review and accessible owner-authenticated callback deployment are NOT
+configured by the agent. Vercel preview SSO blocks anonymous hosted browser acceptance.
+Vercel Hobby cron is daily/production-only with hourly scheduling precision.
+No live OAuth, remote revocation confirmation, publishing or owner acceptance is claimed.

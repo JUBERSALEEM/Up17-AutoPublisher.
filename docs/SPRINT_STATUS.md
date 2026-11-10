@@ -2,9 +2,9 @@
 
 **Updated:** 2026-11-08 UTC
 **Current phase:** functional product implementation, owner-authorized A–J batches
-**Current batch:** A–J functional delivery. A deployment repair PARTIAL; B Clay engine COMPLETE locally; C auth/data foundation PARTIAL (hosted DB tests PASS; email/hosted browser/Storage-delete gates pending); D–J remain demo/missing unless separately recorded
+**Current batch:** A–J functional delivery. A deployment repair PARTIAL; B Clay engine COMPLETE locally; C auth/data foundation PARTIAL (hosted DB/Storage-API delete tests PASS; email/hosted browser/temp-cleanup gates pending); D connections broker PARTIAL (local/hosted broker gates PASS; live OAuth BLOCKED by owner setup); E–H demo UI PARTIAL; I–J MISSING
 **Owner acceptance:** NOT RECORDED; technical tests are not owner acceptance
-**Product integrations/deployment:** Supabase auth/data foundation applied and DB-tested; Vercel preview build path repaired but SSO-protected; creator workflows not live. See [owner balance](OWNER_REQUIREMENTS_BALANCE.md) and [Batch C report](BATCH_C_AUTH_REPORT.md).
+**Product integrations/deployment:** Supabase auth/data foundation and nine reviewed migrations applied/DB-tested; Vercel preview build path repaired but SSO-protected; real OAuth broker implemented, live provider authorization not configured. See [owner balance](OWNER_REQUIREMENTS_BALANCE.md), [Batch C report](BATCH_C_AUTH_REPORT.md), [Batch D report](BATCH_D_CONNECTIONS_REPORT.md) and [owner setup](OWNER_SETUP.md).
 
 ## Active UI batches
 
@@ -27,7 +27,7 @@ The original Playwright CDN remains blocked, but a registry-only Chromium fallba
 ## Remaining boundaries
 
 - Backend/deployment/official OAuth work is now authorized. Paid providers and actual creator-account publication still require their explicit approvals.
-- Integration suite now contains 4 local SSR-cookie adapter contract tests and passes; hosted DB isolation is evidenced separately by `supabase/tests/rls.sql`. OAuth/upload/queue integration tests remain pending.
+- Integration suite contains 4 local SSR-cookie adapter contract tests; hosted DB isolation and the Batch D broker rollback fixture pass. Live OAuth, upload/queue integration and owner browser acceptance remain pending or blocked.
 - Active GitHub CI remains blocked by workflow permission; inactive template preserved.
 - Windows runtime and manual screen-reader testing remain NOT RUN.
 - Full ten-screen plus Notifications, six-width and four-theme automated accessibility/viewport matrices have passed locally; manual screen-reader and OS install checks remain pending.
@@ -45,3 +45,10 @@ The original Playwright CDN remains blocked, but a registry-only Chromium fallba
 | M1.1 foundation hardening | `241d3aa` | same fixed branch | SUCCESS — remote matched `241d3aa5f4292ddb64a836ddfdcd57e028385d37`; immediate audit delivered; browser/axe verification still pending |
 
 A commit cannot contain its own final hash. The latest session audit reports the current commit. Frontend M1.2 browser execution is resolved locally; functional Batch C is recorded in [BATCH_C_AUTH_REPORT.md](BATCH_C_AUTH_REPORT.md) and [evidence](evidence/batch-c-auth.txt). Push/deployment audit for Batch C is reported in the session delivery audit after the commit is pushed.
+
+
+## Batch D — official connections broker (2026-11-10)
+
+Server-only OAuth state/PKCE/binding, encrypted token custody, provider adapters, refresh/health/disconnect RPCs, a bearer-protected cron endpoint, a real accounts board and nine applied hosted migrations are in place. Local/remote migration parity and the hosted rollback broker fixture pass; the fixture leaves zero synthetic rows. Strict env-example/Vercel cron guards and connection unit tests are added. Final local gates: 59 unit, 4 integration, 46 Python validator, 6 TypeScript security, 123 E2E, 85 axe, 153 viewport, 62 clay, 13 development navigation, 25-route build and 0 audit vulnerabilities. One initial development service-worker test failure was corrected and rerun. See [Batch D report](BATCH_D_CONNECTIONS_REPORT.md), [evidence](evidence/batch-d-connections.txt) and [owner setup](OWNER_SETUP.md).
+
+Live OAuth is BLOCKED: owner SMTP, service key, token keyring, provider apps/secrets, app review, cron bearer secret and an owner-authenticated callback deployment are not configured by the agent. Vercel Hobby cron is daily/production-only. The Batch C temporary SQL cleanup was blocked by the connector provider security filter before execution; owner-run instructions are recorded. Publishing/Smart AI are untouched and owner acceptance is NOT RECORDED.

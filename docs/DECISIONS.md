@@ -34,7 +34,7 @@
 | ADR-007 | PROPOSED | One shared video/analysis pipeline, immutable account-specific content versions and independent account jobs; no cross-account credential or analytics pooling | A single combined publish job couples failures and permissions | Phase 3 domain review |
 | ADR-008 | PROPOSED | AI/research/storage/queue/social providers implement typed ports; deterministic mocks are the default, external calls require explicit mode and authorization | Direct SDK coupling makes testing and provider changes expensive | Each provider selection gate |
 | ADR-009 | PROPOSED | PWA caches only public app-shell assets; no offline publishing, sensitive API responses, tokens or signed media URLs in service-worker caches | Offline-first mutations add reconciliation and privacy risks | M1.3 and Phase 12 |
-| ADR-010 | PROPOSED | Server-side OAuth, envelope-encrypted tokens in a service-only table, workspace-scoped RLS on all exposed domain tables, redacted structured logs | Browser token storage or a shared privileged client is unacceptable | Phase 4 security review |
+| ADR-010 | IMPLEMENTED (database-tested; live gates blocked) | Server-side OAuth, envelope-encrypted tokens in a service-only table, workspace-scoped RLS on all exposed domain tables, redacted structured logs | Browser token storage or a shared privileged client is unacceptable | Batch D hosted broker fixture; owner live acceptance pending |
 | ADR-011 | PROPOSED | YouTube is the first live integration; Instagram then TikTok, each separately authorized and tested; UI and mocks cover all three from the outset | Parallel live integrations multiply review/support blockers | Phase 7 approval |
 | ADR-012 | PROPOSED | Research uses approved lawful sources with attribution; do not assume commercial eligibility for TikTok Research Tools or infer keyword volume from search results | Unofficial trend scraping violates the brief; no research provider selected yet | M6.3 source/budget approval |
 
@@ -56,8 +56,8 @@
 | D-012 | Upload limits / initial formats | MP4-first; propose 500 MiB and 10 minutes per original, vertical short-form focus; server validation and lower per-platform variant limits | Phase 5 | Proposed product limits, not API limits |
 | D-013 | Research source / budget | Owner-approved official game announcements and licensed/permitted search only; no source connected yet | M6.3 | Awaiting owner |
 | D-014 | Legal jurisdiction / privacy terms | Owner to confirm operating jurisdiction, privacy contact and processor agreements; do not infer from approximate chat location | Before hosted personal data | Awaiting owner |
-| D-015 | Instagram login path | Evaluate currently documented Unified Login versus Instagram Login for the owner's professional accounts; do not universally require a Facebook Page | M7.3 app-access spike | Deferred pending approved app |
-| D-016 | Unavoidable platform review | Preserve required TikTok consent/privacy/creator-info UX and other safety interventions even in full automation; confirm acceptable workflow | Phase 0 approval / M7.4 | Proposed |
+| D-015 | Instagram login path | Use Business Login for Instagram with `instagram_business_basic` and `instagram_business_content_publish`; do not universally require a Facebook Page | M7.3 app-access spike | Adapter implemented; live app/professional-account review pending owner |
+| D-016 | Unavoidable platform review | Preserve required TikTok consent/privacy/creator-info UX and other safety interventions even in full automation; confirm acceptable workflow | Phase 0 approval / M7.4 | Preserved in adapter notes and owner setup; live workflow confirmation pending |
 | D-017 | Repository license | Owner chooses license before public code distribution beyond this repository; no license invented | Before adding third-party-facing distribution | Awaiting owner |
 
 ## Approval ledger
@@ -66,7 +66,7 @@
 |---|---|---|
 | Phase 0 plan + recommended defaults | 2026-11-08 | Owner selected “Approve — start M1.1” in the approval prompt. Approves the local Next.js/TypeScript direction, YouTube-first live sequence, explicit account enablement, bounded retries and required platform consent. Authorizes **M1.1 local development only**; later milestones follow the approved small-step process. |
 
-No infrastructure authorization has been given. Supabase and Vercel being available as conversation connectors does not authorize their use. Approval of the plan alone does not authorize cloud resources, credentials, public posting or deployment; those require named, separate gates.
+The later owner authorization covered the named Supabase project, Vercel preview repair/deployment and official platform-connection work. It did not cover secret creation/copying, SMTP/provider-console configuration, production promotion, paid services or publication to an actual creator account; those remain separate owner gates.
 
 ## M1.1 compatibility result — 2026-11-08
 
@@ -126,3 +126,12 @@ The owner authorized the functional A–J delivery sequence, including the named
 - Closed direct preference/workspace writes behind the audited revision RPC; added category/platform integrity and a multi-workspace selection cookie with membership fallback.
 - Deliberately allowlisted reviewed `supabase/migrations`, `supabase/tests` and `lib/supabase/database.types.ts` in the artifact guard; other cloud/generated artifacts remain rejected.
 - Hosted RLS fixture passes and rolls back. SMTP is absent, Vercel preview SSO blocks anonymous hosted browser acceptance, and Storage-API delete is untested; these remain explicit gates rather than claimed success.
+
+
+## Batch D connection-broker decisions — 2026-11-10
+
+- Applied nine reviewed migrations rather than reapplying earlier failed or already-applied versions; canonical local/remote MD5 parity is the audit method. Two corrective migrations were added after the hosted fixture exposed a 42702 ambiguous PL/pgSQL variable and a 23514 disconnect-order check violation.
+- Instagram Business Login uses an explicit null PKCE verifier and `none` key id; Google and TikTok require encrypted verifiers. TikTok uses hex SHA256 S256, Google base64url S256. These are deliberate provider-specific contracts, not inferred NULL semantics.
+- `up17_private.service_actor_role` fails closed to `viewer`; service-role calls still re-check owner/admin membership explicitly. Browser roles receive no service RPC or private-credential grants.
+- The daily `/api/cron/connections` cron is declared in the exact reviewed `vercel.json`; no secret is in Git. Vercel Hobby runs cron daily and only on production.
+- No provider app, SMTP credential, service key, token keyring, cron bearer secret or SSO change was created by the agent. `.env.example` contains reviewed placeholders only. Live OAuth remains BLOCKED and owner acceptance is NOT RECORDED. See [Batch D report](BATCH_D_CONNECTIONS_REPORT.md) and [owner setup](OWNER_SETUP.md).

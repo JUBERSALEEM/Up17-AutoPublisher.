@@ -1,0 +1,31 @@
+Up17 Batch C — hosted Storage API acceptance
+Date: 2026-11-09 UTC (sandbox clock)
+Project: hxgokimjdormlktxjsbg
+Method: temporary challenge-gated Supabase Edge Function invoked through pg_net; synthetic confirmed user/password sign-in; real Storage API upload/download/signed URL/remove; cleanup of object, workspace and auth user. No deployment-protection bypass. No email delivery test.
+
+Executed probe: 0a8352c8-162b-4a37-83dd-7f56886ad0d3
+pg_net request id: 2
+HTTP status: 200
+Sanitized response:
+{
+  "probe": "0a8352c8-162b-4a37-83dd-7f56886ad0d3",
+  "email_delivery": "not_tested",
+  "password_signin": true,
+  "storage_api_upload": true,
+  "storage_api_download": true,
+  "signed_url_download": true,
+  "storage_api_delete": true,
+  "delete_returned_count": 1,
+  "deleted_object_absent_from_list": true,
+  "deleted_object_inaccessible": false,
+  "success": true
+}
+
+Interpretation: Storage API delete is confirmed by a one-object delete response, absence from the authenticated bucket listing, and post-run database inventory. The probe also observed that an authenticated object download remained readable during its 30-second post-delete polling window even though the object was absent from listing; this is recorded as a cache/consistency limitation, not as immediate URL revocation. Signed URLs are short-lived (60 seconds in the app route); immediate cryptographic revocation of already-issued signed URLs is not claimed.
+
+Post-run object/workspace/user cleanup inventory (executed SQL):
+synthetic_users=0
+synthetic_workspaces=0
+acceptance_objects=0
+
+Earlier failed probes were cleaned up. The temporary Edge Function `storage-acceptance` was deleted, but `public.tmp_consume_acceptance_challenge(p_digest text)`, `up17_private.acceptance_challenges`, `http` and `pg_net` remain hosted: cleanup SQL was blocked by the connector provider security filter before execution and was not retried or rewritten to bypass it. Owner-run cleanup instructions are in `docs/OWNER_SETUP.md`. This evidence does not verify hosted email delivery, hosted browser acceptance, OAuth, publishing, or immediate revocation of already-issued signed URLs.

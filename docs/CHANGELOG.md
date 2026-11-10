@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — Batch D official connections broker (2026-11-10)
+
+- Added server-side OAuth state/PKCE/binding handling, AES-256-GCM encrypted token custody, reviewed YouTube/Instagram/TikTok adapters, refresh/health/disconnect lifecycle, a bearer-protected cron endpoint and a real-account board that never enables publishing automatically.
+- Applied nine reviewed hosted migrations; verified local=remote canonical MD5 parity and a rollback hosted broker isolation fixture with zero synthetic rows afterwards. Two corrective migrations fixed an ambiguous PL/pgSQL variable and disconnect ordering against the connection-state check.
+- Added strict reviewed env-example/Vercel cron guards, their positive/negative tests, connection crypto/provider unit tests and a 155-row four-gate owner balance. Live OAuth remains blocked by owner SMTP, secrets, provider apps/app review and accessible callback deployment. See [Batch D report](BATCH_D_CONNECTIONS_REPORT.md) and [owner setup](OWNER_SETUP.md).
+- Recorded the later Batch C Storage-API delete acceptance and corrected its evidence: temporary Edge Function cleanup succeeded, but temporary SQL objects/extensions remain because cleanup SQL was blocked before execution. No bypass was attempted.
+- Corrected the development service-worker cleanup regression to assert on a genuinely fresh page after registration removal; all 13 development navigation assertions pass after the retained first failure.
+
+
 ## Unreleased — Batch C auth/data foundation (2026-11-08)
 
 - Added Supabase SSR authentication, protected workspace/preferences/inbox paths, five applied hosted migrations, private media bucket policies and a rollback multi-user RLS fixture.

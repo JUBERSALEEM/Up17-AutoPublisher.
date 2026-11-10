@@ -50,7 +50,10 @@ export default async function Page({
       />
       {params.password === "updated" ? (
         <p className="save-notice" role="status">
-          Password updated. Other sessions were signed out.
+          Password updated.{" "}
+          {params.other_sessions === "revoked"
+            ? "Other sessions were signed out."
+            : "Other-session revocation could not be confirmed; sign out of other devices manually if needed."}
         </p>
       ) : null}
       <Card className="settings-section">

@@ -1,55 +1,230 @@
 # Owner requirements balance
 
-**Updated:** 2026-11-08 UTC (Batch C execution crossed into 2026-11-09 sandbox time). This is the current product-delivery balance, not a count of pages. The original [product brief](PLAN.md) is preserved. The detailed 155-row [requirement register](REQUIREMENTS_TRACEABILITY.md) remains the source-level mapping; this page summarizes the owner's active A–J implementation batches. Historical frontend-only reports describe their original scope, not permission to call the product finished.
+**Updated:** 2026-11-10 UTC. This is the current product-delivery balance, not a page count. The original [product brief](PLAN.md) is preserved. The detailed 155-row [requirement register](REQUIREMENTS_TRACEABILITY.md) remains the canonical seven-cell status/evidence source; the separate 155-row four-gate table below gives an owner-readable balance for every requirement. Historical frontend-only reports describe their original scope, not permission to call the product finished.
 
-## Status meanings
+## Four coarse statuses
 
-- **COMPLETE:** the requested real workflow is implemented and verified at its required boundary; owner acceptance is recorded separately.
-- **PARTIAL:** some real or supporting work exists, but the full acceptance gate has not passed.
-- **DEMO:** explicitly labelled sample/simulated behavior; not real processing or publishing.
-- **BLOCKED:** a named external credential, approval, service or test access is required.
-- **MISSING:** the requested real workflow is not implemented yet.
-- **NOT REQUIRED:** the owner explicitly removed the requirement; none have been removed.
+- **COMPLETE:** the requirement's own stated boundary is implemented and verified; product-level owner acceptance is still recorded separately.
+- **PARTIAL:** implementation or tests exist, but at least one required boundary is unfinished.
+- **BLOCKED:** a named owner/external credential, approval, service or test access is required before the acceptance gate can proceed, even when code exists.
+- **MISSING:** no real implementation of the requested workflow exists yet.
+
+**DEMO is not a delivery status.** It describes explicitly labelled sample data or simulated behavior. Demo UI makes E–H PARTIAL for presentation scope; it never counts as real processing, connection, analytics or publishing.
 
 ## Batch balance
 
 | Batch | Requirement | Status | What exists / what remains |
 |---|---|---|---|
-| A | Baseline, environments and deployment repair | PARTIAL | Exact identities verified; npm root cause repaired; fresh Vercel preview `dpl_9w3SZMZsVDUjrWf2NKjcqEQ3rKdA` READY from verified commit `6ad7ae4776479d826ccfee8482d811ea4196da3d`. Anonymous hosted browser check blocked by Vercel SSO. Production still serves the old docs-only main commit. |
-| B | Rich sculptural Clay Light/Dark; flat Bento Light/Dark; all screens and devices | COMPLETE | Central sculptural material engine applied across all 12 screens; Bento explicitly flat. 62 dedicated checks and 12 reviewed screenshot baselines pass, plus 116 E2E / 82 axe / 150 viewport checks. Local technical scope verified; owner/hosted visual acceptance separate. |
-| C | Real authentication, relational persistence, RLS and private storage | PARTIAL | Five hosted migrations applied; SSR auth, cloud workspace/preferences/inbox, private media policies and rollback multi-user RLS fixture pass at tested boundaries. Hosted email delivery/recovery, SSO-protected hosted browser acceptance and Storage-API delete verification remain. See [Batch C report](BATCH_C_AUTH_REPORT.md). |
-| D | Official multi-account YouTube/Instagram/TikTok OAuth | MISSING | No provider credentials or real connected accounts. Server-side state/PKCE, encrypted token custody, refresh/revoke/health and provider review documentation remain. |
-| E | Upload, private video playback, game/category selection and versioned metadata | DEMO | Library/draft screens work with labelled sample data and browser storage. Real private upload/storage/playback and durable video records remain. BGMI and PUBG Mobile must remain distinct. |
-| F | Durable, evidence-based video/audio AI analysis | DEMO | Analysis timeline is explicitly simulated. No media worker, extracted evidence, provider result or paid AI authorization exists. |
-| G | Content-grounded, platform-specific metadata intelligence | DEMO | Local editing/suggestions exist; no real content analysis/research grounding or approved AI provider. |
-| H | Durable scheduling, retries, reconciliation and confirmed publishing | DEMO | Local schedule/queue interactions never submit a publication. Real state machine, worker, idempotency and platform confirmation remain. |
+| A | Baseline, environments and deployment repair | PARTIAL | Exact identities verified; npm root cause repaired; Vercel preview READY from a verified commit; anonymous hosted browser check blocked by team SSO. Production alias remains separate. |
+| B | Rich sculptural Clay Light/Dark; flat Bento Light/Dark; all screens and devices | COMPLETE | Central material engine applied across all 12 screens; 62 dedicated checks, 12 reviewed baselines and full local browser/axe/viewport gates pass. Owner/hosted visual acceptance separate. |
+| C | Real authentication, relational persistence, RLS and private storage | PARTIAL | Five hosted migrations, SSR auth, cloud workspace/preferences/inbox and private media policies pass at tested boundaries. Hosted RLS and later Storage-API delete probe pass; email delivery, SSO-protected browser acceptance and temporary SQL cleanup remain blocked. |
+| D | Official multi-account YouTube/Instagram/TikTok OAuth | BLOCKED | Nine migrations, server-only OAuth/token broker, encrypted custody, refresh/health/disconnect, cron, real accounts UI and hosted rollback fixture are implemented/tested. Live acceptance is blocked by owner SMTP, secrets, provider apps/app review and accessible callback deployment; no connected account is claimed. |
+| E | Upload, private video playback, game/category selection and versioned metadata | PARTIAL | Labelled demo UI and local draft interactions exist; real private upload/storage/playback and durable video records remain. BGMI and PUBG Mobile stay distinct. |
+| F | Durable, evidence-based video/audio AI analysis | PARTIAL | Explicitly simulated analysis timeline exists; no media worker, extracted evidence, provider result or paid AI authorization. |
+| G | Content-grounded, platform-specific metadata intelligence | PARTIAL | Local editing/suggestions exist; no real content analysis/research grounding or approved AI provider. |
+| H | Durable scheduling, retries, reconciliation and confirmed publishing | PARTIAL | Local schedule/queue interactions exist but never submit a publication. Real state machine, worker, idempotency and platform confirmation remain. |
 | I | Real analytics and research provenance | MISSING | Analytics explicitly unavailable; research briefs are local notes/examples. No platform metrics or retrieved research are represented as real. |
-| J | Security/browser gates, production launch and live smoke verification | MISSING | Local frontend gates pass; full product security/integration gates and a real-app production release have not run. A READY docs-only deployment is not a live product launch. |
+| J | Security/browser gates, production launch and live smoke verification | MISSING | Local frontend and hosted database gates pass; full product security/live integration gates and real-app production release have not run. READY preview is not a live launch. |
 
-**Totals: 10 batches — COMPLETE 1; PARTIAL 2; DEMO 4; BLOCKED 0; MISSING 3; NOT REQUIRED 0.** Batch statuses are not additive feature percentages. External authorization blockers will be recorded explicitly as implementation reaches them; deployment itself is now authorized.
+**Batch totals:** COMPLETE 1; PARTIAL 6; BLOCKED 1; MISSING 2. Batch statuses are not additive feature percentages. Batch D code is implemented and database-tested, but its live OAuth acceptance gate is BLOCKED by owner setup. See [Batch C report](BATCH_C_AUTH_REPORT.md), [Batch D report](BATCH_D_CONNECTIONS_REPORT.md) and [owner setup](OWNER_SETUP.md).
+
+## Four gates used per requirement
+
+| Gate | Meaning |
+|---|---|
+| Implementation | `IMPLEMENTED`, `PARTIAL`, `NOT STARTED` or `BLOCKED` code/configuration state |
+| Local tests | `PASS`, `PARTIAL`, `NOT RUN` or `BLOCKED` local executable evidence |
+| Hosted/live | `PASS`, `PARTIAL`, `NOT RUN` or `BLOCKED` hosted database/provider evidence |
+| Owner | `NOT RECORDED` or `BLOCKED`; technical tests are never owner acceptance |
+
+Matrix register statuses: BLOCKED=4, IN PROGRESS=38, PLANNED=91, TESTED=22. Per-requirement balance totals: COMPLETE=22, PARTIAL=38, BLOCKED=4, MISSING=91. Gate totals: implementation {'IMPLEMENTED': 22, 'NOT STARTED': 91, 'PARTIAL': 38, 'BLOCKED': 4}; local {'PASS': 26, 'NOT RUN': 92, 'PARTIAL': 33, 'BLOCKED': 4}; hosted/live {'NOT RUN': 138, 'PARTIAL': 12, 'BLOCKED': 4, 'PASS': 1}; owner {'NOT RECORDED': 151, 'BLOCKED': 4}. No row is owner-accepted.
+
+## Per-requirement four-gate balance — 155 rows
+
+Cross-reference each ID with the [requirement register](REQUIREMENTS_TRACEABILITY.md) for brief source, wording, milestone, destination and evidence. A `PASS` in one gate never overrides a `PARTIAL`, `NOT RUN` or `BLOCKED` result in another.
+
+| ID | Register | Balance | Implementation | Local tests | Hosted/live | Owner |
+|---|---|---|---|---|---|---|
+| GOV-001 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| GOV-002 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| GOV-003 | TESTED | COMPLETE | IMPLEMENTED | NOT RUN | NOT RUN | NOT RECORDED |
+| GOV-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| GOV-005 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| GOV-006 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| GOV-007 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| GOV-008 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| GOV-009 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| GOV-010 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| GOV-011 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | PARTIAL | NOT RECORDED |
+| GOV-012 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| GOV-013 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| GOV-014 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| GOV-015 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| GOV-016 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| PRD-001 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PRD-002 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PRD-003 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PRD-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PRD-005 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PRD-006 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PRD-007 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PRD-008 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| UX-001 | IN PROGRESS | PARTIAL | PARTIAL | PASS | NOT RUN | NOT RECORDED |
+| UX-002 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| UX-003 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| UX-004 | IN PROGRESS | PARTIAL | PARTIAL | PASS | NOT RUN | NOT RECORDED |
+| UX-005 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| UX-006 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| UX-007 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| UX-008 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| UX-009 | IN PROGRESS | PARTIAL | PARTIAL | PASS | NOT RUN | NOT RECORDED |
+| UX-010 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| UX-011 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| UX-012 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| UX-013 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| UX-014 | TESTED | COMPLETE | IMPLEMENTED | PARTIAL | NOT RUN | NOT RECORDED |
+| OVR-001 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| OVR-002 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| OVR-003 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| VID-001 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| VID-002 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| VID-003 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| VID-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| VID-005 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| VID-006 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| VID-007 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| VID-008 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| AI-001 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| AI-002 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| AI-003 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| AI-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| AI-005 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| AI-006 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| AI-007 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| AI-008 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| AI-009 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| MET-001 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| MET-002 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| MET-003 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| MET-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| MET-005 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| MET-006 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| MET-007 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| MET-008 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| MET-009 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| RES-001 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| RES-002 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| RES-003 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| RES-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| RES-005 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| SCH-001 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| SCH-002 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| SCH-003 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| SCH-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| SCH-005 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| SCH-006 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| SCH-007 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PUB-001 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PUB-002 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| PUB-003 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PUB-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PUB-005 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PUB-006 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PUB-007 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PUB-008 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PUB-009 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PUB-010 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PUB-011 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| PUB-012 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| STU-001 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| STU-002 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| STU-003 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| STU-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| STU-005 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| STU-006 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| LAB-001 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| LAB-002 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| LAB-003 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| SOC-001 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | PARTIAL | NOT RECORDED |
+| SOC-002 | IN PROGRESS | PARTIAL | PARTIAL | PASS | NOT RUN | NOT RECORDED |
+| SOC-003 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | PARTIAL | NOT RECORDED |
+| SOC-004 | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED |
+| SOC-005 | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED |
+| SOC-006 | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED |
+| SOC-007 | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED |
+| SET-001 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| SET-002 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| SET-003 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| DAT-001 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| DAT-002 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| DAT-003 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | PARTIAL | NOT RECORDED |
+| DAT-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| ARC-001 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| ARC-002 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| ARC-003 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| ARC-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| ARC-005 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| SEC-001 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | PARTIAL | NOT RECORDED |
+| SEC-002 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | PARTIAL | NOT RECORDED |
+| SEC-003 | IN PROGRESS | PARTIAL | PARTIAL | PASS | PASS | NOT RECORDED |
+| SEC-004 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | PARTIAL | NOT RECORDED |
+| SEC-005 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| SEC-006 | IN PROGRESS | PARTIAL | PARTIAL | PASS | PARTIAL | NOT RECORDED |
+| SEC-007 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | PARTIAL | NOT RECORDED |
+| SEC-008 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| SEC-009 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| SEC-010 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| NOT-001 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| NOT-002 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| NOT-003 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| NOT-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| TST-001 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| TST-002 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | PARTIAL | NOT RECORDED |
+| TST-003 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | NOT RUN | NOT RECORDED |
+| TST-004 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | PARTIAL | NOT RECORDED |
+| TST-005 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| TST-006 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| TST-007 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| TST-008 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| DEM-001 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| DEM-002 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| DEM-003 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| DEM-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| OPS-001 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| OPS-002 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| OPS-003 | IN PROGRESS | PARTIAL | PARTIAL | PARTIAL | PARTIAL | NOT RECORDED |
+| OPS-004 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| OPS-005 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| OPS-006 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| OPS-007 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| OPS-008 | PLANNED | MISSING | NOT STARTED | NOT RUN | NOT RUN | NOT RECORDED |
+| OPS-009 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
+| OPS-010 | TESTED | COMPLETE | IMPLEMENTED | PASS | NOT RUN | NOT RECORDED |
 
 ## What works now
 
 - All 12 destinations, responsive navigation, four themes and local demo interactions. Navigation repair was confirmed by the owner; commit `226ae1bf7612a3378f9281d1ed68be432bfb0218` was push-verified.
-- Supabase-backed account/workspace/preferences/inbox paths when configured and signed in; hosted database RLS/isolation fixture passes and rolls back synthetic data. Hosted email delivery and browser acceptance are not yet verified.
-- Local production-build gates before Batch A: 114 E2E, 80 axe, 90 viewport, 13 development-navigation assertions; 24 unit and 34 Python security/documentation tests. These are frontend evidence, not backend or publishing evidence.
+- Supabase-backed account/workspace/preferences/inbox paths when configured and signed in; hosted database RLS/isolation and the Batch D service-only broker rollback fixture pass and roll back synthetic data.
+- Real Accounts UI for signed-in owner/admin sessions: provider setup state, real connection identity/scopes/state, refresh/health/disconnect actions and honest publishing-disabled defaults. Demo identities remain only on the explicit no-session fallback.
+- Local production-build frontend gates, strict documentation/credential guards, connection crypto/provider unit tests and hosted migration parity. Final Batch D gates: 59 unit, 4 integration, 46 Python validator, 6 TypeScript security, 123 E2E, 85 axe, 153 viewport, 62 clay, 13 development navigation, 25-route build and 0 audit vulnerabilities.
 
-## What is still demo
+## What is still demo or missing
 
-Video library, analysis, metadata suggestions, drafts, scheduling, queue, account cards and research briefs remain labelled demo data. Notifications and workspace preferences have cloud-backed paths when signed in, but real event delivery, full privacy controls and hosted acceptance remain pending. Existing demo labels must remain until each real replacement passes its acceptance gate. No demo action publishes anything.
+Video library, analysis, metadata suggestions, drafts, scheduling, queue, demo account cards and research briefs remain labelled demo data. Real event delivery, full privacy controls, uploads/workers, grounded intelligence, confirmed publishing, analytics and hosted owner acceptance remain pending. No demo action publishes anything. Publishing/Smart AI were not touched by Batch D.
 
 ## What is connected
 
-- Supabase project `hxgokimjdormlktxjsbg` in organization `xjzpxfeqrdhjsyijotvh`: five application migrations applied, private media bucket configured and hosted RLS fixture passed. This is database/auth foundation evidence, not verified hosted email delivery or full product acceptance.
-- Vercel project `prj_uh7RosdHFABdfwRkSRg7JNmu67bK` in team `team_jEJR74nCGB4nVczqRwF0ljmM`, linked to the correct GitHub repository. Preview environment now has the public Supabase URL/publishable key and explicit DEMO mode; no privileged key is browser-exposed.
+- Supabase project `hxgokimjdormlktxjsbg` in organization `xjzpxfeqrdhjsyijotvh`: nine application migrations applied, private media bucket configured, hosted RLS and Batch D broker fixtures passed. This is database/auth/broker evidence, not live provider or email acceptance.
+- Vercel project `prj_uh7RosdHFABdfwRkSRg7JNmu67bK` in team `team_jEJR74nCGB4nVczqRwF0ljmM`, linked to the correct GitHub repository. Preview environment receives only public Supabase URL/publishable key and explicit DEMO mode; no privileged key is committed or browser-exposed.
+- No official provider application is configured by the agent. No real social account is connected.
 
-## What needs authorization or external setup
+## What needs owner setup or external authorization
 
-- The owner has authorized Supabase, Vercel, deployment and official platform connections. Provider client credentials/app review are still needed for real OAuth; no connected badge will be fabricated.
-- Paid AI/services require a separate cost proposal and explicit approval. None has been purchased.
-- Publishing to an actual creator account requires final confirmation of the exact content and action. No such publication has occurred.
-- Supabase default email delivery is not a production SMTP solution; recovery/confirmation delivery needs verification and likely an approved custom SMTP provider.
+- Configure Supabase SMTP, exact auth redirect URLs, Vercel Sensitive secrets, `UP17_SITE_URL`, the token keyring, provider client IDs/secrets and `CRON_SECRET`; exact steps are in [owner setup](OWNER_SETUP.md).
+- Create Google/Meta/TikTok apps, consent screens, scopes, exact callback URLs and complete review/audit gates. Use an owner-authenticated browser or explicitly adjust Vercel preview SSO for hosted acceptance.
+- Run the temporary Batch C SQL cleanup manually if no other hosted feature depends on the probe objects/extensions; the connector security filter blocked that SQL before execution and no bypass was attempted. See [storage evidence](evidence/batch-c-storage-api.txt) and [owner setup](OWNER_SETUP.md).
+- Paid AI/services require a separate cost proposal and approval. Publication to an actual creator account requires final confirmation of exact content/action. No such publication has occurred.
 
-## What remains / is it live?
+## Is it live?
 
-Hosted auth email delivery/recovery, hosted browser acceptance, Storage-API delete verification, provider connections, uploads, workers, grounded intelligence, confirmed publishing, real analytics and production acceptance remain. **The functional product is not live yet.** The production alias currently points to the initial documentation commit on `main`; the working application is on the fixed Arena branch. Preview build repair is verified; anonymous preview browser testing is blocked by team SSO. See [Batch B report](BATCH_B_CLAY_REPORT.md), [Batch C report](BATCH_C_AUTH_REPORT.md) and [deployment evidence](evidence/batch-a-deployment.txt) for executed checks and blockers.
+Hosted email delivery/recovery, SSO-protected hosted browser acceptance, live OAuth, provider app review, uploads, workers, grounded intelligence, confirmed publishing, real analytics, production cron and production acceptance remain. **The functional product is not live yet.** The production alias has not been promoted by the agent; the working application is on the fixed Arena branch. A READY preview is build evidence, not browser/owner acceptance. See [deployment evidence](evidence/batch-a-deployment.txt), [Batch C evidence](evidence/batch-c-auth.txt), [Batch D evidence](evidence/batch-d-connections.txt) and [test evidence](TEST_EVIDENCE.md).

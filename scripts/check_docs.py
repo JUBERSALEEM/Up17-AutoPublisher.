@@ -26,6 +26,7 @@ REQUIRED = (
     "docs/SECURITY_PRIVACY.md", "docs/UX_DESIGN_SYSTEM.md", "docs/TEST_STRATEGY.md",
     "docs/DECISIONS.md", "docs/CHANGELOG.md", "docs/SPRINT_STATUS.md",
     "docs/REPOSITORY_AUDIT.md", "docs/TEST_EVIDENCE.md",
+    "docs/BATCH_D_CONNECTIONS_REPORT.md", "docs/OWNER_SETUP.md",
 )
 STATUSES = {
     "NOT STARTED", "PLANNED", "IN PROGRESS", "BLOCKED",
@@ -34,6 +35,24 @@ STATUSES = {
 BASELINE_PLAN_SHA256 = "504cf651d731a4596285cf9a6d2ee44eae3f99f0bba89b5f4d9fec58e8fc5deb"
 ID_PATTERN = re.compile(r"^[A-Z]{2,4}-\d{3}$")
 ALLOWED_ENV_EXAMPLES = {".env.example"}
+# Names are approved for documentation; values are inert placeholders only. Real
+# values belong to the owner's deployment secret manager, never to this file.
+REVIEWED_ENV_EXAMPLE = {
+    "UP17_APP_MODE": {"DEMO"},
+    "NEXT_PUBLIC_SUPABASE_URL": {"https://your-project.supabase.co"},
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": {"sb_publishable_your-publishable-key"},
+    "UP17_SITE_URL": {"https://your-app.example.com"},
+    "SUPABASE_SERVICE_ROLE_KEY": {"your-server-only-service-key"},
+    "UP17_TOKEN_ACTIVE_KEY_ID": {"primary"},
+    "UP17_TOKEN_KEYS": {'{"primary":"your-base64-32-byte-key"}'},
+    "GOOGLE_CLIENT_ID": {"your-google-oauth-client-id"},
+    "GOOGLE_CLIENT_SECRET": {"your-google-oauth-client-secret"},
+    "INSTAGRAM_CLIENT_ID": {"your-instagram-app-id"},
+    "INSTAGRAM_CLIENT_SECRET": {"your-instagram-app-secret"},
+    "TIKTOK_CLIENT_KEY": {"your-tiktok-client-key"},
+    "TIKTOK_CLIENT_SECRET": {"your-tiktok-client-secret"},
+    "CRON_SECRET": {"your-random-cron-secret"},
+}
 MAX_SCAN_BYTES = 2_000_000
 GENERATED_DIRS = {
     "node_modules", ".next", "out", "dist", "build", "coverage", "test-results",
@@ -79,6 +98,8 @@ CREDENTIAL_ASSIGNMENT = re.compile(
 PLACEHOLDER_PREFIXES = (
     "<", "$", "process.", "import.meta", "os.environ", "z.", "your-", "your_",
     "example", "dummy", "placeholder", "redacted", "changeme", "synthetic-test", "parsed.", "passwordschema",
+    # Typed source expressions used by reviewed provider adapters, not literal secrets.
+    "secrets.", "token.", "current.", "row.", "long.", "short.", "decryptsecret(",
 )
 PLACEHOLDER_VALUES = {"string", "number", "boolean", "undefined", "null", "true", "false", "test", "testing", "fixture", "xxx", "****"}
 
@@ -149,8 +170,43 @@ def artifact_reason(relative: str) -> str | None:
 
 
 def is_placeholder(value: str) -> bool:
-    lowered = value.lower().strip("\"'`()")
+    lowered = value.lower().strip("\"'`()").rstrip(".,;:)([]{}")
     return len(lowered) < 4 or lowered in PLACEHOLDER_VALUES or lowered.startswith(PLACEHOLDER_PREFIXES)
+
+
+def env_example_reasons(data: bytes) -> list[str]:
+    seen: set[str] = set()
+    for line in data.decode("utf-8", errors="replace").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        match = re.fullmatch(r"([A-Z][A-Z0-9_]*)=(.*)", stripped)
+        if not match:
+            return ["permitted environment example contains unapproved or populated settings"]
+        name, value = match.groups()
+        if name in seen or name not in REVIEWED_ENV_EXAMPLE or value not in REVIEWED_ENV_EXAMPLE[name]:
+            return ["permitted environment example contains unapproved or populated settings"]
+        seen.add(name)
+    if "UP17_APP_MODE" not in seen:
+        return ["permitted environment example contains unapproved or populated settings"]
+    return []
+
+
+def vercel_config_reasons(data: bytes) -> list[str]:
+    try:
+        config = json.loads(data)
+    except (ValueError, UnicodeDecodeError):
+        return ["hosted build configuration is not valid JSON"]
+    expected = {
+        "$schema": "https://openapi.vercel.sh/vercel.json",
+        "framework": "nextjs",
+        "installCommand": "npx --yes npm@11.21.2 ci",
+        "buildCommand": "npx --yes npm@11.21.2 run build",
+        "crons": [{"path": "/api/cron/connections", "schedule": "0 3 * * *"}],
+    }
+    if config != expected:
+        return ["hosted build configuration differs from the reviewed credential-free policy"]
+    return []
 
 
 def privileged_jwt(text: str) -> bool:
@@ -169,30 +225,15 @@ def privileged_jwt(text: str) -> bool:
 def content_reasons(relative: str, data: bytes) -> list[str]:
     path = PurePosixPath(relative)
     if relative == ".env.example":
-        assignments = []
-        for line in data.decode("utf-8", errors="replace").splitlines():
-            stripped = line.strip()
-            if stripped and not stripped.startswith("#"):
-                assignments.append(stripped)
-        if assignments != ["UP17_APP_MODE=DEMO"]:
-            return ["permitted environment example contains unapproved or populated settings"]
-        return []
-    if relative == "vercel.json":
+        reasons = env_example_reasons(data)
+        if reasons:
+            return reasons
+    elif relative == "vercel.json":
         # Deployment is owner-authorized, but only this reviewed, credential-free
-        # build configuration may enter Git. Account links and secrets stay in Vercel.
-        try:
-            config = json.loads(data)
-        except (ValueError, UnicodeDecodeError):
-            return ["hosted build configuration is not valid JSON"]
-        expected = {
-            "$schema": "https://openapi.vercel.sh/vercel.json",
-            "framework": "nextjs",
-            "installCommand": "npx --yes npm@11.21.2 ci",
-            "buildCommand": "npx --yes npm@11.21.2 run build",
-        }
-        if config != expected:
-            return ["hosted build configuration differs from the reviewed credential-free policy"]
-        return []
+        # build configuration may enter Git. Secrets stay in Vercel.
+        reasons = vercel_config_reasons(data)
+        if reasons:
+            return reasons
     if path.name == ".npmrc":
         settings = []
         for line in data.decode("utf-8", errors="replace").splitlines():

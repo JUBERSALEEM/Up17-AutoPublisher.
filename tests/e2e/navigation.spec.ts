@@ -244,21 +244,26 @@ test("development clears an inherited production service worker @e2e @navigation
     const registrations = await navigator.serviceWorker.getRegistrations();
     return registrations.length === 0;
   });
-  // Unregistering releases the registration; a fresh document is no longer controlled.
-  // CacheStorage deletion is best-effort in the provider; without a registration it
-  // cannot serve stale development chunks.
-  await page.goto("/");
-  expect(await page.evaluate(() => navigator.serviceWorker.controller)).toBeNull();
+  // An unregistered worker can still control the document that performed the
+  // unregister until that document is closed. Open a genuinely fresh document in
+  // the same context after the registration count reaches zero. CacheStorage
+  // deletion is best-effort in the provider; without a registration it cannot
+  // serve stale development chunks.
+  const fresh = await page.context().newPage();
+  await fresh.goto("/");
+  await fresh.waitForFunction(() => navigator.serviceWorker.controller === null);
+  expect(await fresh.evaluate(() => navigator.serviceWorker.controller)).toBeNull();
   expect(
-    await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length),
+    await fresh.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length),
   ).toBe(0);
-  await page
+  await fresh
     .getByRole("navigation", { name: "Main navigation", exact: true })
     .getByRole("link", { name: "Video Studio", exact: true })
     .click();
   await expectRoute(
-    page,
+    fresh,
     allDestinations.find((item) => item.href === "/video-studio")!,
     "desktop",
   );
+  await fresh.close();
 });
