@@ -33,9 +33,11 @@ test("owner-requested login/signup aliases and confirmation recovery render real
   await page.goto("/login");
   await expect(page).toHaveURL(/\/sign-in$/);
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+  await expect(page.getByTestId("preview-access-note")).toBeVisible();
   await page.goto("/signup");
   await expect(page).toHaveURL(/\/sign-up$/);
   await expect(page.getByRole("heading", { name: "Create your creator account" })).toBeVisible();
+  await expect(page.getByTestId("preview-access-note")).toBeVisible();
   await page.goto("/auth/verify-email");
   await expect(page.getByRole("heading", { name: "Confirm your email" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Resend confirmation email" })).toBeDisabled();

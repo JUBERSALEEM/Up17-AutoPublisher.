@@ -76,6 +76,12 @@ export function AuthForm({
         <p className="eyebrow">Real account · verified workspace</p>
         <h1>{titles[mode]}</h1>
         <p className="muted">{descriptions[mode]}</p>
+        {mode === "sign-in" || mode === "sign-up" ? (
+          <p className="field-hint small wrap-anywhere" data-testid="preview-access-note">
+            Preview access: a Vercel Protected Deployment sign-in is a separate security gate for
+            this private Preview. This Up17 page is your real email/password account.
+          </p>
+        ) : null}
         {expired ? (
           <p className="validation-summary" role="alert">
             This link is invalid or expired. Request a fresh email.
