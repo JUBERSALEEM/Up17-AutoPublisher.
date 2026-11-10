@@ -23,13 +23,20 @@ export function providerSecrets(platform: ConnectionPlatform): ProviderSecrets |
   return { clientId, clientSecret };
 }
 
+/**
+ * Minimum foundation scopes only. Publishing scopes are not requested until a
+ * separate reviewed milestone; no stored connection is a publishing permission.
+ */
 export const providerScopes: Record<ConnectionPlatform, string[]> = {
-  youtube: [
-    "https://www.googleapis.com/auth/youtube.readonly",
-    "https://www.googleapis.com/auth/youtube.upload",
-  ],
-  instagram: ["instagram_business_basic", "instagram_business_content_publish"],
-  tiktok: ["user.info.basic", "video.publish"],
+  youtube: ["https://www.googleapis.com/auth/youtube.readonly"],
+  instagram: ["instagram_business_basic"],
+  tiktok: ["user.info.basic"],
+};
+
+export const publishingScopes: Record<ConnectionPlatform, string[]> = {
+  youtube: ["https://www.googleapis.com/auth/youtube.upload"],
+  instagram: ["instagram_business_content_publish"],
+  tiktok: ["video.publish"],
 };
 
 /** Instagram Business Login has no PKCE verifier; TikTok uses the documented hex S256 form. */
@@ -47,8 +54,9 @@ export function providerAvailability(): ProviderAvailability[] {
       configured: Boolean(providerSecrets("youtube")),
       loginPath: "Google OAuth 2.0 for Web Server",
       scopes: providerScopes.youtube,
+      publishingScopes: publishingScopes.youtube,
       reviewNote:
-        "Google OAuth consent screen and YouTube API scope verification may be required before external users can authorize.",
+        "Google Cloud project, YouTube Data API v3, OAuth consent screen, exact bridge redirect URI and credential storage are owner-only. Publishing scope is not requested.",
     },
     {
       platform: "instagram",
@@ -56,8 +64,9 @@ export function providerAvailability(): ProviderAvailability[] {
       configured: Boolean(providerSecrets("instagram")),
       loginPath: "Business Login for Instagram",
       scopes: providerScopes.instagram,
+      publishingScopes: publishingScopes.instagram,
       reviewNote:
-        "Meta Business app, Instagram professional account and Advanced Access review are required for public use.",
+        "Meta Business app, Instagram professional account, exact bridge redirect URI, permission access and app review are owner-only. Publishing permission is not requested.",
     },
     {
       platform: "tiktok",
@@ -65,8 +74,9 @@ export function providerAvailability(): ProviderAvailability[] {
       configured: Boolean(providerSecrets("tiktok")),
       loginPath: "TikTok Login Kit for Web",
       scopes: providerScopes.tiktok,
+      publishingScopes: publishingScopes.tiktok,
       reviewNote:
-        "TikTok app review and Direct Post audit restrictions apply; unaudited clients may remain private/self-test only.",
+        "TikTok app, Login Kit, exact bridge redirect URI, account eligibility and review are owner-only. Direct Post audit and video.publish are not part of this foundation.",
     },
   ];
 }
@@ -424,6 +434,15 @@ export async function revokeProviderToken(
       code: error instanceof Error ? error.message.slice(0, 120) : "remote_revoke_failed",
     };
   }
+}
+
+/** Reject any extra permission, especially a publishing scope, before storing a token. */
+export function foundationScopesOnly(platform: ConnectionPlatform, granted: string[]): boolean {
+  const expected = [...providerScopes[platform]].sort();
+  const actual = [...new Set(granted.map((scope) => scope.trim()).filter(Boolean))].sort();
+  return (
+    actual.length === expected.length && actual.every((scope, index) => scope === expected[index])
+  );
 }
 
 export function connectionStateForScopes(

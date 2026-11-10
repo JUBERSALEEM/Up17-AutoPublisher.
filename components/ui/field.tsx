@@ -133,14 +133,20 @@ export function Toggle({
   checked,
   onChange,
   disabled,
+  disabledReason,
 }: {
   label: string;
   description?: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
+  disabledReason?: string;
 }) {
   const id = useId();
+  const describedBy =
+    [description ? `${id}-desc` : "", disabled && disabledReason ? `${id}-disabled` : ""]
+      .filter(Boolean)
+      .join(" ") || undefined;
   return (
     <div className="toggle-row">
       <div>
@@ -152,13 +158,19 @@ export function Toggle({
             {description}
           </p>
         ) : null}
+        {disabled && disabledReason ? (
+          <p className="field-hint small" id={`${id}-disabled`}>
+            {disabledReason}
+          </p>
+        ) : null}
       </div>
       <button
         id={id}
         type="button"
         role="switch"
         aria-checked={checked}
-        aria-describedby={description ? `${id}-desc` : undefined}
+        aria-describedby={describedBy}
+        title={disabled && disabledReason ? disabledReason : undefined}
         className={`toggle ${checked ? "toggle-on" : ""}`}
         disabled={disabled}
         onClick={() => onChange(!checked)}

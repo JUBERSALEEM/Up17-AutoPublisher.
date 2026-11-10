@@ -104,6 +104,12 @@ function ProfileForm({
           onChange={(e) => update("name", e.target.value)}
           maxLength={48}
           disabled={!canRename}
+          title={
+            canRename ? undefined : "Only workspace owners/admins can rename the private workspace."
+          }
+          hint={
+            canRename ? undefined : "Only workspace owners/admins can rename the private workspace."
+          }
           required
         />
         <Input
@@ -171,6 +177,7 @@ function ProfileForm({
           variant="primary"
           loading={submitting}
           disabled={submitting}
+          disabledReason="A workspace preferences save is in progress; wait for it to finish."
           icon={<Save size={17} />}
         >
           Save workspace
@@ -263,6 +270,7 @@ export function SettingsPanel() {
               description="Minimize transitions and animated effects. Your device’s reduced-motion setting is always respected."
               checked={preferences.reduceMotion}
               disabled={pending}
+              disabledReason="A workspace preferences save is in progress; wait for it to finish."
               onChange={async (value) => {
                 const persisted = await update({ reduceMotion: value });
                 setNotice(
@@ -319,6 +327,7 @@ export function SettingsPanel() {
                 }
                 checked={preferences.notifications[category]}
                 disabled={pending}
+                disabledReason="A workspace preferences save is in progress; wait for it to finish."
                 onChange={async (value) => {
                   const persisted = await update({
                     notifications: { ...preferences.notifications, [category]: value },
@@ -481,6 +490,7 @@ export function SettingsPanel() {
               size="sm"
               variant="ghost"
               disabled={pending}
+              disabledReason="A workspace preferences save is in progress; wait for it to finish."
               onClick={async () => {
                 const persisted = await update({
                   ...defaultPreferences,

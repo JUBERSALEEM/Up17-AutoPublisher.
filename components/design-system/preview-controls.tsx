@@ -35,7 +35,11 @@ export function PreviewControls() {
           <Button variant="ghost" onClick={() => setAbout(true)}>
             Accessibility
           </Button>
-          <Button disabled title="Publishing requires a separately approved integration">
+          <Button
+            disabled
+            disabledReason="Publishing requires a separately approved integration; this design-system button is an illustration only."
+            title="Publishing requires a separately approved integration"
+          >
             Publish unavailable
           </Button>
         </div>

@@ -12,5 +12,9 @@ export const signUpSchema = z.object({
   password: passwordSchema,
   displayName: z.string().trim().min(1).max(80),
 });
-export type AuthFormState = { status: "idle" | "error" | "success"; message: string };
+export type AuthFormState = {
+  status: "idle" | "error" | "success";
+  message: string;
+  action?: "sign-in" | "resend" | "retry";
+};
 export const initialAuthState: AuthFormState = { status: "idle", message: "" };

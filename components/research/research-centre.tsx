@@ -386,7 +386,11 @@ export function ResearchCentre() {
                     feature="Refresh research"
                     reason="A compliant research adapter and source allowlist require a later approved integration phase."
                   />
-                  <Button disabled title="No research source is connected">
+                  <Button
+                    disabled
+                    disabledReason="No compliant research source allowlist or adapter is connected."
+                    title="No research source is connected"
+                  >
                     Check for updates unavailable
                   </Button>
                 </Card>

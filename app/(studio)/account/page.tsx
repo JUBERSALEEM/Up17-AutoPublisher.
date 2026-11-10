@@ -4,6 +4,7 @@ import { ShieldCheck, LogOut } from "lucide-react";
 import { Badge, Button, Card, CardHeader, Unavailable } from "@/components/ui";
 import { PageHeader } from "@/components/features/common";
 import { getWorkspaceContext } from "@/lib/auth/workspace";
+import { getAccountSession } from "@/lib/auth/session";
 import { supabaseConfigAvailable } from "@/lib/supabase/config";
 import { signOut } from "@/lib/auth/actions";
 import { selectWorkspace } from "@/lib/auth/workspace-actions";
@@ -26,8 +27,11 @@ export default async function Page({
         </Link>
       </div>
     );
+  const session = await getAccountSession();
+  if (!session) redirect("/login?next=/account");
+  if (!session.confirmed) redirect("/auth/verify-email?next=/account");
   const workspace = await getWorkspaceContext();
-  if (!workspace) redirect("/sign-in?next=/account");
+  if (!workspace) redirect("/onboarding?next=/account");
   const params = await searchParams;
   const client = await createSupabaseServerClient();
   const { data: memberships } = await client!

@@ -4,22 +4,34 @@ import { useActionState } from "react";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { Button, Card, Input } from "@/components/ui";
 import { initialAuthState } from "@/lib/auth/schema";
-import { signIn, signUp, resetPassword, updatePassword } from "@/lib/auth/actions";
+import {
+  signIn,
+  signUp,
+  resetPassword,
+  updatePassword,
+  resendConfirmation,
+} from "@/lib/auth/actions";
+
 const actions = {
   "sign-in": signIn,
   "sign-up": signUp,
   reset: resetPassword,
   update: updatePassword,
+  verify: resendConfirmation,
 };
 
 export function AuthForm({
   mode,
   next = "/account",
   expired = false,
+  authAvailable = true,
+  defaultEmail = "",
 }: {
-  mode: "sign-in" | "sign-up" | "reset" | "update";
+  mode: "sign-in" | "sign-up" | "reset" | "update" | "verify";
   next?: string;
   expired?: boolean;
+  authAvailable?: boolean;
+  defaultEmail?: string;
 }) {
   const [state, submit, pending] = useActionState(actions[mode], initialAuthState);
   const titles = {
@@ -27,20 +39,43 @@ export function AuthForm({
     "sign-up": "Create your creator account",
     reset: "Reset your password",
     update: "Choose a new password",
+    verify: "Confirm your email",
   };
+  const descriptions = {
+    "sign-in":
+      "Sign in to your private workspace. Video, AI, scheduling, analytics and publishing screens remain labelled sample workflows.",
+    "sign-up":
+      "Create a real account with email and password. Confirmation is required before the verified workspace is created.",
+    reset:
+      "Request a one-time recovery link. For security, the result is the same whether or not the address has an account.",
+    update:
+      "Choose a new password for your confirmed account. Other sessions are revoked where supported.",
+    verify:
+      "Check your inbox for the confirmation link. Open it in this browser, then sign in. If the email was interrupted, request a fresh one below.",
+  };
+  const submitLabels = {
+    "sign-in": "Sign in",
+    "sign-up": "Create account",
+    reset: "Send recovery link",
+    update: "Update password",
+    verify: "Resend confirmation email",
+  };
+  const submitDisabled = pending || !authAvailable;
+  const submitReason = !authAvailable
+    ? "Authentication is not configured in this local preview. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in the deployment to enable real sign-in."
+    : pending
+      ? "Submitting securely; wait for the result before trying again."
+      : "Your credentials are sent only to the configured Supabase Auth server; no social password is requested.";
   return (
     <div className="page auth-page">
       <Link href="/" className="text-link small">
-        <ArrowLeft size={16} /> Explore the labelled demo
+        <ArrowLeft size={16} /> Back to sample-data overview
       </Link>
       <Card className="auth-card">
         <ShieldCheck size={30} aria-hidden="true" />
-        <p className="eyebrow">Your private creator workspace</p>
+        <p className="eyebrow">Real account · verified workspace</p>
         <h1>{titles[mode]}</h1>
-        <p className="muted">
-          Account and workspace settings use protected cloud storage. Video, analysis and publishing
-          screens remain labelled demos.
-        </p>
+        <p className="muted">{descriptions[mode]}</p>
         {expired ? (
           <p className="validation-summary" role="alert">
             This link is invalid or expired. Request a fresh email.
@@ -52,9 +87,25 @@ export function AuthForm({
             role={state.status === "error" ? "alert" : "status"}
           >
             {state.message}
+            {state.action === "resend" ? (
+              <>
+                {" "}
+                <Link href="/auth/verify-email" className="text-link">
+                  Resend confirmation email
+                </Link>
+              </>
+            ) : null}
+            {state.action === "sign-in" ? (
+              <>
+                {" "}
+                <Link href="/login" className="text-link">
+                  Sign in
+                </Link>
+              </>
+            ) : null}
           </p>
         ) : null}
-        {state.status !== "success" ? (
+        {state.status !== "success" || mode === "verify" ? (
           <form action={submit} className="stack">
             <input type="hidden" name="next" value={next} />
             {mode === "sign-up" ? (
@@ -72,11 +123,12 @@ export function AuthForm({
                 name="email"
                 type="email"
                 autoComplete="email"
+                defaultValue={defaultEmail}
                 maxLength={254}
                 required
               />
             ) : null}
-            {mode !== "reset" ? (
+            {mode !== "reset" && mode !== "verify" ? (
               <Input
                 label={mode === "update" ? "New password" : "Password"}
                 name="password"
@@ -103,37 +155,53 @@ export function AuthForm({
                 required
               />
             ) : null}
-            <Button type="submit" variant="primary" loading={pending} disabled={pending}>
-              {
-                {
-                  "sign-in": "Sign in",
-                  "sign-up": "Create account",
-                  reset: "Send recovery link",
-                  update: "Update password",
-                }[mode]
-              }
+            <Button
+              type="submit"
+              variant="primary"
+              loading={pending}
+              disabled={submitDisabled}
+              aria-describedby="auth-submit-reason"
+              title={submitReason}
+            >
+              {submitLabels[mode]}
             </Button>
+            <p id="auth-submit-reason" className="field-hint">
+              {submitReason}
+            </p>
           </form>
         ) : null}
         <div className="auth-links">
           {mode === "sign-in" ? (
             <>
-              <Link href="/sign-up" className="text-link">
+              <Link href="/signup" className="text-link">
                 Create an account
               </Link>
               <Link href="/reset-password" className="text-link">
                 Forgot password?
               </Link>
+              <Link href="/auth/verify-email" className="text-link">
+                Confirm email
+              </Link>
+            </>
+          ) : mode === "verify" ? (
+            <>
+              <Link href="/login" className="text-link">
+                Already confirmed? Sign in
+              </Link>
+              <Link href="/signup" className="text-link">
+                Use a different address
+              </Link>
             </>
           ) : (
-            <Link href="/sign-in" className="text-link">
+            <Link href="/login" className="text-link">
               Back to sign in
             </Link>
           )}
         </div>
         <p className="field-hint">
-          Email confirmation is required. Production email delivery is still being verified. No
-          social account is connected by creating this account.
+          Email confirmation is required. Custom SMTP delivery is owner-verified; use resend if a
+          message does not arrive. Creating this account does not connect a social account or enable
+          publishing.
         </p>
       </Card>
     </div>

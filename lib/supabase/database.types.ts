@@ -109,6 +109,10 @@ export interface Database {
         Args: { target_workspace: string; expected_revision: number; proposed_settings: Json };
         Returns: number;
       };
+      up17_ensure_first_workspace: {
+        Args: Record<string, never>;
+        Returns: string;
+      };
     };
     Enums: { member_role: MemberRole };
     CompositeTypes: Record<string, never>;

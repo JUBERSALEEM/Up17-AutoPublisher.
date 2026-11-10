@@ -17,24 +17,27 @@ const providers: ProviderAvailability[] = [
     label: "YouTube",
     configured: true,
     loginPath: "Google OAuth 2.0 for Web Server",
-    scopes: ["youtube.readonly", "youtube.upload"],
-    reviewNote: "Consent screen and verification apply.",
+    scopes: ["https://www.googleapis.com/auth/youtube.readonly"],
+    publishingScopes: ["https://www.googleapis.com/auth/youtube.upload"],
+    reviewNote: "Consent screen and exact redirect URI are owner-only.",
   },
   {
     platform: "instagram",
     label: "Instagram",
     configured: true,
     loginPath: "Business Login for Instagram",
-    scopes: ["instagram_business_basic", "instagram_business_content_publish"],
-    reviewNote: "Professional account and review apply.",
+    scopes: ["instagram_business_basic"],
+    publishingScopes: ["instagram_business_content_publish"],
+    reviewNote: "Professional account and review are owner-only.",
   },
   {
     platform: "tiktok",
     label: "TikTok",
     configured: true,
     loginPath: "TikTok Login Kit for Web",
-    scopes: ["user.info.basic", "video.publish"],
-    reviewNote: "Direct Post audit applies.",
+    scopes: ["user.info.basic"],
+    publishingScopes: ["video.publish"],
+    reviewNote: "Direct Post audit applies to a later publishing milestone.",
   },
 ];
 
@@ -81,6 +84,7 @@ const ready: DeploymentReadiness = {
   keyringConfigured: true,
   connectionReadError: false,
   providerCredentials: { youtube: true, instagram: true, tiktok: true },
+  providerConfigurationVerified: { youtube: true, instagram: true, tiktok: true },
   callbackPaths: {
     youtube: "/api/connections/callback/youtube",
     instagram: "/api/connections/callback/instagram",
@@ -118,10 +122,23 @@ function connection(
 }
 
 describe("unified Accounts readiness", () => {
-  it("defines exactly the ten owner-visible statuses with a tone", () => {
-    expect(connectionStatuses).toHaveLength(10);
-    expect(new Set(connectionStatuses).size).toBe(10);
+  it("defines every owner-visible status with a tone", () => {
+    expect(connectionStatuses).toHaveLength(13);
+    expect(new Set(connectionStatuses).size).toBe(13);
     for (const status of connectionStatuses) expect(statusTone[status]).toBeDefined();
+    for (const status of [
+      "Sign in required",
+      "Workspace setup required",
+      "Provider credentials missing",
+      "Provider configuration incomplete",
+      "Ready",
+      "Connection in progress",
+      "Connected",
+      "Failed",
+      "Reauthorization required",
+    ] as const) {
+      expect(connectionStatuses).toContain(status);
+    }
   });
 
   it("always exposes the three exact real connection buttons", () => {
@@ -131,6 +148,7 @@ describe("unified Accounts readiness", () => {
       "Connect Instagram",
       "Connect TikTok",
     ]);
+    expect(cards.every((card) => card.nextSteps.length > 0)).toBe(true);
   });
 
   it("resolves deployment and owner blockers in precedence order", () => {
@@ -138,11 +156,17 @@ describe("unified Accounts readiness", () => {
       [{ publicSupabaseConfigured: false }, "Not configured"],
       [{ exactSiteUrlConfigured: false }, "Not configured"],
       [{ serverKeyConfigured: false }, "Not configured"],
-      [{ authenticated: false }, "Authentication required"],
+      [{ authenticated: false }, "Sign in required"],
       [{ workspaceReady: false }, "Workspace setup required"],
       [{ canManage: false }, "Workspace setup required"],
       [{ connectionReadError: true }, "Error"],
       [{ keyringConfigured: false }, "Encryption keyring missing"],
+      [
+        {
+          providerConfigurationVerified: { youtube: false, instagram: false, tiktok: false },
+        },
+        "Provider configuration incomplete",
+      ],
     ];
     for (const [override, expected] of cases) {
       const cards = buildProviderCards({ ...ready, ...override }, providers, []);
@@ -165,13 +189,13 @@ describe("unified Accounts readiness", () => {
     expect(cards[0].description).toContain(
       "https://example.supabase.co/functions/v1/up17-oauth-callback?mode=callback&platform=youtube",
     );
-    expect(cards[1].status).toBe("Ready to connect");
-    expect(cards[2].status).toBe("Ready to connect");
+    expect(cards[1].status).toBe("Ready");
+    expect(cards[2].status).toBe("Ready");
   });
 
-  it("reports Ready to connect only when every server-side gate is present", () => {
+  it("reports Ready only when every server-side and owner-verified gate is present", () => {
     const cards = buildProviderCards(ready, providers, []);
-    expect(cards.every((card) => card.status === "Ready to connect")).toBe(true);
+    expect(cards.every((card) => card.status === "Ready")).toBe(true);
     expect(cards.every((card) => card.canStart)).toBe(true);
     expect(cards.every((card) => card.blocker === null)).toBe(true);
   });
@@ -180,9 +204,9 @@ describe("unified Accounts readiness", () => {
     const states: Array<[RealConnection["state"], string]> = [
       ["connected", "Connected"],
       ["limited_permissions", "Limited permissions"],
-      ["needs_authorisation", "Needs reauthorization"],
-      ["pending", "Needs reauthorization"],
-      ["error", "Error"],
+      ["needs_authorisation", "Reauthorization required"],
+      ["pending", "Connection in progress"],
+      ["error", "Failed"],
     ];
     for (const [state, expected] of states) {
       const cards = buildProviderCards(ready, providers, [connection("youtube", state)]);
@@ -191,19 +215,24 @@ describe("unified Accounts readiness", () => {
     const disconnected = buildProviderCards(ready, providers, [
       connection("youtube", "disconnected"),
     ]);
-    expect(disconnected[0].status).toBe("Ready to connect");
+    expect(disconnected[0].status).toBe("Ready");
   });
 
-  it("keeps a connected account visible while disabling a duplicate connect", () => {
-    const cards = buildProviderCards(ready, providers, [connection("instagram", "connected")]);
-    expect(cards[1].status).toBe("Connected");
-    expect(cards[1].canStart).toBe(false);
-    expect(cards[1].connection?.platform).toBe("instagram");
+  it("keeps connected and in-progress accounts visible while disabling duplicate starts", () => {
+    const connectedCards = buildProviderCards(ready, providers, [
+      connection("instagram", "connected"),
+    ]);
+    expect(connectedCards[1].status).toBe("Connected");
+    expect(connectedCards[1].canStart).toBe(false);
+    const pendingCards = buildProviderCards(ready, providers, [connection("youtube", "pending")]);
+    expect(pendingCards[0].status).toBe("Connection in progress");
+    expect(pendingCards[0].canStart).toBe(false);
   });
 
-  it("does not turn owner-verification checks into app-inferred blockers", () => {
+  it("shows owner-verification checks as explicit next steps, not silent blockers", () => {
     const cards = buildProviderCards(ready, providers, []);
-    expect(cards[0].missing.map((check) => check.id)).toEqual([]);
+    expect(cards[0].missing.some((check) => check.id === "owner-only")).toBe(true);
+    expect(cards[0].nextSteps.join(" ")).toContain("Supabase custom SMTP");
     expect(ready.checks.find((check) => check.id === "owner-only")?.ownerVerification).toBe(true);
   });
 

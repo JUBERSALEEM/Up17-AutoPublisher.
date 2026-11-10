@@ -78,19 +78,90 @@ function SearchDialog({ open, onClose }: { open: boolean; onClose: () => void })
 export function AppShell({
   children,
   authAvailable = false,
+  signedIn = false,
+  emailConfirmed = false,
+  safeMode = true,
   connectedCount = 0,
 }: {
   children: ReactNode;
   authAvailable?: boolean;
+  signedIn?: boolean;
+  emailConfirmed?: boolean;
+  safeMode?: boolean;
   connectedCount?: number;
 }) {
   const pathname = usePathname();
   const current = destinationForPath(pathname);
+  const accountRoutes = [
+    "/login",
+    "/signup",
+    "/sign-in",
+    "/sign-up",
+    "/reset-password",
+    "/auth/verify-email",
+    "/auth/update-password",
+    "/onboarding",
+    "/account",
+    "/accounts",
+    "/settings",
+  ];
+  const accountRoute = accountRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
   const [searchOpen, setSearchOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const { canInstall, install, installed } = usePwa();
   const { preferences, cloud } = usePreferences();
+  const privateWorkspace = Boolean(cloud);
+  const badgeLabel = accountRoute
+    ? privateWorkspace
+      ? "Private workspace"
+      : "Real account controls"
+    : safeMode
+      ? "Demo mode"
+      : "Safe preview";
+  const mobileBadgeLabel = accountRoute
+    ? privateWorkspace
+      ? "Private"
+      : "Account"
+    : safeMode
+      ? "Demo"
+      : "Safe";
+  const profileName = cloud?.displayName ?? (accountRoute ? "Not signed in" : "Local creator");
+  const profileEmail = cloud
+    ? cloud.email
+    : accountRoute
+      ? signedIn
+        ? emailConfirmed
+          ? "Workspace setup pending"
+          : "Confirm your email to finish setup"
+        : "No private session"
+      : "Demo profile · not signed in";
+  const workspaceTitle = cloud
+    ? preferences.name
+    : accountRoute
+      ? "No private workspace"
+      : preferences.name;
+  const workspaceSubtitle = cloud
+    ? "Private creator workspace"
+    : accountRoute
+      ? "Sign in to create one"
+      : "Creator workspace · sample data";
+  const workspaceAvatar = cloud
+    ? cloud.displayName.slice(0, 2).toUpperCase()
+    : accountRoute
+      ? "—"
+      : "U17";
+  const additionalWorkspaceReason = privateWorkspace
+    ? "Additional workspaces need a separate reviewed invitation flow. This milestone creates only the first verified owner workspace."
+    : !authAvailable
+      ? "Authentication is not configured in this local preview. Set the public Supabase URL and publishable key in the deployment."
+      : signedIn && !emailConfirmed
+        ? "Confirm your email before a first workspace can be created."
+        : signedIn && emailConfirmed
+          ? "Finish verified onboarding; it creates your first owner workspace server-side."
+          : "Sign up, confirm your email, then verified onboarding creates your first owner workspace.";
   useEffect(() => {
     document.documentElement.dataset.motion = preferences.reduceMotion ? "reduce" : "system";
   }, [preferences.reduceMotion]);
@@ -113,12 +184,12 @@ export function AppShell({
       type="button"
       className="workspace-switch"
       onClick={() => setWorkspaceOpen(true)}
-      title="View workspace details"
+      title={privateWorkspace ? "View private workspace details" : "View workspace setup"}
     >
-      <span className="workspace-avatar">U17</span>
+      <span className="workspace-avatar">{workspaceAvatar}</span>
       <span className="workspace-copy">
-        <strong>{preferences.name}</strong>
-        <span>Creator workspace</span>
+        <strong>{workspaceTitle}</strong>
+        <span>{workspaceSubtitle}</span>
       </span>
       <ChevronDown size={16} aria-hidden="true" />
     </button>
@@ -173,6 +244,7 @@ export function AppShell({
             type="button"
             className="btn btn-secondary btn-sm install-button"
             disabled={!canInstall}
+            aria-describedby={!canInstall ? "install-disabled-reason" : undefined}
             title={
               installed
                 ? "Already installed"
@@ -185,6 +257,12 @@ export function AppShell({
             <Download size={17} aria-hidden="true" />
             {installed ? "App installed" : "Install app"}
           </button>
+          {!canInstall && !installed ? (
+            <p id="install-disabled-reason" className="field-hint small">
+              Install is disabled because this browser has not offered an install prompt. Use your
+              browser menu to install the app when it is available.
+            </p>
+          ) : null}
         </div>
       </aside>
       <div className="shell-main">
@@ -200,10 +278,18 @@ export function AppShell({
           </div>
           <div className="topbar-actions">
             <span className="demo-desktop">
-              <DemoBadge label="Demo mode" />
+              {accountRoute ? (
+                <Badge tone={privateWorkspace ? "success" : "neutral"}>{badgeLabel}</Badge>
+              ) : (
+                <DemoBadge label={badgeLabel} />
+              )}
             </span>
             <span className="demo-mobile">
-              <DemoBadge label="Demo" />
+              {accountRoute ? (
+                <Badge tone={privateWorkspace ? "success" : "neutral"}>{mobileBadgeLabel}</Badge>
+              ) : (
+                <DemoBadge label={mobileBadgeLabel} />
+              )}
             </span>
             <button type="button" className="search-trigger" onClick={() => setSearchOpen(true)}>
               <Search size={17} aria-hidden="true" />
@@ -236,13 +322,15 @@ export function AppShell({
                 <>
                   <div className="profile-summary">
                     <span className="profile-avatar">
-                      {cloud ? cloud.displayName.slice(0, 2).toUpperCase() : "JC"}
+                      {cloud
+                        ? cloud.displayName.slice(0, 2).toUpperCase()
+                        : accountRoute
+                          ? "—"
+                          : "JC"}
                     </span>
                     <div>
-                      <strong>{cloud?.displayName ?? "Local creator"}</strong>
-                      <p className="field-hint">
-                        {cloud ? cloud.email : "Demo profile · not signed in"}
-                      </p>
+                      <strong>{profileName}</strong>
+                      <p className="field-hint">{profileEmail}</p>
                     </div>
                   </div>
                   <Link className="menu-item" href="/settings" onClick={close}>
@@ -255,8 +343,12 @@ export function AppShell({
                     <ShieldCheck size={15} aria-hidden="true" />
                     {cloud ? (
                       "Private session · social accounts not connected"
+                    ) : signedIn && !emailConfirmed ? (
+                      <Link href="/auth/verify-email" onClick={close}>
+                        Confirm your email to finish setup
+                      </Link>
                     ) : authAvailable ? (
-                      <Link href="/sign-in" onClick={close}>
+                      <Link href="/login" onClick={close}>
                         Sign in to your workspace
                       </Link>
                     ) : (
@@ -276,8 +368,10 @@ export function AppShell({
           <span>
             <span className="status-dot" aria-hidden="true" />
             {cloud
-              ? "Private workspace · creator workflows still demo"
-              : "Local frontend · integrations not connected"}
+              ? "Private workspace · creator workflows still labelled demo"
+              : accountRoute
+                ? "Not signed in · real account controls; sample workflows remain labelled demo"
+                : "Local frontend · integrations not connected"}
           </span>
         </footer>
       </div>
@@ -333,8 +427,14 @@ export function AppShell({
       <Dialog
         open={workspaceOpen}
         onClose={() => setWorkspaceOpen(false)}
-        title={preferences.name}
-        description={cloud ? "Your private creator workspace" : "Your local creator workspace"}
+        title={workspaceTitle}
+        description={
+          cloud
+            ? "Your private creator workspace"
+            : accountRoute
+              ? "Sign in and confirm your email before a private workspace exists"
+              : "Your local creator workspace"
+        }
         footer={
           <Button variant="primary" onClick={() => setWorkspaceOpen(false)}>
             Done
@@ -344,7 +444,9 @@ export function AppShell({
         <div className="stack">
           <div className="spread">
             <span className="muted small">Workspace handle</span>
-            <strong>@up17longshotyt</strong>
+            <strong>
+              {cloud ? "Private workspace" : accountRoute ? "Sign-in required" : "@up17longshotyt"}
+            </strong>
           </div>
           <div className="spread">
             <span className="muted small">Content focus</span>
@@ -355,14 +457,46 @@ export function AppShell({
             <Badge tone={connectedCount ? "success" : "warning"}>{connectedCount} connected</Badge>
           </div>
           <p className="unavailable-note">
-            <strong>{cloud ? "Private workspace." : "One local workspace."}</strong>{" "}
+            <strong>{cloud ? "Private workspace." : "No private workspace."}</strong>{" "}
             {cloud
               ? `Your role is ${cloud.role}. ${connectedCount > 0 ? `${connectedCount} real account${connectedCount === 1 ? "" : "s"} connected` : "No real accounts connected"}; publishing remains disabled.`
-              : "This is browser-local demo data. Sign in to use a private cloud workspace when authentication is configured."}
+              : accountRoute
+                ? additionalWorkspaceReason
+                : "This is browser-local demo data. Sign in to use a private cloud workspace when authentication is configured."}
           </p>
-          <Button disabled title="Workspace creation requires the backend phase">
-            Create workspace unavailable
-          </Button>
+          <p id="workspace-setup-reason" className="field-hint small">
+            {additionalWorkspaceReason}
+          </p>
+          {cloud ? (
+            <Button
+              disabled
+              aria-describedby="workspace-setup-reason"
+              title={additionalWorkspaceReason}
+            >
+              Create workspace unavailable
+            </Button>
+          ) : accountRoute && authAvailable ? (
+            <Link
+              className="btn btn-primary btn-md"
+              href={
+                signedIn && !emailConfirmed
+                  ? "/auth/verify-email"
+                  : signedIn && emailConfirmed
+                    ? "/onboarding"
+                    : "/signup?next=/onboarding"
+              }
+            >
+              {signedIn ? "Finish workspace setup" : "Create your private workspace"}
+            </Link>
+          ) : (
+            <Button
+              disabled
+              aria-describedby="workspace-setup-reason"
+              title={additionalWorkspaceReason}
+            >
+              Create workspace unavailable
+            </Button>
+          )}
         </div>
       </Dialog>
       <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />

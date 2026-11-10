@@ -265,7 +265,11 @@ export function PublishingQueue() {
               reschedule cannot change a real platform outcome.
             </p>
             <div className="row row-wrap">
-              <Button disabled title="No real job is running">
+              <Button
+                disabled
+                disabledReason="No real publishing job is running in this labelled demo queue."
+                title="No real job is running"
+              >
                 Cancel unavailable
               </Button>
               <Link

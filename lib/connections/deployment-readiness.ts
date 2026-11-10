@@ -6,7 +6,9 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { callbackBridgeOrigin, callbackBridgeUrl } from "./bridge";
 import { custodyConfigured } from "./crypto";
+import { providerRequirements } from "./provider-requirements";
 import { providerAvailability, providerSecrets } from "./providers";
+import { isSafeDemoMode } from "@/lib/app-mode";
 import {
   applyDeploymentEvidence,
   buildProviderCards,
@@ -245,45 +247,86 @@ function setupChecks(flags: Record<ConnectionPlatform, boolean>): SetupCheck[] {
       ownerAction:
         "Keep local and hosted migration names and canonical SQL parity. Never reapply a confirmed migration.",
     }),
-    ...connectionPlatforms.flatMap((platform) => [
-      check({
-        id: `${platform}-credentials`,
-        names:
-          platform === "youtube"
-            ? ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]
-            : platform === "instagram"
-              ? ["INSTAGRAM_CLIENT_ID", "INSTAGRAM_CLIENT_SECRET"]
-              : ["TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET"],
-        location: "Provider developer console; Vercel → Sensitive/plain env",
-        state: flags[platform] ? "CONFIGURED" : "BLOCKED",
-        evidence: flags[platform]
-          ? `${platform}_credentials_present_no_account_authorization`
-          : `${platform}_credentials_absent_external_account_access_required`,
-        ownerAction: `Create the provider app and register ${urls[platform] ?? "the exact public bridge callback"} as its exact redirect URI. Never paste credentials into chat.`,
-        platforms: [platform],
-      }),
-      check({
-        id: `${platform}-review`,
-        names:
-          platform === "youtube"
-            ? ["Google OAuth consent screen", "YouTube API scope verification"]
-            : platform === "instagram"
-              ? ["Meta app review", "Instagram professional account", "Advanced Access"]
-              : ["TikTok Direct Post audit", "video.publish approval"],
-        location:
-          platform === "youtube"
-            ? "Google Cloud Console → APIs & Services → OAuth consent screen"
-            : platform === "instagram"
-              ? "Meta for Developers → App Review / Instagram Business Login"
-              : "TikTok Developer Portal → your app → Content Posting API / Audit",
-        state: "OWNER ACTION REQUIRED",
-        evidence: `${platform}_external_review_not_inspectable_by_connector`,
-        ownerAction:
-          "Complete the external provider review and perform one real account authorization, callback validation and secure token persistence test.",
-        platforms: [platform],
-      }),
-    ]),
+    ...connectionPlatforms.flatMap((platform) => {
+      const requirement = providerRequirements[platform];
+      const redirect = urls[platform] ?? "the exact public bridge callback";
+      return [
+        check({
+          id: `${platform}-credentials`,
+          names:
+            platform === "youtube"
+              ? ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]
+              : platform === "instagram"
+                ? ["INSTAGRAM_CLIENT_ID", "INSTAGRAM_CLIENT_SECRET"]
+                : ["TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET"],
+          location: `${requirement.dashboardUrl}; Vercel → Project Settings → Environment Variables`,
+          state: flags[platform] ? "CONFIGURED" : "BLOCKED",
+          evidence: flags[platform]
+            ? `${platform}_credentials_present_no_account_authorization`
+            : `${platform}_credentials_absent_external_account_access_required`,
+          ownerAction: `Copy the provider app's client ID/key and secret into Vercel Preview only. Register ${redirect} as the exact redirect URI. Never paste values into chat.`,
+          platforms: [platform],
+        }),
+        check({
+          id: `${platform}-redirect`,
+          names: ["Exact provider redirect URI", "OAuth client registration"],
+          location: `${requirement.dashboardUrl}; ${requirement.navigation[requirement.navigation.length - 2] ?? ""}`,
+          state: "OWNER ACTION REQUIRED",
+          evidence: `${platform}_redirect_uri_registration_not_inspectable_by_connector`,
+          ownerAction: `Register exactly ${redirect} as the authorized redirect URI. Expected result: the provider accepts the URL without normalization and returns to the public bridge.`,
+          platforms: [platform],
+        }),
+        check({
+          id: `${platform}-review`,
+          names: ["Provider app setup", "consent / permissions", "app review"],
+          location: requirement.navigation.join(" → "),
+          state: "OWNER ACTION REQUIRED",
+          evidence: `${platform}_external_review_not_inspectable_by_connector`,
+          ownerAction: `${requirement.expectedResult} Official documentation: ${requirement.documentationUrl}.`,
+          platforms: [platform],
+        }),
+        check({
+          id: `${platform}-account`,
+          names: ["Eligible owner account", "test user / access restrictions"],
+          location: requirement.dashboardUrl,
+          state: "OWNER ACTION REQUIRED",
+          evidence: `${platform}_account_eligibility_not_inspectable_by_connector`,
+          ownerAction: `${requirement.restrictions.join(" ")} Perform one real authorization and verify the returned identity, encrypted persistence and workspace isolation.`,
+          platforms: [platform],
+        }),
+      ];
+    }),
   ];
+}
+
+/**
+ * External provider configuration is READY only when every owner-only check is
+ * an explicitly timestamped VERIFIED record (or explicitly NOT APPLICABLE).
+ * Credential presence alone never makes a provider Ready.
+ */
+function providerConfigurationVerified(checks: SetupCheck[]): Record<ConnectionPlatform, boolean> {
+  return Object.fromEntries(
+    connectionPlatforms.map((platform) => {
+      const requiredIds = [`${platform}-redirect`, `${platform}-review`, `${platform}-account`];
+      const required = checks.filter((item) => requiredIds.includes(item.id));
+      return [
+        platform,
+        required.length === requiredIds.length &&
+          required.every((item) => ["VERIFIED", "NOT APPLICABLE"].includes(item.status)),
+      ];
+    }),
+  ) as Record<ConnectionPlatform, boolean>;
+}
+
+/** Server-side OAuth start gate: owner-only external checks must be VERIFIED. */
+export async function providerConfigurationReady(platform: ConnectionPlatform): Promise<boolean> {
+  try {
+    const evidence = await loadEvidence();
+    const checks = applyDeploymentEvidence(setupChecks(providerCredentialFlags()), evidence);
+    return providerConfigurationVerified(checks)[platform];
+  } catch {
+    return false;
+  }
 }
 
 function mapConnections(
@@ -360,7 +403,7 @@ async function safeWorkspace(): Promise<WorkspaceContext | null> {
 }
 
 export async function getAccountsState(): Promise<AccountsState> {
-  const demoMode = (process.env.UP17_APP_MODE ?? "DEMO") === "DEMO";
+  const demoMode = isSafeDemoMode();
   const authenticated = await safeViewer();
   const workspace = await safeWorkspace();
   const providers = providerAvailability();
@@ -391,6 +434,7 @@ export async function getAccountsState(): Promise<AccountsState> {
     }
   }
   const evidence = await loadEvidence();
+  const checks = applyDeploymentEvidence(setupChecks(providerCredentials), evidence);
   const readiness: DeploymentReadiness = {
     demoMode,
     authenticated,
@@ -402,10 +446,11 @@ export async function getAccountsState(): Promise<AccountsState> {
     keyringConfigured: keyringConfigured(),
     connectionReadError,
     providerCredentials,
+    providerConfigurationVerified: providerConfigurationVerified(checks),
     callbackPaths: paths,
     externalCallbackUrls: urls,
     bridgeOrigin: callbackBridgeOrigin(),
-    checks: applyDeploymentEvidence(setupChecks(providerCredentials), evidence),
+    checks,
   };
   return {
     readiness,

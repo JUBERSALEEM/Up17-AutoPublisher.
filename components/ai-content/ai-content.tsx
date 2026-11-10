@@ -263,7 +263,11 @@ export function AiContent() {
               feature="Corrections and clip suggestions"
               reason="There are no observations to correct. Verified facts, estimates and user corrections require the later analysis phase."
             />
-            <Button disabled title="No analysis result exists">
+            <Button
+              disabled
+              disabledReason="No verified analysis result exists to correct in this labelled demo."
+              title="No analysis result exists"
+            >
               Correct observation unavailable
             </Button>
           </Card>

@@ -13,8 +13,10 @@ import {
   authorizationUrl,
   callbackUrl,
   connectionStateForScopes,
+  foundationScopesOnly,
   pkceMethods,
   providerScopes,
+  publishingScopes,
   revokeProviderToken,
 } from "@/lib/connections/providers";
 import { isConnectionPlatform } from "@/lib/connections/types";
@@ -137,11 +139,22 @@ describe("provider authorization contracts", () => {
     expect(tiktok.searchParams.get("code_challenge_method")).toBe("S256");
   });
 
-  it("never marks partial scope grants as fully connected", () => {
+  it("requests minimum foundation scopes and never marks partial grants as connected", () => {
+    expect(providerScopes.youtube).toEqual(["https://www.googleapis.com/auth/youtube.readonly"]);
+    expect(providerScopes.instagram).toEqual(["instagram_business_basic"]);
+    expect(providerScopes.tiktok).toEqual(["user.info.basic"]);
+    expect(publishingScopes.youtube).toEqual(["https://www.googleapis.com/auth/youtube.upload"]);
+    expect(providerScopes.youtube).not.toContain(publishingScopes.youtube[0]);
     expect(connectionStateForScopes("youtube", providerScopes.youtube)).toBe("connected");
-    expect(connectionStateForScopes("youtube", providerScopes.youtube.slice(0, 1))).toBe(
-      "limited_permissions",
-    );
+    expect(connectionStateForScopes("youtube", [])).toBe("limited_permissions");
+    expect(foundationScopesOnly("youtube", providerScopes.youtube)).toBe(true);
+    expect(
+      foundationScopesOnly("youtube", [...providerScopes.youtube, ...publishingScopes.youtube]),
+    ).toBe(false);
+    expect(
+      foundationScopesOnly("instagram", ["instagram_business_basic", "instagram_business_basic"]),
+    ).toBe(true);
+    expect(foundationScopesOnly("tiktok", ["video.publish"])).toBe(false);
   });
 
   it("accepts an empty 200 revocation response but never fakes Instagram remote revoke", async () => {

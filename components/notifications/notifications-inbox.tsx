@@ -76,6 +76,7 @@ export function NotificationsInbox() {
             <Button
               icon={<CheckCheck size={18} />}
               disabled={!unread}
+              disabledReason="There are no unread labelled demo notices to mark as read."
               onClick={() =>
                 mark(
                   enabledItems.map((n) => n.id),

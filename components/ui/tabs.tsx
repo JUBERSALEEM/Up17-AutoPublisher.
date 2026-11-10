@@ -7,6 +7,7 @@ export interface TabItem {
   label: ReactNode;
   content: ReactNode;
   disabled?: boolean;
+  disabledReason?: string;
 }
 
 export function Tabs({
@@ -39,6 +40,8 @@ export function Tabs({
             aria-controls={`${base}-panel-${item.id}`}
             tabIndex={item.id === active.id ? 0 : -1}
             disabled={item.disabled}
+            aria-describedby={item.disabled ? `${base}-disabled-${item.id}` : undefined}
+            title={item.disabled ? (item.disabledReason ?? "This tab is unavailable.") : undefined}
             className={`tab ${item.id === active.id ? "tab-active" : ""}`}
             onClick={() => onChange(item.id)}
             onKeyDown={(event) => {
@@ -61,6 +64,17 @@ export function Tabs({
           </button>
         ))}
       </div>
+      {items
+        .filter((item) => item.disabled)
+        .map((item) => (
+          <p
+            key={`${item.id}-disabled`}
+            id={`${base}-disabled-${item.id}`}
+            className="field-hint small"
+          >
+            {item.disabledReason ?? "This tab is unavailable."}
+          </p>
+        ))}
       {items.map((item) => (
         <div
           key={item.id}

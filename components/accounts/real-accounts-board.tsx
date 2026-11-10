@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useSyncExternalStore, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Link2Off, Plus, RefreshCw, ShieldCheck, Unplug } from "lucide-react";
-import { Badge, Button, Card, DemoBadge, Dialog, EmptyState } from "@/components/ui";
+import { Badge, Button, Card, Dialog, EmptyState } from "@/components/ui";
 import { PageHeader, PlatformBadge, PlatformIcon } from "@/components/features/common";
 import {
   setupStatusTone,
@@ -12,7 +12,12 @@ import {
   type DeploymentReadiness,
   type ProviderCard,
 } from "@/lib/connections/readiness";
-import type { ConnectionPlatform, RealConnection } from "@/lib/connections/types";
+import {
+  connectionStateLabels,
+  isConnectionPlatform,
+  type ConnectionPlatform,
+  type RealConnection,
+} from "@/lib/connections/types";
 
 const stateTone: Record<RealConnection["state"], "success" | "warning" | "danger" | "neutral"> = {
   pending: "neutral",
@@ -23,20 +28,35 @@ const stateTone: Record<RealConnection["state"], "success" | "warning" | "danger
   disconnected: "neutral",
 };
 
-const connectionStatusLabels: Record<RealConnection["state"], string> = {
-  pending: "Needs reauthorization",
-  connected: "Connected",
-  limited_permissions: "Limited permissions",
-  needs_authorisation: "Needs reauthorization",
-  error: "Error",
-  disconnected: "Disconnected",
-};
-
 const providerOrigins: Record<ConnectionPlatform, string> = {
   youtube: "https://accounts.google.com",
   instagram: "https://www.instagram.com",
   tiktok: "https://www.tiktok.com",
 };
+
+const PENDING_KEY = "up17:connection:pending";
+const PENDING_EVENT = "up17:connection:pending-change";
+
+function pendingSnapshot(): string {
+  const marker = window.sessionStorage.getItem(PENDING_KEY);
+  return marker && isConnectionPlatform(marker) ? marker : "";
+}
+function pendingServerSnapshot(): string {
+  return "";
+}
+function subscribePending(callback: () => void): () => void {
+  window.addEventListener("storage", callback);
+  window.addEventListener(PENDING_EVENT, callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(PENDING_EVENT, callback);
+  };
+}
+function setPending(platform: ConnectionPlatform | null): void {
+  if (platform) window.sessionStorage.setItem(PENDING_KEY, platform);
+  else window.sessionStorage.removeItem(PENDING_KEY);
+  window.dispatchEvent(new Event(PENDING_EVENT));
+}
 
 export function RealAccountsBoard({
   readiness,
@@ -56,6 +76,11 @@ export function RealAccountsBoard({
   const [connectPlatform, setConnectPlatform] = useState<ConnectionPlatform | null>(null);
   const [disconnectTarget, setDisconnectTarget] = useState<RealConnection | null>(null);
   const [message, setMessage] = useState<string | null>(notice);
+  const pendingMarker = useSyncExternalStore(
+    subscribePending,
+    pendingSnapshot,
+    pendingServerSnapshot,
+  );
   const connected = connections.filter(
     (connection) => connection.state === "connected" || connection.state === "limited_permissions",
   ).length;
@@ -63,6 +88,46 @@ export function RealAccountsBoard({
   const selectedCard = connectPlatform
     ? (cards.find((card) => card.platform === connectPlatform) ?? null)
     : null;
+  const noticeAuthorized =
+    notice ===
+    "Official authorization completed. The account is connected; publishing remains disabled.";
+  const markerResolved =
+    pendingMarker &&
+    connections.some(
+      (connection) =>
+        connection.platform === pendingMarker &&
+        (connection.state === "connected" || connection.state === "limited_permissions"),
+    );
+  const inProgressPlatform =
+    pendingMarker && !noticeAuthorized && !markerResolved && isConnectionPlatform(pendingMarker)
+      ? pendingMarker
+      : null;
+
+  useEffect(() => {
+    if (pendingMarker && (noticeAuthorized || markerResolved)) setPending(null);
+  }, [markerResolved, noticeAuthorized, pendingMarker]);
+
+  const blockerSummaries = cards
+    .filter((card) => card.blocker)
+    .map((card) => `${card.label}: ${card.blocker}. ${card.description}`);
+  const topReason = pending
+    ? "A connection action is in progress. Wait for the provider window or current request to finish."
+    : blockerSummaries.length
+      ? blockerSummaries.join(" ")
+      : "No provider has every owner-verified readiness check recorded yet.";
+  const managementReason = pending
+    ? "A connection action is in progress; wait for it to finish."
+    : !canManage
+      ? "Only workspace owners/admins can refresh, check health or disconnect accounts."
+      : "Actions are enabled for your owner/admin workspace; publishing remains disabled.";
+  const continueReason = pending
+    ? "A connection action is in progress; wait for it to finish."
+    : selectedCard?.canStart
+      ? "This starts real official OAuth on the provider's own domain."
+      : `${selectedCard?.blocker ?? "Setup incomplete"}: ${selectedCard?.description ?? "Complete the owner setup checklist first."}`;
+  const disconnectReason = pending
+    ? "A connection action is in progress; wait for it to finish."
+    : "Disconnect attempts provider revocation where supported, then deletes the encrypted local credential.";
 
   const act = (connection: RealConnection, action: "refresh" | "health" | "disconnect") => {
     setMessage(null);
@@ -135,6 +200,8 @@ export function RealAccountsBoard({
         }
         if (providerOrigin !== providerOrigins[platform])
           throw new Error("Unexpected provider origin.");
+        // A non-secret marker only. No state, code, token or credential is stored in the browser.
+        setPending(platform);
         window.location.assign(target.toString());
       } catch {
         setMessage("Could not start official OAuth.");
@@ -154,11 +221,8 @@ export function RealAccountsBoard({
               variant="primary"
               icon={<Plus size={18} />}
               disabled={!canManage || !firstReadyPlatform || pending}
-              title={
-                firstReadyPlatform
-                  ? "Connect an account"
-                  : "Complete the deployment and owner setup checklist first"
-              }
+              aria-describedby="connect-account-reason"
+              title={topReason}
               onClick={() => {
                 if (firstReadyPlatform) setConnectPlatform(firstReadyPlatform);
               }}
@@ -169,22 +233,24 @@ export function RealAccountsBoard({
           </>
         }
       />
+      <p id="connect-account-reason" className="field-hint small">
+        {topReason}
+      </p>
 
-      {readiness.demoMode ? (
-        <Card variant="inset" className="demo-mode-card" data-testid="demo-mode">
-          <div className="spread">
-            <div>
-              <h2>Demo mode is active</h2>
-              <p className="muted small">
-                <code>UP17_APP_MODE=DEMO</code> means other product screens may show labelled sample
-                data. The three cards below are live deployment controls, not demo identities. No
-                account is connected and no authorization is simulated here.
-              </p>
-            </div>
-            <DemoBadge label="Demo mode" />
+      <Card variant="inset" className="safe-preview-card" data-testid="safe-preview">
+        <div className="spread">
+          <div>
+            <h2>Evidence-backed readiness</h2>
+            <p className="muted small">
+              Authentication, verified workspace onboarding and these Accounts controls are real and
+              are not trapped behind demo mode. Video, scheduling, analytics and sample content are
+              labelled demo workflows; publishing stays disabled. No account is connected and no
+              authorization is simulated here.
+            </p>
           </div>
-        </Card>
-      ) : null}
+          <Badge tone="accent">Safe preview</Badge>
+        </div>
+      </Card>
 
       <div className="account-security-note">
         <ShieldCheck size={22} aria-hidden="true" />
@@ -203,20 +269,49 @@ export function RealAccountsBoard({
           {message}
         </p>
       ) : null}
+      {inProgressPlatform ? (
+        <p className="unavailable-note">
+          <strong>Connection in progress.</strong> Finish consent in the official provider window,
+          then return here. If you cancelled,{" "}
+          <button
+            type="button"
+            className="text-link small"
+            onClick={() => {
+              setPending(null);
+              setMessage(null);
+            }}
+          >
+            dismiss this state
+          </button>{" "}
+          and start again.
+        </p>
+      ) : null}
       {!readiness.authenticated ? (
         <p className="unavailable-note">
-          <strong>Authentication required.</strong> Sign in with a confirmed email before a real
-          connection can start. Email confirmation needs custom SMTP configured in Supabase.
+          <strong>Sign in required.</strong>{" "}
+          <Link href="/login" className="text-link">
+            Sign in
+          </Link>{" "}
+          with a confirmed email, or{" "}
+          <Link href="/signup" className="text-link">
+            create an account
+          </Link>
+          . Custom SMTP delivery is owner-verified; use the confirmation-help page if email is
+          interrupted.
         </p>
       ) : !canManage ? (
         <p className="unavailable-note">
-          <strong>Read-only access.</strong> Only workspace owners/admins can connect, refresh or
-          disconnect accounts.
+          <strong>Workspace setup required.</strong>{" "}
+          <Link href="/onboarding" className="text-link">
+            Finish verified onboarding
+          </Link>{" "}
+          for your first owner workspace, or ask an owner/admin for an invitation. Viewer/editor
+          roles cannot connect, refresh or disconnect accounts.
         </p>
       ) : null}
       {readiness.connectionReadError ? (
         <p className="unavailable-note">
-          <strong>Connection records could not be read.</strong> Check the server-only broker
+          <strong>Error.</strong> Connection records could not be read. Check the server-only broker
           configuration and workspace permissions; no connection status is invented.
         </p>
       ) : null}
@@ -227,80 +322,133 @@ export function RealAccountsBoard({
             <h2 id="real-connection-heading">Real connection controls</h2>
             <p className="muted small">
               Each card reports its actual deployment status. No simulated authorization; disabled
-              buttons are honest setup blockers.
+              buttons name the exact blocker and the owner action that completes it.
             </p>
           </div>
           <Badge tone="neutral">3 providers</Badge>
         </div>
         <div className="accounts-grid grid grid-3">
-          {cards.map((card) => (
-            <Card
-              key={card.platform}
-              className="account-card real-account-card"
-              data-platform={card.platform}
-              data-status={card.status}
-            >
-              <div className="spread">
-                <span className={`platform-icon platform-large platform-${card.platform}`}>
-                  <PlatformIcon platform={card.platform} size={25} />
-                </span>
-                <Badge tone={statusTone[card.status]}>{card.status}</Badge>
-              </div>
-              <h2>{card.label}</h2>
-              <p className="muted small">{card.loginPath}</p>
-              {card.blocker && card.blocker !== card.status ? (
-                <Badge tone="warning">Setup blocker: {card.blocker}</Badge>
-              ) : null}
-              <p id={`${card.platform}-status`} className="account-note muted small">
-                {card.description}
-              </p>
-              <dl className="account-meta">
-                <div>
-                  <dt>Requested scopes</dt>
-                  <dd className="wrap-anywhere">{card.scopes.join(", ")}</dd>
+          {cards.map((card) => {
+            const cardReason = card.canStart
+              ? "This starts real official OAuth on the provider's own domain."
+              : `${card.blocker ?? card.status}: ${card.description}`;
+            return (
+              <Card
+                key={card.platform}
+                className="account-card real-account-card"
+                data-platform={card.platform}
+                data-status={card.status}
+              >
+                <div className="spread">
+                  <span className={`platform-icon platform-large platform-${card.platform}`}>
+                    <PlatformIcon platform={card.platform} size={25} />
+                  </span>
+                  <Badge tone={statusTone[card.status]}>{card.status}</Badge>
                 </div>
-                <div>
-                  <dt>Exact provider redirect URI</dt>
-                  <dd className="wrap-anywhere">{card.externalCallbackUrl ?? card.callbackPath}</dd>
-                </div>
-                <div>
-                  <dt>Provider console</dt>
-                  <dd className="wrap-anywhere">{card.providerDashboard}</dd>
-                </div>
-                <div>
-                  <dt>Publishing</dt>
-                  <dd>
-                    <Badge tone="warning">Disabled</Badge>
-                  </dd>
-                </div>
-              </dl>
-              {card.missing.length ? (
-                <div className="setup-missing">
-                  <strong>Still needed for this provider</strong>
-                  <ul>
-                    {card.missing.map((check) => (
-                      <li key={check.id}>
-                        <span>{check.names.join(", ")}</span>
-                        <span className="muted small"> · {check.location}</span>
-                      </li>
+                <h2>{card.label}</h2>
+                <p className="muted small">{card.loginPath}</p>
+                {card.blocker && card.blocker !== card.status ? (
+                  <Badge tone="warning">Setup blocker: {card.blocker}</Badge>
+                ) : null}
+                <p id={`${card.platform}-status`} className="account-note muted small">
+                  {card.description}
+                </p>
+                <p id={`${card.platform}-blocker`} className="field-hint small">
+                  {cardReason}
+                </p>
+                <dl className="account-meta">
+                  <div>
+                    <dt>Foundation scopes</dt>
+                    <dd className="wrap-anywhere">{card.scopes.join(", ")}</dd>
+                  </div>
+                  <div>
+                    <dt>Publishing scopes</dt>
+                    <dd className="wrap-anywhere">
+                      {card.publishingScopes.join(", ")} · not requested
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Exact provider redirect URI</dt>
+                    <dd className="wrap-anywhere">
+                      {card.externalCallbackUrl ?? card.callbackPath}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Provider console</dt>
+                    <dd className="wrap-anywhere">
+                      <a
+                        href={card.providerDashboard}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="text-link"
+                      >
+                        {card.providerDashboard}
+                      </a>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Publishing</dt>
+                    <dd>
+                      <Badge tone="warning">Disabled</Badge>
+                    </dd>
+                  </div>
+                </dl>
+                <details className="provider-requirements">
+                  <summary>Exact owner setup steps</summary>
+                  <ol>
+                    {card.requirements.navigation.map((step) => (
+                      <li key={step}>{step}</li>
                     ))}
-                  </ul>
+                  </ol>
+                  <p className="small">
+                    <strong>Fields:</strong> {card.requirements.fields.join("; ")}.
+                  </p>
+                  <p className="small">
+                    <strong>Expected result:</strong> {card.requirements.expectedResult}
+                  </p>
+                  <p className="small">
+                    <strong>Restrictions:</strong> {card.requirements.restrictions.join(" ")}
+                  </p>
+                  <p className="small">
+                    <a
+                      href={card.requirements.documentationUrl}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-link"
+                    >
+                      Official provider documentation
+                    </a>
+                  </p>
+                </details>
+                {card.missing.length ? (
+                  <div className="setup-missing">
+                    <strong>Still needed for this provider</strong>
+                    <ul>
+                      {card.missing.map((check) => (
+                        <li key={check.id}>
+                          <span>{check.names.join(", ")}</span>
+                          <span className="muted small"> · {check.location}</span>
+                          <span className="muted small"> · {check.ownerAction}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                <div className="account-card-actions">
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    disabled={!card.canStart || pending}
+                    aria-describedby={`${card.platform}-status ${card.platform}-blocker`}
+                    title={cardReason}
+                    onClick={() => setConnectPlatform(card.platform)}
+                  >
+                    {card.connectLabel}
+                  </Button>
                 </div>
-              ) : null}
-              <div className="account-card-actions">
-                <Button
-                  size="sm"
-                  variant="primary"
-                  disabled={!card.canStart || pending}
-                  aria-describedby={`${card.platform}-status`}
-                  title={card.canStart ? card.connectLabel : "Complete the setup checklist first"}
-                  onClick={() => setConnectPlatform(card.platform)}
-                >
-                  {card.connectLabel}
-                </Button>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       </section>
 
@@ -335,33 +483,32 @@ export function RealAccountsBoard({
           <div>
             <h2 id="journey-heading">How to reach real connections</h2>
             <p className="muted small">
-              Demo mode does not replace this journey. Build and unit-test results are not live
+              Safe preview does not replace this journey. Build and unit-test results are not live
               OAuth acceptance.
             </p>
           </div>
         </div>
         <ol className="accounts-journey">
           <li>
-            <strong>Sign in.</strong> <Link href="/sign-up">Create account</Link> or{" "}
-            <Link href="/sign-in">Sign in</Link>, then confirm the email. Custom SMTP and the exact
-            Supabase Site URL / Redirect URLs are owner dashboard steps.
+            <strong>Sign in.</strong> <Link href="/signup">Create account</Link> or{" "}
+            <Link href="/login">Sign in</Link>, confirm the email, then finish verified onboarding.
+            Custom SMTP and delivery testing are owner dashboard steps.
           </li>
           <li>
-            <strong>Get an owner/admin workspace.</strong> Confirmed signup creates the workspace,
-            member and preferences from the reviewed trigger. Viewer/editor roles cannot manage
-            connections.
+            <strong>Get an owner/admin workspace.</strong> Verified onboarding creates the first
+            workspace, owner membership and preferences through a server-side RPC. Existing members
+            are never promoted; viewer/editor roles cannot manage connections.
           </li>
           <li>
-            <strong>Complete the checklist.</strong> Add the public Supabase URL/key, exact{" "}
+            <strong>Complete the checklist.</strong> Confirm the public Supabase URL/key, exact{" "}
             <code>UP17_SITE_URL</code>, server-only service/secret key, token keyring and the
             credentials for each provider in Vercel, then redeploy.
           </li>
           <li>
             <strong>Register exact provider callbacks.</strong> Use the three public bridge redirect
-            URIs above in Google Cloud, Meta for Developers and TikTok Developer Portal. The main
-            app stays protected; the bridge exchanges a one-time receipt before returning to the
-            protected callback. Complete consent-screen, professional-account, Advanced Access and
-            Direct Post audit gates where applicable.
+            URIs above in Google Cloud, Meta for Developers and TikTok Developer Portal. Complete
+            consent-screen, professional-account, Advanced Access and Direct Post audit gates only
+            when the corresponding publishing milestone is approved.
           </li>
           <li>
             <strong>Connect.</strong> Return here, press the enabled provider button, verify the
@@ -394,7 +541,7 @@ export function RealAccountsBoard({
                 <div className="spread">
                   <PlatformBadge platform={connection.platform} />
                   <Badge tone={stateTone[connection.state]}>
-                    {connectionStatusLabels[connection.state]}
+                    {connectionStateLabels[connection.state]}
                   </Badge>
                 </div>
                 <h2>{connection.displayName}</h2>
@@ -433,10 +580,15 @@ export function RealAccountsBoard({
                     </div>
                   ) : null}
                 </dl>
+                <p id={`account-management-reason-${connection.id}`} className="field-hint small">
+                  {managementReason}
+                </p>
                 <div className="account-card-actions">
                   <Button
                     size="sm"
                     disabled={!canManage || pending}
+                    aria-describedby={`account-management-reason-${connection.id}`}
+                    title={managementReason}
                     icon={<RefreshCw size={15} />}
                     onClick={() => act(connection, "refresh")}
                   >
@@ -446,6 +598,8 @@ export function RealAccountsBoard({
                     size="sm"
                     variant="ghost"
                     disabled={!canManage || pending}
+                    aria-describedby={`account-management-reason-${connection.id}`}
+                    title={managementReason}
                     onClick={() => act(connection, "health")}
                   >
                     Check health
@@ -454,6 +608,8 @@ export function RealAccountsBoard({
                     size="sm"
                     variant="danger"
                     disabled={!canManage || pending}
+                    aria-describedby={`account-management-reason-${connection.id}`}
+                    title={managementReason}
                     icon={<Unplug size={15} />}
                     onClick={() => setDisconnectTarget(connection)}
                   >
@@ -477,6 +633,8 @@ export function RealAccountsBoard({
             <Button
               variant="primary"
               disabled={!selectedCard?.canStart || pending}
+              aria-describedby="continue-reason"
+              title={continueReason}
               onClick={() => {
                 if (connectPlatform && selectedCard?.canStart) {
                   setConnectPlatform(null);
@@ -499,6 +657,16 @@ export function RealAccountsBoard({
               <strong>{selectedCard.label}:</strong> {selectedCard.description}
             </p>
           ) : null}
+          <p id="continue-reason" className="field-hint small">
+            {continueReason}
+          </p>
+          {selectedCard?.nextSteps.length ? (
+            <ul>
+              {selectedCard.nextSteps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       </Dialog>
 
@@ -517,6 +685,8 @@ export function RealAccountsBoard({
             <Button
               variant="danger"
               disabled={pending}
+              aria-describedby="disconnect-reason"
+              title={disconnectReason}
               onClick={() => {
                 if (disconnectTarget) act(disconnectTarget, "disconnect");
               }}
@@ -530,6 +700,9 @@ export function RealAccountsBoard({
           Up17 will attempt provider revocation where supported, then delete local encrypted
           credentials. If remote revocation is unsupported or fails, the UI will say so and provide
           a manual remedy.
+        </p>
+        <p id="disconnect-reason" className="field-hint small">
+          {disconnectReason}
         </p>
       </Dialog>
     </div>

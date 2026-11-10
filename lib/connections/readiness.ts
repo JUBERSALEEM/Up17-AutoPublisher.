@@ -1,15 +1,20 @@
 import type { ConnectionPlatform, ProviderAvailability, RealConnection } from "./types";
+import { providerRequirements, type ProviderRequirement } from "./provider-requirements";
 
+/** Owner-visible states. Every disabled state names an actionable cause. */
 export const connectionStatuses = [
   "Not configured",
-  "Authentication required",
+  "Sign in required",
   "Workspace setup required",
   "Provider credentials missing",
+  "Provider configuration incomplete",
   "Encryption keyring missing",
-  "Ready to connect",
+  "Ready",
+  "Connection in progress",
   "Connected",
   "Limited permissions",
-  "Needs reauthorization",
+  "Failed",
+  "Reauthorization required",
   "Error",
 ] as const;
 
@@ -96,6 +101,7 @@ export interface DeploymentReadiness {
   keyringConfigured: boolean;
   connectionReadError: boolean;
   providerCredentials: Record<ConnectionPlatform, boolean>;
+  providerConfigurationVerified: Record<ConnectionPlatform, boolean>;
   callbackPaths: Record<ConnectionPlatform, string>;
   externalCallbackUrls: Record<ConnectionPlatform, string | null>;
   bridgeOrigin: string | null;
@@ -109,9 +115,11 @@ export interface ProviderCard extends ProviderAvailability {
   description: string;
   canStart: boolean;
   missing: SetupCheck[];
+  nextSteps: string[];
   callbackPath: string;
   externalCallbackUrl: string | null;
   providerDashboard: string;
+  requirements: ProviderRequirement;
   connection: RealConnection | null;
 }
 
@@ -122,9 +130,9 @@ export const connectLabels: Record<ConnectionPlatform, string> = {
 };
 
 export const providerDashboards: Record<ConnectionPlatform, string> = {
-  youtube: "Google Cloud Console → APIs & Services → Credentials / OAuth consent screen",
-  instagram: "Meta for Developers → your app → Instagram Business Login",
-  tiktok: "TikTok Developer Portal → your app → Login Kit",
+  youtube: "https://console.cloud.google.com/apis/credentials",
+  instagram: "https://developers.facebook.com/apps/",
+  tiktok: "https://developers.tiktok.com/apps",
 };
 
 export const providerSetupNames: Record<ConnectionPlatform, readonly string[]> = {
@@ -135,38 +143,47 @@ export const providerSetupNames: Record<ConnectionPlatform, readonly string[]> =
 
 export const statusTone: Record<ConnectionStatus, StatusTone> = {
   "Not configured": "danger",
-  "Authentication required": "warning",
+  "Sign in required": "warning",
   "Workspace setup required": "warning",
   "Provider credentials missing": "warning",
+  "Provider configuration incomplete": "warning",
   "Encryption keyring missing": "warning",
-  "Ready to connect": "success",
+  Ready: "success",
+  "Connection in progress": "neutral",
   Connected: "success",
   "Limited permissions": "warning",
-  "Needs reauthorization": "warning",
+  Failed: "danger",
+  "Reauthorization required": "warning",
   Error: "danger",
 };
 
 const statusDescriptions: Record<ConnectionStatus, string> = {
   "Not configured":
-    "Deployment setup is incomplete. Complete the checklist below; this page exposes names and booleans only, never values.",
-  "Authentication required":
-    "Sign in with a confirmed email. The owner must configure custom SMTP in Supabase before confirmation and recovery emails can be verified.",
+    "Deployment setup is incomplete: the public Supabase URL/key, exact site URL, server-only key or callback bridge is missing. Complete the deployment checklist below.",
+  "Sign in required":
+    "Sign in with a confirmed email. Sign up, open the confirmation link in this browser, and finish verified workspace onboarding.",
   "Workspace setup required":
-    "A confirmed user needs an owner/admin workspace. Confirmed signup creates it from the reviewed trigger; otherwise ask a workspace owner to add the account.",
+    "Finish verified onboarding to create your first owner workspace, or ask an existing owner/admin for an invitation. Viewer and editor roles cannot manage connections.",
   "Provider credentials missing":
     "The provider app credentials are absent from this deployment's server-only environment.",
+  "Provider configuration incomplete":
+    "External provider app setup, exact redirect URI registration, consent/review and account eligibility are not evidence-verified. Complete the exact owner actions listed on this card.",
   "Encryption keyring missing":
-    "The server-side AES-256-GCM keyring is absent or invalid. Tokens cannot be encrypted until it is configured.",
-  "Ready to connect":
-    "Ready to start official provider authorization. You will be sent to the provider's own page; publishing remains disabled.",
+    "The server-side AES-256-GCM keyring is absent or invalid. Tokens cannot be encrypted until the owner configures it in Vercel.",
+  Ready:
+    "Ready to start official provider authorization. You will be sent to the provider's own page; only foundation read-only/identity scopes are requested and publishing remains disabled.",
+  "Connection in progress":
+    "Authorization has started but no provider identity is stored. Finish consent in the provider window, or dismiss this state and start again.",
   Connected:
-    "A real account is connected. Its credentials stay encrypted server-side, and publishing remains disabled.",
+    "A real identity is connected for the read-only foundation. Credentials stay encrypted server-side; publishing permissions were not requested and publishing remains disabled.",
   "Limited permissions":
-    "The stored account is missing required scopes. Reconnect to request the reviewed permissions again.",
-  "Needs reauthorization":
+    "The stored account is missing foundation scopes. Reconnect to request the reviewed minimum permissions again.",
+  Failed:
+    "The stored connection has an error. Check the last error code, fix the provider setup and reconnect; no connection is invented.",
+  "Reauthorization required":
     "The stored account needs fresh official authorization. Reconnect to continue.",
   Error:
-    "The stored connection has an error. Check its last error code and reconnect when the cause is fixed.",
+    "Connection records could not be read or authorization failed. Check the server-only broker configuration, workspace permissions and provider response.",
 };
 
 function storedStatus(connection: RealConnection | null): ConnectionStatus | null {
@@ -176,11 +193,12 @@ function storedStatus(connection: RealConnection | null): ConnectionStatus | nul
       return "Connected";
     case "limited_permissions":
       return "Limited permissions";
-    case "needs_authorisation":
     case "pending":
-      return "Needs reauthorization";
+      return "Connection in progress";
+    case "needs_authorisation":
+      return "Reauthorization required";
     case "error":
-      return "Error";
+      return "Failed";
     case "disconnected":
       return null;
     default:
@@ -198,11 +216,13 @@ function firstBlocker(
     !readiness.serverKeyConfigured
   )
     return "Not configured";
-  if (!readiness.authenticated) return "Authentication required";
+  if (!readiness.authenticated) return "Sign in required";
   if (!readiness.workspaceReady || !readiness.canManage) return "Workspace setup required";
   if (readiness.connectionReadError) return "Error";
   if (!readiness.providerCredentials[platform]) return "Provider credentials missing";
   if (!readiness.keyringConfigured) return "Encryption keyring missing";
+  if (!readiness.providerConfigurationVerified[platform])
+    return "Provider configuration incomplete";
   return null;
 }
 
@@ -210,18 +230,29 @@ function describe(
   status: ConnectionStatus,
   card: Pick<
     ProviderCard,
-    "platform" | "callbackPath" | "externalCallbackUrl" | "providerDashboard" | "missing"
+    | "platform"
+    | "callbackPath"
+    | "externalCallbackUrl"
+    | "providerDashboard"
+    | "requirements"
+    | "missing"
+    | "nextSteps"
   >,
 ): string {
   const base = statusDescriptions[status];
   if (status === "Provider credentials missing") {
     const redirect =
       card.externalCallbackUrl ?? `the external callback bridge for ${card.callbackPath}`;
-    return `${base} Add ${providerSetupNames[card.platform].join(", ")} in Vercel. Register ${redirect} as the exact redirect URI in ${card.providerDashboard}.`;
+    return `${base} Add ${providerSetupNames[card.platform].join(", ")} in Vercel. Register ${redirect} as the exact redirect URI at ${card.providerDashboard}.`;
   }
-  if (status === "Workspace setup required") {
+  if (status === "Provider configuration incomplete") {
+    const missing = card.missing.map((check) => check.names.join(", ")).join("; ");
+    return `${base} Outstanding owner checks: ${missing || "external app review"}. ${card.nextSteps[0] ?? ""}`;
+  }
+  if (status === "Workspace setup required")
     return `${base} Only owner/admin roles can connect, refresh or disconnect accounts.`;
-  }
+  if (status === "Sign in required")
+    return `${base} Email delivery is managed by Supabase; custom SMTP must be owner-verified before broad rollout.`;
   return base;
 }
 
@@ -236,21 +267,41 @@ export function buildProviderCards(
       connections.find((item) => item.platform === platform && item.state !== "disconnected") ??
       null;
     const blocker = firstBlocker(readiness, platform);
-    const status = storedStatus(connection) ?? blocker ?? "Ready to connect";
+    const status = storedStatus(connection) ?? blocker ?? "Ready";
     const missing = readiness.checks.filter(
       (check) =>
-        !check.configured &&
-        !check.ownerVerification &&
-        (check.platforms === undefined || check.platforms.includes(platform)),
+        (check.platforms === undefined || check.platforms.includes(platform)) &&
+        check.status !== "VERIFIED" &&
+        check.status !== "NOT APPLICABLE" &&
+        (!check.configured || check.ownerVerification),
+    );
+    const nextSteps = missing.map(
+      (check) => `${check.names.join(", ")} — ${check.ownerAction} Where: ${check.location}.`,
     );
     const callbackPath = readiness.callbackPaths[platform];
     const externalCallbackUrl = readiness.externalCallbackUrls[platform];
     const providerDashboard = providerDashboards[platform];
-    const canStart = blocker === null && !(connection && connection.state === "connected");
+    const requirements = providerRequirements[platform];
+    const canStart =
+      blocker === null && connection?.state !== "connected" && connection?.state !== "pending";
     const draft: Pick<
       ProviderCard,
-      "platform" | "callbackPath" | "externalCallbackUrl" | "providerDashboard" | "missing"
-    > = { platform, callbackPath, externalCallbackUrl, providerDashboard, missing };
+      | "platform"
+      | "callbackPath"
+      | "externalCallbackUrl"
+      | "providerDashboard"
+      | "requirements"
+      | "missing"
+      | "nextSteps"
+    > = {
+      platform,
+      callbackPath,
+      externalCallbackUrl,
+      providerDashboard,
+      requirements,
+      missing,
+      nextSteps,
+    };
     return {
       ...provider,
       connectLabel: connectLabels[platform],
@@ -259,9 +310,11 @@ export function buildProviderCards(
       description: describe(status, draft),
       canStart,
       missing,
+      nextSteps,
       callbackPath,
       externalCallbackUrl,
       providerDashboard,
+      requirements,
       connection,
     };
   });

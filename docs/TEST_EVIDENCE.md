@@ -210,3 +210,24 @@ Strict local gates and the final Preview verification are recorded in the [auton
 Final local execution with pinned Node 22.22.3 / npm 11.21.2: `npm run check` PASS (13 unit files / 78 tests, 1 integration / 4 tests, 48 Python validator tests, 2 TypeScript security files / 8 tests, strict docs 16 / 155 / 191 / 217, 25/25 static pages and 25 routes). Browser gates used the documented registry-only Chromium 153 fallback because the default Playwright CDN executable was absent; the first invocation failed on that environment prerequisite, then clean reruns passed: E2E 124, visual 153, axe 85, clay 62 and development navigation 13. Generated TS config changes were restored. Staged whitespace and high-confidence secret-pattern scans PASS. These are local/build gates, not hosted owner acceptance.
 
 Final runtime commit `df774e42ccf098b0c7c4959a7d144308bbd8cc97` was pushed to the fixed branch. Vercel deployment `dpl_4R3BdHpC9qpcNB1Kpo5YeFnn2Jwg` is READY at that exact SHA, `public=false`, Node 22.x, Hobby, with the branch alias assigned and the required Preview env names in the build environment. An anonymous `/accounts` request returns Vercel's Protected Deployment login; the public bridge health endpoint remains reachable. READY is not owner browser acceptance.
+
+## New master milestone — real owner authentication and foundation OAuth (2026-11-08)
+
+**Scope:** real sign-in/sign-up and email-confirmation recovery, `/login` and `/signup` aliases, secure verified first-workspace onboarding, account/shell honesty, evidence-backed Accounts readiness, foundation-only provider scopes, server-side OAuth start gate, private-storage boundaries, Edge Function v3 and local/deployed verification. Hosted owner acceptance, real email delivery, provider OAuth, authenticated storage upload/cross-workspace denial, Production promotion and cron execution are NOT VERIFIED.
+
+| Check | Actual result |
+|---|---|
+| Pinned `npm run check` | PASS — format, ESLint `--max-warnings 0`, strict TypeScript, 14 unit files / 87 tests, 1 integration file / 4 tests, 48 Python validator tests, 2 TypeScript security files / 8 tests, strict docs 16 / 155 / 205 / 223 candidates, and a production build with 27/27 static pages and 27 routes |
+| Standalone Edge Function type check | PASS — strict TypeScript with reviewed Deno runtime declarations; the Next.js `tsconfig.json` still excludes `supabase/functions/**`. This is a static check, not hosted Deno execution |
+| `npm run test:e2e` | PASS — 126. An initial clean run found 3 stale expectations; locator strictness and checklist-scope assertions were corrected, then the whole gate passed |
+| `npm run test:visual` | PASS — 153. An initial run found 5 Accounts overflow assertions at 320–430px; a scoped `min-width:0`/wrap fix for setup-check copy was rebuilt and rechecked, then the whole gate passed |
+| `npm run test:a11y` | PASS — 85 |
+| `npm run test:clay` | PASS — 62 |
+| `npm run test:navigation:dev` | PASS — 13; generated `tsconfig.json`/`next-env.d.ts` rewrites were restored |
+| Hosted migration/RPC inventory | PASS — 11 applied migrations ending `20261110085716 verified_first_workspace`; `auth.users=0`, confirmed users=0, workspaces=0, members=0, owners=0, preferences=0, connections=0, bridge sessions=0, receipts=0, evidence=17; `public_tables_without_rls=0`; bootstrap ACL `[authenticated, postgres]`; RPC definition includes `auth.uid()`, email-confirmation and advisory-lock checks |
+| Hosted Auth config | PASS — exact branch Site URL, confirmation required, signup enabled, refresh rotation on, secure email change on, MFA TOTP on; custom SMTP host/user/password remain null and delivery is NOT VERIFIED |
+| Edge Function v3 | PASS — updated ACTIVE `verify_jwt=false` with exact provider origin/path, foundation scope, PKCE and secret-parameter checks; hosted source version advanced from 2 to 3. Anonymous health/forged-callback are negative reachability checks only |
+| Deployed Preview | Exact runtime SHA/READY/private/SSO deployment ID is recorded in the final A–G chat delivery; a commit cannot contain its own hash. Anonymous app fetches reach Vercel SSO, not an owner-authenticated app session |
+| Owner-authenticated browser acceptance | NOT RECORDED — Vercel SSO, custom SMTP, provider apps/reviews and a real confirmed owner session are genuine external gates |
+
+Browser gates used the documented registry-only Chromium fallback with `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/tmp/chromium` and `LD_LIBRARY_PATH=/tmp/up17-al2023/lib`. No Playwright screenshot baselines were rewritten. Local reproduction used no hosted session, no real provider secret and no synthetic database user; it proves UI behavior only. Staged whitespace and high-confidence secret-pattern scans are re-run before the runtime commit. See [owner setup](OWNER_SETUP.md), [decisions](DECISIONS.md) and [sprint status](SPRINT_STATUS.md).

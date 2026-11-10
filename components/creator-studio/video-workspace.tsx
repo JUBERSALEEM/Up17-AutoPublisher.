@@ -138,7 +138,12 @@ function PackageEditor({
             </p>
           )}
           <div className="row row-wrap">
-            <Button disabled icon={<Sparkles size={17} />} title="AI provider is not connected">
+            <Button
+              disabled
+              disabledReason="No approved AI provider is connected; no analysis request is simulated."
+              icon={<Sparkles size={17} />}
+              title="AI provider is not connected"
+            >
               Generate unavailable
             </Button>
             <span className="muted tiny">No AI request or generated result is simulated.</span>
@@ -307,7 +312,11 @@ function PackageEditor({
           <Button variant="primary" icon={<Save size={17} />} onClick={() => save()}>
             Save draft
           </Button>
-          <Button disabled title="Publishing is not connected">
+          <Button
+            disabled
+            disabledReason="Publishing is disabled; no official provider connection or approved publishing integration exists."
+            title="Publishing is not connected"
+          >
             Publish unavailable
           </Button>
         </div>
@@ -407,7 +416,11 @@ export function VideoWorkspace({ initialVideoId }: { initialVideoId?: string }) 
                 <strong>Video preview unavailable.</strong> This is demo artwork, not a playable
                 uploaded file.
               </p>
-              <Button disabled title="Media storage and playback are not connected">
+              <Button
+                disabled
+                disabledReason="Private media storage and authenticated playback are not connected for demo artwork."
+                title="Media storage and playback are not connected"
+              >
                 Play preview unavailable
               </Button>
             </div>
@@ -460,6 +473,7 @@ export function VideoWorkspace({ initialVideoId }: { initialVideoId?: string }) 
               size="sm"
               variant="ghost"
               disabled={!drafts[`${videoId}:${platform}`]}
+              disabledReason="Save a browser-local draft for this platform first; there is nothing to reset yet."
               onClick={reset}
             >
               Reset saved draft

@@ -15,12 +15,15 @@ describe("auth redirect and input boundary", () => {
   ])("rejects unsafe next %s", (value) => {
     expect(safeNext(value)).toBe("/account");
   });
-  it.each(["/settings", "/notifications?filter=unread", "/auth/update-password"])(
-    "keeps internal next %s",
-    (value) => {
-      expect(safeNext(value)).toBe(value);
-    },
-  );
+  it.each([
+    "/settings",
+    "/notifications?filter=unread",
+    "/auth/update-password",
+    "/auth/verify-email",
+    "/onboarding?next=/account",
+  ])("keeps internal next %s", (value) => {
+    expect(safeNext(value)).toBe(value);
+  });
   it("requires an exact Origin match", () => {
     expect(
       sameOrigin(

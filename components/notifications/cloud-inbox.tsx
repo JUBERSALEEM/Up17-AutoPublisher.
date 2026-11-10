@@ -37,6 +37,11 @@ export function CloudInbox({ notices }: { notices: Notice[] }) {
           <Button
             icon={<CheckCheck size={18} />}
             disabled={!unread.length || pending}
+            disabledReason={
+              pending
+                ? "A notification update is in progress; wait for it to finish."
+                : "There are no unread private-workspace notices to mark as read."
+            }
             loading={pending}
             onClick={() =>
               mark(
@@ -100,6 +105,7 @@ export function CloudInbox({ notices }: { notices: Notice[] }) {
                 <Button
                   size="sm"
                   disabled={pending}
+                  disabledReason="A notification update is in progress; wait for it to finish."
                   onClick={() => mark([notice.id], !notice.read_at)}
                 >
                   {notice.read_at ? "Mark unread" : "Mark read"}

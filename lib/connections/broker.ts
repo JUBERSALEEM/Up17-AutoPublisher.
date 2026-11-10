@@ -3,6 +3,7 @@ import { requireSupabaseAdminClient } from "@/lib/supabase/admin";
 import { decryptSecret, encryptSecret, sha256Hex, type CryptoContext } from "./crypto";
 import {
   connectionStateForScopes,
+  foundationScopesOnly,
   exchangeCode,
   fetchIdentity,
   pkceMethods,
@@ -122,6 +123,11 @@ export async function completeOAuth(input: {
     record.redirect_uri,
     verifier,
   );
+  if (!foundationScopesOnly(input.platform, tokens.scopes))
+    throw new ConnectionError(
+      "Authorization returned unexpected permissions. No credential was stored.",
+      400,
+    );
   const identity = await fetchIdentity(input.platform, tokens.accessToken);
   const workspaceId = record.workspace_id;
   const subject = identity.providerAccountId;
@@ -220,6 +226,8 @@ export async function refreshConnection(actorId: string, connectionId: string): 
   try {
     const current = decryptRow(row);
     const tokens = await refreshTokens(row.platform, secrets, current);
+    if (!foundationScopesOnly(row.platform, tokens.scopes))
+      throw new Error("unexpected_provider_scopes");
     const identity = await fetchIdentity(row.platform, tokens.accessToken);
     if (identity.providerAccountId !== row.provider_account_id)
       throw new Error("provider_identity_changed");

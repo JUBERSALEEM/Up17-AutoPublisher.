@@ -6,6 +6,7 @@ import { WORKSPACE_COOKIE } from "@/lib/supabase/constants";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getWorkspaceContext } from "./workspace";
+import { getViewer } from "./session";
 import { defaultPreferences, timezones } from "@/features/preferences/model";
 
 const schema = z
@@ -28,6 +29,40 @@ const schema = z
   })
   .strict();
 export type SaveResult = { ok: boolean; message: string; revision?: number };
+export type BootstrapResult = { ok: boolean; message: string; workspaceId?: string };
+
+/**
+ * Secure first-workspace initialization. The RPC derives identity exclusively
+ * from the verified Supabase session and refuses unconfirmed users. There is no
+ * client-supplied user id and no owner-role escalation for existing members.
+ */
+export async function bootstrapFirstWorkspace(): Promise<BootstrapResult> {
+  const viewer = await getViewer();
+  if (!viewer)
+    return {
+      ok: false,
+      message: "Sign in with a confirmed email before creating a private workspace.",
+    };
+  try {
+    const client = await createSupabaseServerClient();
+    if (!client) return { ok: false, message: "Authentication is not configured." };
+    const { data, error } = await client.rpc("up17_ensure_first_workspace", {});
+    if (error || typeof data !== "string")
+      return {
+        ok: false,
+        message:
+          "Workspace setup could not finish. Reload this page to retry; no data was changed.",
+      };
+    revalidatePath("/", "layout");
+    return { ok: true, message: "Your first private workspace is ready.", workspaceId: data };
+  } catch {
+    return {
+      ok: false,
+      message: "Workspace setup is temporarily unavailable. Reload this page to retry.",
+    };
+  }
+}
+
 export async function savePreferences(input: unknown): Promise<SaveResult> {
   const parsed = schema.safeParse(input);
   if (!parsed.success)

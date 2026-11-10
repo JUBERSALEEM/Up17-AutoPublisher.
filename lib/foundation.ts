@@ -1,8 +1,9 @@
 import "server-only";
 
 import { z } from "zod";
+import { assertSafeMode } from "./app-mode";
 
-/** M1.1 supports only an honest, network-free demo foundation. */
+/** M1.1 safely gates creator workflows; auth/onboarding are separate real domains. */
 export const foundationStatusSchema = z.object({
   product: z.literal("Up17 AutoPublisher"),
   milestone: z.literal("M1.1"),
@@ -14,10 +15,7 @@ export const foundationStatusSchema = z.object({
 export type FoundationStatus = z.infer<typeof foundationStatusSchema>;
 
 export function getFoundationStatus(): FoundationStatus {
-  const configuredMode = process.env.UP17_APP_MODE ?? "DEMO";
-  if (configuredMode !== "DEMO") {
-    throw new Error("Only DEMO mode is available until integrations are approved and tested.");
-  }
+  assertSafeMode();
   return foundationStatusSchema.parse({
     product: "Up17 AutoPublisher",
     milestone: "M1.1",

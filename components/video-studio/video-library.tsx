@@ -297,10 +297,19 @@ export function VideoLibrary() {
                 worker.
               </p>
               <div className="row row-wrap">
-                <Button disabled title="No media processing service is connected">
+                <Button
+                  disabled
+                  disabledReason="No media processing service is connected to this labelled demo library."
+                  title="No media processing service is connected"
+                >
                   Retry unavailable
                 </Button>
-                <Button disabled variant="danger" title="No real media is stored">
+                <Button
+                  disabled
+                  disabledReason="No real media is stored for this labelled demo item."
+                  variant="danger"
+                  title="No real media is stored"
+                >
                   Delete unavailable
                 </Button>
               </div>
@@ -327,7 +336,12 @@ export function VideoLibrary() {
               MP4-first, direct resumable storage and background processing are planned for a
               separately approved phase.
             </p>
-            <Button disabled>Choose a video unavailable</Button>
+            <Button
+              disabled
+              disabledReason="Authenticated private storage upload is not enabled in this labelled demo phase."
+            >
+              Choose a video unavailable
+            </Button>
           </div>
           <p className="field-hint">
             No file is read, sent or stored here. Explore the labelled demo library instead.

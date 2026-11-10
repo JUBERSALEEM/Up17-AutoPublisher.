@@ -9,12 +9,32 @@ const providerOrigins: Record<Platform, string> = {
   instagram: "https://www.instagram.com",
   tiktok: "https://www.tiktok.com",
 };
+const providerPaths: Record<Platform, string> = {
+  youtube: "/o/oauth2/v2/auth",
+  instagram: "/oauth/authorize",
+  tiktok: "/v2/auth/authorize/",
+};
 const platforms = Object.keys(providerOrigins) as Platform[];
+const foundationScopes: Record<Platform, string> = {
+  youtube: "https://www.googleapis.com/auth/youtube.readonly",
+  instagram: "instagram_business_basic",
+  tiktok: "user.info.basic",
+};
 const cookieName = "up17_oauth_bridge";
 const cookiePath = "/functions/v1/up17-oauth-callback";
 
 function isPlatform(value: string | null): value is Platform {
   return value !== null && (platforms as string[]).includes(value);
+}
+
+/** Foundation-only scope check. Publishing scopes are never allowed by the bridge. */
+function hasExactFoundationScope(platform: Platform, raw: string | null): boolean {
+  if (!raw) return false;
+  const parts = raw
+    .split(platform === "youtube" ? /\s+/ : /,/)
+    .map((scope) => scope.trim())
+    .filter(Boolean);
+  return parts.length === 1 && parts[0] === foundationScopes[platform];
 }
 
 function json(body: unknown, status = 200): Response {
@@ -30,11 +50,15 @@ function base64Url(bytes: Uint8Array): string {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
-function fromBase64(value: string): Uint8Array {
+function fromBase64(value: string): Uint8Array<ArrayBuffer> {
   const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
   const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
   const binary = atob(padded);
-  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  const bytes = new Uint8Array(new ArrayBuffer(binary.length));
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return bytes;
 }
 
 async function sha256Hex(value: string): Promise<string> {
@@ -196,11 +220,22 @@ async function authorize(request: Request): Promise<Response> {
     return json({ error: "Invalid provider authorization URL." }, 400);
   }
   const forbidden = ["client_secret", "access_token", "refresh_token"];
+  const pkceExpected = context.platform !== "instagram";
   if (
     providerUrl.origin !== providerOrigins[context.platform] ||
+    providerUrl.pathname !== providerPaths[context.platform] ||
+    providerUrl.hash ||
+    providerUrl.username ||
+    providerUrl.password ||
+    providerUrl.searchParams.get("response_type") !== "code" ||
     providerUrl.searchParams.get("state") !== state ||
     providerUrl.searchParams.get("redirect_uri") !== context.redirect_uri ||
-    forbidden.some((name) => providerUrl.searchParams.has(name))
+    !hasExactFoundationScope(context.platform, providerUrl.searchParams.get("scope")) ||
+    forbidden.some((name) => providerUrl.searchParams.has(name)) ||
+    (pkceExpected &&
+      (providerUrl.searchParams.get("code_challenge_method") !== "S256" ||
+        !providerUrl.searchParams.get("code_challenge"))) ||
+    (!pkceExpected && providerUrl.searchParams.has("code_challenge"))
   ) {
     return json({ error: "Provider authorization URL is not allowed." }, 400);
   }

@@ -3,6 +3,7 @@
 **Updated:** 2026-11-08 UTC
 **Current phase:** functional product implementation, owner-authorized A–J batches
 **Current batch:** A–J functional delivery. A deployment repair PARTIAL; B Clay engine COMPLETE locally; C auth/data foundation PARTIAL (hosted DB/Storage-API delete tests PASS; email/hosted browser/temp-cleanup gates pending); D connections broker PARTIAL (local/hosted broker gates PASS; live OAuth BLOCKED by owner setup); E–H demo UI PARTIAL; I–J MISSING
+**Active master milestone:** real owner authentication, verified workspace onboarding, honest Accounts readiness, foundation Google/YouTube OAuth, security, authenticated-storage boundary and deployed Preview verification. Local implementation/quality gates PASS; live email/provider/owner acceptance remains BLOCKED.
 **Owner acceptance:** NOT RECORDED; technical tests are not owner acceptance
 **Product integrations/deployment:** Supabase auth/data foundation and nine reviewed migrations applied/DB-tested; Vercel preview build path repaired and Batch D runtime commit `74a6c53c805af349a46f34e20fbb76700e914fb1` preview-verified READY as `dpl_F5tKbh3PJXB8yjbHVQZk33hK5gW9` (exact SHA, `public=false`, SSO-protected, cron declared but not run); real OAuth broker implemented, live provider authorization not configured. See [owner balance](OWNER_REQUIREMENTS_BALANCE.md), [Batch C report](BATCH_C_AUTH_REPORT.md), [Batch D report](BATCH_D_CONNECTIONS_REPORT.md) and [owner setup](OWNER_SETUP.md).
 
@@ -73,3 +74,21 @@ Live OAuth remains BLOCKED: no Google/Meta/TikTok app credentials, consent-scree
 Final quality gates PASS: `npm run check` (78 unit, 4 integration, 48 Python, 8 TypeScript security, strict docs 16/155/191/217, 25-route build), E2E 124, visual 153, axe 85, clay 62 and development navigation 13. Browser gates used the documented registry-only Chromium fallback after the default Playwright CDN executable was found absent; generated TS config changes were restored. Every gate is local/build evidence, not live OAuth or owner acceptance.
 
 Final runtime commit `df774e42ccf098b0c7c4959a7d144308bbd8cc97` is deployed as Vercel `dpl_4R3BdHpC9qpcNB1Kpo5YeFnn2Jwg` (READY, exact SHA, `public=false`, SSO-protected, Node 22.x, branch alias assigned). Anonymous app access still reaches Vercel SSO; the public callback bridge remains externally reachable. Owner acceptance remains NOT RECORDED.
+
+## New MASTER MILESTONE — real auth, workspace and foundation OAuth
+
+| Letter | Area | State | Actual boundary |
+|---|---|---|---|
+| A | Real login/signup and DEMO-mode exit for auth | TESTED (local) | `/login`, `/signup`, canonical auth pages, verified `getUser()`, confirmation recovery, reset/update flows and domain-specific safe mode implemented. No hosted signup/session/SMTP delivery exists. |
+| B | Secure workspace onboarding | TESTED (local/static) | Migration 11 and `/onboarding` use a confirmed-session RPC with no client-supplied id/role; hosted ACL and zero-data inventory verified. No real owner workspace exists. |
+| C | Honest Accounts readiness | TESTED (local) | 13 connection states, six evidence-backed setup states, exact blockers/owner steps, deployment checklist, three always-visible provider buttons and no simulated authorization. |
+| D | First Google/YouTube OAuth foundation | IMPLEMENTED / BLOCKED (live) | `youtube.readonly` only, separate publishing scope, exact console path/redirect, evidence-gated start route and Edge Function v3 checks. No Google app, credential, consent, callback or token. |
+| E | Security and authenticated storage | CONFIGURED / NOT VERIFIED | RLS, private bucket, four scoped policies, session-bound media access and exact disabled reasons verified statically. Authenticated upload/cross-workspace denial need an owner session. |
+| F | Deployed Preview browser verification | READY / SSO BLOCKED | Exact runtime SHA and private/SSO Preview recorded in the final A–G chat delivery; anonymous fetches reach Vercel SSO. Local production-build browser gates pass. |
+| G | Docs, cost and owner acceptance | DOCS UPDATED / NOT RECORDED | Five named docs updated; expected incremental cost $0 on existing free allowances with usage limits. Owner acceptance and Production/cron/publishing approvals are NOT RECORDED. |
+
+`UP17_APP_MODE=DEMO` remains global. Authentication, onboarding and Accounts controls are real; video/scheduling/analytics/sample content remain labelled demo; publishing is disabled. Vercel SSO, Production `main`, all prior migrations, service-only custody and Smart AI/analytics/video boundaries are intact. No secret value is in Git, chat, URLs or reports.
+
+Final pinned local gates PASS: `npm run check` (87 unit, 4 integration, 48 Python, 8 TypeScript security, strict docs 16/155/205/223, 27/27 static pages and 27 routes), standalone strict Edge Function TypeScript check, E2E 126, visual 153, axe 85, clay 62 and development navigation 13. An initial E2E run found 3 stale expectations and an initial visual run found 5 Accounts overflow assertions; both were fixed and clean full reruns passed. Generated TS config rewrites were restored. These are local/build gates, not hosted owner acceptance.
+
+Hosted verification found migration 11 applied, Edge Function v3 ACTIVE `verify_jwt=false`, zero auth users/workspaces/members/connections/bridge sessions/receipts, 17 evidence rows, `public_tables_without_rls=0`, bootstrap ACL `[authenticated, postgres]`, email confirmation required and custom SMTP absent. Anonymous app access reaches Vercel SSO; the public bridge health endpoint is reachable. Live OAuth, email delivery, owner-authenticated signup/workspace/storage acceptance, Production promotion, cron and publishing remain BLOCKED/NOT RECORDED. See [owner setup](OWNER_SETUP.md), [test evidence](TEST_EVIDENCE.md), [decisions](DECISIONS.md) and [change log](CHANGELOG.md).

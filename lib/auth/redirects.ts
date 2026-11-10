@@ -13,9 +13,10 @@ export function safeNext(value: unknown, fallback = "/account"): string {
     if (decoded.startsWith("//") || decoded.includes("\\") || /[\x00-\x1f]/.test(decoded))
       return fallback;
     const url = new URL(value, "https://up17.invalid");
+    const allowedAuthPaths = new Set(["/auth/update-password", "/auth/verify-email"]);
     if (
       url.origin !== "https://up17.invalid" ||
-      (url.pathname.startsWith("/auth/") && url.pathname !== "/auth/update-password") ||
+      (url.pathname.startsWith("/auth/") && !allowedAuthPaths.has(url.pathname)) ||
       url.pathname.startsWith("/api/")
     )
       return fallback;

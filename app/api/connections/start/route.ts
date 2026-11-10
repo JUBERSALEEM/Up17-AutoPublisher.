@@ -11,6 +11,7 @@ import {
   createBridgeSession,
 } from "@/lib/connections/bridge";
 import { custodyConfigured, pkcePair, randomToken } from "@/lib/connections/crypto";
+import { providerConfigurationReady } from "@/lib/connections/deployment-readiness";
 import { authorizationUrl, pkceMethods, providerSecrets } from "@/lib/connections/providers";
 import { isConnectionPlatform } from "@/lib/connections/types";
 
@@ -46,6 +47,14 @@ export async function POST(request: Request) {
   if (!secrets || !custodyConfigured() || !callbackBridgeOrigin())
     return NextResponse.json(
       { error: "Official OAuth is not configured on this deployment." },
+      { status: 503, headers },
+    );
+  if (!(await providerConfigurationReady(platform)))
+    return NextResponse.json(
+      {
+        error:
+          "Provider configuration incomplete: external app setup, exact redirect URI, review and account eligibility need timestamped VERIFIED evidence before OAuth can start.",
+      },
       { status: 503, headers },
     );
   const state = randomToken(32);

@@ -231,10 +231,19 @@ export function AccountsBoard() {
               data exists for this identity.
             </p>
             <div className="row row-wrap">
-              <Button disabled title="No OAuth connection exists">
+              <Button
+                disabled
+                disabledReason="No official OAuth connection exists for this labelled demo account."
+                title="No OAuth connection exists"
+              >
                 Refresh unavailable
               </Button>
-              <Button disabled variant="danger" title="No real account is connected">
+              <Button
+                disabled
+                disabledReason="No real account is connected, so there is nothing to disconnect."
+                variant="danger"
+                title="No real account is connected"
+              >
                 Disconnect unavailable
               </Button>
             </div>
@@ -249,7 +258,11 @@ export function AccountsBoard() {
         footer={
           <>
             <Button onClick={() => setConnect(null)}>Close</Button>
-            <Button disabled title="OAuth and provider setup require separate authorization">
+            <Button
+              disabled
+              disabledReason="Official OAuth requires owner provider credentials, exact redirect registration, review and real consent."
+              title="OAuth and provider setup require separate authorization"
+            >
               OAuth unavailable
             </Button>
           </>

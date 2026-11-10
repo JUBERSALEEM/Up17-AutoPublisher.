@@ -3631,8 +3631,14 @@ input[type="radio"] {
 }
 .setup-check-copy {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 5px;
   min-width: 0;
+}
+.setup-check-copy > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .setup-check-copy p {
   margin: 0;

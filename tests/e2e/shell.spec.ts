@@ -42,12 +42,33 @@ test("search, workspace details and profile menu have real behavior @e2e", async
   await expect(page).toHaveURL(/\/queue$/);
   await page.getByRole("button", { name: /Up17 Gaming/ }).click();
   await expect(page.getByRole("dialog")).toContainText("@up17longshotyt");
-  await expect(page.getByRole("button", { name: "Create workspace unavailable" })).toBeDisabled();
+  const createWorkspace = page.getByRole("button", { name: "Create workspace unavailable" });
+  await expect(createWorkspace).toBeDisabled();
+  await expect(page.locator("#workspace-setup-reason")).toContainText(
+    "Authentication is not configured in this local preview",
+  );
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Local profile menu" }).click();
   await expect(page.getByRole("link", { name: "Design System", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "Local profile menu" })).toBeFocused();
+});
+
+test("account routes replace demo identity with real account controls and exact reasons @e2e", async ({
+  page,
+}) => {
+  await page.goto("/account");
+  await expect(page.getByRole("heading", { name: "Account security" })).toBeVisible();
+  await expect(page.getByText("Real account controls").first()).toBeVisible();
+  await expect(page.getByText("Demo mode", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: /No private workspace|Up17 Gaming/ }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText("No private workspace");
+  await expect(dialog.locator("#workspace-setup-reason")).toContainText(
+    "Authentication is not configured in this local preview",
+  );
+  await expect(dialog.getByRole("button", { name: "Create workspace unavailable" })).toBeDisabled();
+  await expect(dialog.getByText("@up17longshotyt")).toHaveCount(0);
 });
 
 test("shell theme menu persists and dismisses accessibly @e2e", async ({ page }) => {

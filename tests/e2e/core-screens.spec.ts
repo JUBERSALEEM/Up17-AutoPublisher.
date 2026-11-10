@@ -106,7 +106,10 @@ test("accounts show real OAuth cards and exact setup blockers @e2e", async ({ pa
     await expect(button).toBeDisabled();
   }
   await expect(page.getByRole("button", { name: "Connect an account" })).toBeDisabled();
-  await expect(page.getByText("Demo mode is active")).toBeVisible();
+  await expect(page.locator("#connect-account-reason")).toContainText("Not configured");
+  await expect(page.locator("#youtube-status")).toContainText("Deployment setup is incomplete");
+  await expect(page.locator("#youtube-blocker")).toContainText("Not configured");
+  await expect(page.getByText("Evidence-backed readiness")).toBeVisible();
   await expect(page.getByText("No real identity is connected", { exact: false })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Deployment and owner setup checklist" }),
@@ -127,10 +130,12 @@ test("accounts show real OAuth cards and exact setup blockers @e2e", async ({ pa
     "TIKTOK_CLIENT_SECRET",
     "CRON_SECRET",
   ]) {
-    await expect(page.getByText(name, { exact: false }).first()).toBeVisible();
+    await expect(
+      page.locator(".setup-checklist").getByText(name, { exact: false }).first(),
+    ).toBeVisible();
   }
   await expect(page.getByRole("link", { name: "Create account" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign in", exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "How to reach real connections" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "No real accounts connected" })).toBeVisible();
 });

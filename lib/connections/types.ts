@@ -13,7 +13,10 @@ export interface ProviderAvailability {
   label: string;
   configured: boolean;
   loginPath: string;
+  /** Minimum foundation scopes requested by the real OAuth start handler. */
   scopes: string[];
+  /** Publishing scopes deliberately NOT requested until review and a separate milestone. */
+  publishingScopes: string[];
   reviewNote: string;
 }
 
@@ -52,10 +55,10 @@ export function isConnectionPlatform(value: unknown): value is ConnectionPlatfor
 }
 
 export const connectionStateLabels: Record<ConnectionState, string> = {
-  pending: "Pending",
+  pending: "Connection in progress",
   connected: "Connected",
   limited_permissions: "Limited permissions",
-  needs_authorisation: "Needs authorisation",
-  error: "Error",
+  needs_authorisation: "Reauthorization required",
+  error: "Failed",
   disconnected: "Disconnected",
 };

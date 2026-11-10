@@ -137,7 +137,12 @@ export function PerformanceLab() {
           >
             Sync unavailable
           </Button>
-          <Button disabled icon={<Download size={16} />} title="There is no real report to export">
+          <Button
+            disabled
+            disabledReason="There is no real analytics report to export from this labelled demo."
+            icon={<Download size={16} />}
+            title="There is no real report to export"
+          >
             Export unavailable
           </Button>
         </div>

@@ -9,12 +9,15 @@ test("unconfigured local auth stays honest and account controls do not fake a se
   await page.goto("/sign-in");
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
   await expect(
-    page.getByText("Production email delivery is still being verified", { exact: false }),
+    page.getByText("Custom SMTP delivery is owner-verified", { exact: false }),
   ).toBeVisible();
   await page.getByLabel("Email address").fill("not-an-email");
   await page.getByLabel("Password", { exact: true }).fill("synthetic-test-password");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page.getByLabel("Email address")).toHaveJSProperty("validity.valid", false);
+  await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeDisabled();
+  await expect(
+    page.getByText("Authentication is not configured in this local preview").first(),
+  ).toBeVisible();
   await expect(page).toHaveURL(/\/sign-in$/);
   await page.goto("/account");
   await expect(page.getByRole("heading", { name: "Account security" })).toBeVisible();
@@ -22,6 +25,30 @@ test("unconfigured local auth stays honest and account controls do not fake a se
     page.getByText("Authentication is not configured in this local demo."),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign out" })).toHaveCount(0);
+});
+
+test("owner-requested login/signup aliases and confirmation recovery render real auth @e2e", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await expect(page).toHaveURL(/\/sign-in$/);
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+  await page.goto("/signup");
+  await expect(page).toHaveURL(/\/sign-up$/);
+  await expect(page.getByRole("heading", { name: "Create your creator account" })).toBeVisible();
+  await page.goto("/auth/verify-email");
+  await expect(page.getByRole("heading", { name: "Confirm your email" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Resend confirmation email" })).toBeDisabled();
+  await expect(
+    page.getByText("Authentication is not configured in this local preview").first(),
+  ).toBeVisible();
+  await page.goto("/onboarding");
+  await expect(
+    page.getByRole("heading", { name: "Set up your workspace", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Authentication is not configured in this local preview").first(),
+  ).toBeVisible();
 });
 
 test("auth callback rejects an unsafe next target and expired code @e2e", async ({ page }) => {
