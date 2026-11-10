@@ -158,3 +158,5 @@ The owner authorized the functional A–J delivery sequence, including the named
 - Owner actions are limited to external provider/account permissions, direct SMTP credential entry, owner-authenticated browser acceptance and separately approved Production changes. All independent integration work was performed first. See the [autonomous configuration report](evidence/autonomous-configuration-report.md) and [owner setup](OWNER_SETUP.md).
 
 Final runtime commit `df774e42ccf098b0c7c4959a7d144308bbd8cc97` is deployed as `dpl_4R3BdHpC9qpcNB1Kpo5YeFnn2Jwg` (READY, exact SHA, `public=false`, Node 22.x, SSO-protected). This is deployment evidence, not live OAuth, SMTP delivery, authenticated storage or owner acceptance.
+
+Documentation commit `aee1016809f5a81edcc4df1451d86ae8288b721c` was verified as READY private/SSO Preview `dpl_8tkq9nSn8BY2bUtvqJ5g3Ww4c9Fa`; runtime source is unchanged from `dpl_4R3BdHpC9qpcNB1Kpo5YeFnn2Jwg`. Both deployment types remain distinct from owner acceptance.

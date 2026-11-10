@@ -80,3 +80,7 @@ These are genuine external account permissions/approvals: the Vercel connector c
 - Historical Batch C leftovers (`public.tmp_consume_acceptance_challenge`, `up17_private.acceptance_challenges` without RLS, `http`, `pg_net`) remain. Their cleanup is destructive, previously blocked by the connector security filter and requires a separately reviewed reversible migration.
 - `public.deployment_evidence` contains 17 non-secret states: 3 VERIFIED, 3 BLOCKED, 4 OWNER ACTION REQUIRED, 1 NOT APPLICABLE and 6 CONFIGURED. No row contains a secret value.
 - No Smart AI, video analysis, publishing workflow, Production promotion, paid plan or security-boundary weakening was performed.
+
+### Final documentation deployment verification
+
+Documentation commit `aee1016809f5a81edcc4df1451d86ae8288b721c` built as Vercel `dpl_8tkq9nSn8BY2bUtvqJ5g3Ww4c9Fa` (READY, exact documentation SHA, `public=false`, Node 22.x, branch alias assigned). Runtime source is unchanged from runtime deployment `dpl_4R3BdHpC9qpcNB1Kpo5YeFnn2Jwg`. An anonymous `/accounts` request after this commit returns Vercel's Protected Deployment login, and the public Supabase bridge still returns `{"ok":true,"service":"up17-oauth-callback"}`. Neither deployment proves owner-authenticated acceptance or live provider OAuth.
