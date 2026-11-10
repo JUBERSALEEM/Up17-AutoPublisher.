@@ -7,13 +7,14 @@
 - Added strict reviewed env-example/Vercel cron guards, their positive/negative tests, connection crypto/provider unit tests and a 155-row four-gate owner balance. Live OAuth remains blocked by owner SMTP, secrets, provider apps/app review and accessible callback deployment. See [Batch D report](BATCH_D_CONNECTIONS_REPORT.md) and [owner setup](OWNER_SETUP.md).
 - Recorded the later Batch C Storage-API delete acceptance and corrected its evidence: temporary Edge Function cleanup succeeded, but temporary SQL objects/extensions remain because cleanup SQL was blocked before execution. No bypass was attempted.
 - Corrected the development service-worker cleanup regression to assert on a genuinely fresh page after registration removal; all 13 development navigation assertions pass after the retained first failure.
+- Committed and pushed runtime commit `74a6c53c805af349a46f34e20fbb76700e914fb1` to the fixed branch; Vercel deployment `dpl_F5tKbh3PJXB8yjbHVQZk33hK5gW9` is READY at the exact SHA, SSO-protected and `public=false`, with the reviewed cron declaration but no preview cron execution. Build logs report pinned npm 11.21.2, Node 22.x, 0 vulnerabilities and a successful production build. This is deployment evidence, not hosted browser or owner acceptance.
 
 
 ## Unreleased — Batch C auth/data foundation (2026-11-08)
 
 - Added Supabase SSR authentication, protected workspace/preferences/inbox paths, five applied hosted migrations, private media bucket policies and a rollback multi-user RLS fixture.
 - Closed direct preference/workspace writes behind a revision-checked audited RPC; added category/platform integrity and multi-workspace selection fallback.
-- Local aggregate/browser/accessibility/viewport/clay/navigation gates and hosted DB isolation fixture pass; hosted email delivery, SSO-protected browser acceptance and Storage-API delete remain explicit unverified gates. See [Batch C report](BATCH_C_AUTH_REPORT.md).
+- Local aggregate/browser/accessibility/viewport/clay/navigation gates and hosted DB isolation fixture pass; hosted email delivery and SSO-protected browser acceptance remain blocked. The later challenge-gated Storage-API delete probe passed with a 30-second cached-download limitation; temporary SQL cleanup remains an owner action. See [Batch C report](BATCH_C_AUTH_REPORT.md), [storage evidence](evidence/batch-c-storage-api.txt) and [owner setup](OWNER_SETUP.md).
 
 ## Unreleased — Batch B sculptural Clay engine (2026-11-08)
 

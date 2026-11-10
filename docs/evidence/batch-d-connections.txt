@@ -55,7 +55,7 @@ Command: env npm_execpath=<pinned npm cli> npm_config_user_agent='npm/11.21.2 no
 PASS — toolchain, format:check, zero-warning lint, strict typecheck.
 PASS — 59 unit tests / 11 files; 4 integration tests / 1 file.
 PASS — strict docs/credential validator: 16 required docs, 155 requirement rows,
-143 local links, 206 Git-index/worktree artifact candidates; statuses
+148 local links, 206 Git-index/worktree artifact candidates; statuses
 BLOCKED=4, IN PROGRESS=38, PLANNED=91, TESTED=22.
 PASS — 46 Python validator tests; 6 TypeScript security tests / 2 files.
 PASS — production build: 25 routes/static pages, including four connection API routes.
@@ -73,6 +73,27 @@ navigator.serviceWorker.controller was not yet null. The test now opens a genuin
 fresh page in the same context after the registration count reaches zero. Rerun
 PASS — 13 development-mode navigation assertions.
 PASS — npm audit --audit-level=moderate: 0 vulnerabilities.
+
+VERCEL PREVIEW VERIFICATION — runtime commit
+Branch: arena/698e4880-up17-autopublisher
+Commit: 74a6c53c805af349a46f34e20fbb76700e914fb1 (committed and pushed)
+Deployment: dpl_F5tKbh3PJXB8yjbHVQZk33hK5gW9
+Preview URL: autopublisher-lr1etgys6-auto-uploader.vercel.app
+Branch alias: autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app
+Connector read: READY; exact SHA; public=false; preview; readySubstate=STAGED;
+plan=hobby; nodeVersion=22.x; aliasAssigned=true; SSO-protected.
+Build env: only public Supabase URL/publishable key and UP17_APP_MODE; no service
+key, token keyring, provider client secret or cron bearer secret.
+crons metadata: [{"path":"/api/cron/connections","schedule":"0 3 * * *"}]
+(declared; Vercel Hobby cron is production-only and does not run on this preview).
+Build events: cloned exact SHA; npx --yes npm@11.21.2 ci; 420 packages added;
+found 0 vulnerabilities; Next.js 16.4.5; Compiled successfully in 6.1s;
+Running TypeScript / Finished TypeScript in 11.9s; Build Completed in 45s;
+Deployment completed; build cache saved.
+Anonymous branch-alias fetch: PASS — Vercel "Protected Deployment" login
+returned; no app page, hosted auth, OAuth callback or owner acceptance reached.
+A following documentation-only commit records this verification and does not
+change runtime code. READY is build evidence, not hosted browser acceptance.
 
 The strict docs gate was run after staging intended changes because it compares both
 Git-index and worktree versions of vercel.json; the reviewed cron/build config must

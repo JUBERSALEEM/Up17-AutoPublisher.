@@ -148,9 +148,12 @@ Detailed logs: [Batch 1](evidence/ui-batch1-validation.txt), [Batch 2](evidence/
 |---|---|
 | Applied migration parity | PASS — nine local canonical MD5 values matched hosted statements; do not reapply |
 | Hosted broker rollback fixture | PASS — expected `P0001: ROLLBACK_BROKER_FIXTURE_COMPLETE`; synthetic users/connections/credentials/audit rows all zero afterwards |
-| Local aggregate gates | PASS — `npm run check`: 59 unit, 4 integration, 46 Python validator, 6 TypeScript security, 16 docs/155 requirements/143 links/206 artifacts, 25-route build |
+| Local aggregate gates | PASS — `npm run check`: 59 unit, 4 integration, 46 Python validator, 6 TypeScript security, 16 docs/155 requirements/148 links/206 artifacts, 25-route build |
 | Browser E2E/axe/visual/clay/navigation | PASS — 123 E2E, 85 axe, 153 viewport, 62 clay and 13 development navigation assertions; dev service-worker test corrected with a fresh page after unregister |
 | Live OAuth / provider app review / SMTP / owner browser | NOT RUN / BLOCKED — owner configuration required |
+| Vercel preview build verification | PASS — deployment `dpl_F5tKbh3PJXB8yjbHVQZk33hK5gW9` READY at exact SHA `74a6c53c805af349a46f34e20fbb76700e914fb1`, `public=false`, SSO-protected; pinned npm 11.21.2/Node 22.x, 0 npm vulnerabilities, TypeScript/production build PASS; cron declared but not run on preview |
 | Production cron / publication / owner acceptance | NOT RUN / NOT RECORDED |
 
 Corrections retained: a 42702 ambiguous PL/pgSQL `connection_id` was fixed by `20261110042107`; a 23514 disconnect-state check violation was fixed by `20261110042815`; the development service-worker cleanup test now verifies a genuinely fresh page after registration removal. The Batch C Storage-API delete probe passed with a 30-second cached-download limitation. Its temporary SQL cleanup was blocked by the connector provider security filter before execution; owner-run instructions are in [owner setup](OWNER_SETUP.md).
+
+Vercel connector verification: the runtime commit was pushed to the fixed branch and built from the exact SHA. The deployment is READY, `public=false` and SSO-protected; build events record pinned `npm@11.21.2 ci`, Next.js 16.4.5, 420 installed packages, 0 vulnerabilities, compiled successfully in 6.1s, TypeScript in 11.9s and Build Completed in 45s. The deployment metadata contains the reviewed `0 3 * * *` cron declaration but no service key, token keyring, provider secret or cron bearer secret. An anonymous request to the branch alias returns Vercel's **Protected Deployment** login; no app page or hosted browser acceptance was reached. Vercel Hobby cron is daily/production-only, so the preview does not execute the cron.

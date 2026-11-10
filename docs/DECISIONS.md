@@ -125,7 +125,7 @@ The owner authorized the functional A–J delivery sequence, including the named
 - Applied five reviewed migrations rather than reapplying failed monolithic/hardening attempts. Local/remote parity is canonical (comments/whitespace removed), not raw-byte parity.
 - Closed direct preference/workspace writes behind the audited revision RPC; added category/platform integrity and a multi-workspace selection cookie with membership fallback.
 - Deliberately allowlisted reviewed `supabase/migrations`, `supabase/tests` and `lib/supabase/database.types.ts` in the artifact guard; other cloud/generated artifacts remain rejected.
-- Hosted RLS fixture passes and rolls back. SMTP is absent, Vercel preview SSO blocks anonymous hosted browser acceptance, and Storage-API delete is untested; these remain explicit gates rather than claimed success.
+- Hosted RLS fixture passes and rolls back. SMTP is absent and Vercel preview SSO blocks anonymous hosted browser acceptance. The later challenge-gated Storage-API delete probe passed with a 30-second cached-download limitation; temporary SQL cleanup was blocked by the connector provider's security filter before execution. These remain explicit gates rather than claimed production acceptance. See [Batch C report](BATCH_C_AUTH_REPORT.md), [storage evidence](evidence/batch-c-storage-api.txt) and [owner setup](OWNER_SETUP.md).
 
 
 ## Batch D connection-broker decisions — 2026-11-10
@@ -135,3 +135,4 @@ The owner authorized the functional A–J delivery sequence, including the named
 - `up17_private.service_actor_role` fails closed to `viewer`; service-role calls still re-check owner/admin membership explicitly. Browser roles receive no service RPC or private-credential grants.
 - The daily `/api/cron/connections` cron is declared in the exact reviewed `vercel.json`; no secret is in Git. Vercel Hobby runs cron daily and only on production.
 - No provider app, SMTP credential, service key, token keyring, cron bearer secret or SSO change was created by the agent. `.env.example` contains reviewed placeholders only. Live OAuth remains BLOCKED and owner acceptance is NOT RECORDED. See [Batch D report](BATCH_D_CONNECTIONS_REPORT.md) and [owner setup](OWNER_SETUP.md).
+- The Batch D runtime commit `74a6c53c805af349a46f34e20fbb76700e914fb1` was committed and pushed to the fixed branch, then preview-verified as Vercel deployment `dpl_F5tKbh3PJXB8yjbHVQZk33hK5gW9` (READY, exact SHA, `public=false`, SSO-protected). Build logs show pinned npm 11.21.2, Node 22.x, 0 npm vulnerabilities, successful TypeScript and production build, and the reviewed daily cron declaration. Vercel Hobby cron runs daily only on production; the preview does not execute it. READY is not hosted browser or owner acceptance.
