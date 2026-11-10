@@ -265,6 +265,21 @@ class DocumentationValidatorTests(unittest.TestCase):
     def test_supabase_arbitrary_sql_is_rejected(self):
         self.assert_rejected(lambda root: self.force_add(root, "supabase/seed.sql", "select 1;\n"), "cloud configuration")
 
+    def test_reviewed_edge_function_source_is_allowed(self):
+        self.assert_accepted(
+            lambda root: self.write(
+                root,
+                "supabase/functions/up17-oauth-callback/index.ts",
+                "Deno.serve(() => new Response('ok'));\n",
+            )
+        )
+
+    def test_edge_function_nested_cloud_config_is_rejected(self):
+        self.assert_rejected(
+            lambda root: self.force_add(root, "supabase/functions/up17-oauth-callback/config.toml", "project_id=\"example\"\n"),
+            "cloud configuration",
+        )
+
     def test_reviewed_database_types_are_allowed(self):
         self.assert_accepted(lambda root: self.write(root, "lib/supabase/database.types.ts", "export type Json = string;\n"))
 

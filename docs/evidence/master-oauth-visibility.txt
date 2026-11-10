@@ -133,3 +133,7 @@ Lifecycle: BLOCKED (no real connection for refresh/health/disconnect).
 Security: PARTIAL (architecture and local gates pass; hosted role/isolation and real callback not revalidated).
 Owner acceptance: NOT RECORDED.
 No provider is COMPLETE from code alone. Connecting an account never implies publishing approval. No real content was published; Smart AI, paid AI, the next creator phase and production promotion were not started.
+
+=== 7. Superseded by autonomous configuration task ===
+
+A later active task independently configured the remaining permitted Preview/development prerequisites, applied the tenth migration, deployed the public OAuth callback bridge and replaced presence-only readiness with six evidence-backed states. The exact provider redirect URIs are now the public Supabase bridge URLs, not the protected Vercel app paths listed above. See autonomous-configuration-report.md and autonomous-configuration-plan.md in this directory, plus docs/OWNER_SETUP.md. This historical evidence remains for the earlier task only; it is not the current hosted configuration or final delivery record.

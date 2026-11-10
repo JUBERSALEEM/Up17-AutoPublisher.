@@ -7,6 +7,7 @@ import { Link2Off, Plus, RefreshCw, ShieldCheck, Unplug } from "lucide-react";
 import { Badge, Button, Card, DemoBadge, Dialog, EmptyState } from "@/components/ui";
 import { PageHeader, PlatformBadge, PlatformIcon } from "@/components/features/common";
 import {
+  setupStatusTone,
   statusTone,
   type DeploymentReadiness,
   type ProviderCard,
@@ -120,7 +121,19 @@ export function RealAccountsBoard({
           return;
         }
         const target = new URL(body.authorizationUrl);
-        if (target.origin !== providerOrigins[platform])
+        const bridge = readiness.bridgeOrigin;
+        const isBridge =
+          Boolean(bridge) &&
+          target.origin === bridge &&
+          target.pathname === "/functions/v1/up17-oauth-callback" &&
+          target.searchParams.get("mode") === "authorize";
+        let providerOrigin = target.origin;
+        if (isBridge) {
+          const inner = target.searchParams.get("authorize");
+          if (!inner) throw new Error("Unexpected authorization handoff.");
+          providerOrigin = new URL(inner).origin;
+        }
+        if (providerOrigin !== providerOrigins[platform])
           throw new Error("Unexpected provider origin.");
         window.location.assign(target.toString());
       } catch {
@@ -247,8 +260,8 @@ export function RealAccountsBoard({
                   <dd className="wrap-anywhere">{card.scopes.join(", ")}</dd>
                 </div>
                 <div>
-                  <dt>Exact callback path</dt>
-                  <dd className="wrap-anywhere">{card.callbackPath}</dd>
+                  <dt>Exact provider redirect URI</dt>
+                  <dd className="wrap-anywhere">{card.externalCallbackUrl ?? card.callbackPath}</dd>
                 </div>
                 <div>
                   <dt>Provider console</dt>
@@ -296,26 +309,20 @@ export function RealAccountsBoard({
           <div>
             <h2 id="setup-heading">Deployment and owner setup checklist</h2>
             <p className="muted small">
-              Only names, dashboard locations and booleans are shown. Values stay in the deployment
-              secret manager; none are copied into Git, chat, URLs or logs.
+              Only names, evidence-backed states, dashboard locations and non-secret evidence are
+              shown. Values stay in the deployment secret manager; none are copied into Git, chat,
+              URLs or logs.
             </p>
           </div>
         </div>
         <ul className="setup-checklist">
           {readiness.checks.map((check) => (
             <li key={check.id} className="setup-check-item">
-              <Badge
-                tone={check.configured ? "success" : check.ownerVerification ? "warning" : "danger"}
-              >
-                {check.configured
-                  ? "Configured"
-                  : check.ownerVerification
-                    ? "Owner verification required"
-                    : "Missing"}
-              </Badge>
+              <Badge tone={setupStatusTone[check.status]}>{check.status}</Badge>
               <div className="setup-check-copy">
                 <strong className="wrap-anywhere">{check.names.join(", ")}</strong>
                 <p className="muted small wrap-anywhere">{check.location}</p>
+                <p className="muted small wrap-anywhere">Evidence: {check.evidence}</p>
                 <p className="small">{check.ownerAction}</p>
               </div>
             </li>
@@ -350,10 +357,11 @@ export function RealAccountsBoard({
             credentials for each provider in Vercel, then redeploy.
           </li>
           <li>
-            <strong>Register exact provider callbacks.</strong> Use the three callback paths above
-            in Google Cloud, Meta for Developers and TikTok Developer Portal. Complete
-            consent-screen, professional-account, Advanced Access and Direct Post audit gates where
-            applicable.
+            <strong>Register exact provider callbacks.</strong> Use the three public bridge redirect
+            URIs above in Google Cloud, Meta for Developers and TikTok Developer Portal. The main
+            app stays protected; the bridge exchanges a one-time receipt before returning to the
+            protected callback. Complete consent-screen, professional-account, Advanced Access and
+            Direct Post audit gates where applicable.
           </li>
           <li>
             <strong>Connect.</strong> Return here, press the enabled provider button, verify the

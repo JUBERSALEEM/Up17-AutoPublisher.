@@ -4,13 +4,14 @@ import { sameOrigin } from "@/lib/auth/redirects";
 import { getWorkspaceContext } from "@/lib/auth/workspace";
 import { appOrigin } from "@/lib/supabase/config";
 import { beginOAuth, ConnectionError } from "@/lib/connections/broker";
-import { custodyConfigured, pkcePair, randomToken } from "@/lib/connections/crypto";
 import {
-  authorizationUrl,
-  callbackUrl,
-  pkceMethods,
-  providerSecrets,
-} from "@/lib/connections/providers";
+  bridgeAuthorizeUrl,
+  callbackBridgeOrigin,
+  callbackBridgeUrl,
+  createBridgeSession,
+} from "@/lib/connections/bridge";
+import { custodyConfigured, pkcePair, randomToken } from "@/lib/connections/crypto";
+import { authorizationUrl, pkceMethods, providerSecrets } from "@/lib/connections/providers";
 import { isConnectionPlatform } from "@/lib/connections/types";
 
 export const runtime = "nodejs";
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
   if (!isConnectionPlatform(platform))
     return NextResponse.json({ error: "Unsupported platform." }, { status: 400, headers });
   const secrets = providerSecrets(platform);
-  if (!secrets || !custodyConfigured())
+  if (!secrets || !custodyConfigured() || !callbackBridgeOrigin())
     return NextResponse.json(
       { error: "Official OAuth is not configured on this deployment." },
       { status: 503, headers },
@@ -51,7 +52,14 @@ export async function POST(request: Request) {
   const binding = randomToken(32);
   const method = pkceMethods[platform];
   const pair = method ? pkcePair(method) : null;
-  const redirectUri = callbackUrl(appOrigin(), platform);
+  const redirectUri = callbackBridgeUrl(platform);
+  const providerUrl = authorizationUrl(
+    platform,
+    secrets,
+    redirectUri,
+    state,
+    pair?.challenge ?? null,
+  );
   try {
     await beginOAuth({
       actorId: workspace.userId,
@@ -62,6 +70,29 @@ export async function POST(request: Request) {
       binding,
       verifier: pair?.verifier ?? null,
     });
+    const bridgeId = await createBridgeSession({
+      actorId: workspace.userId,
+      workspaceId: workspace.workspaceId,
+      platform,
+      state,
+      binding,
+      redirectUri,
+      returnOrigin: appOrigin(),
+    });
+    (await cookies()).set(BINDING_COOKIE, binding, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/api/connections",
+      maxAge: 600,
+    });
+    return NextResponse.json(
+      {
+        ok: true,
+        authorizationUrl: bridgeAuthorizeUrl({ bridgeId, state, authorizationUrl: providerUrl }),
+      },
+      { headers },
+    );
   } catch (error) {
     const status = error instanceof ConnectionError ? error.status : 503;
     return NextResponse.json(
@@ -71,24 +102,4 @@ export async function POST(request: Request) {
       { status, headers },
     );
   }
-  (await cookies()).set(BINDING_COOKIE, binding, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/api/connections",
-    maxAge: 600,
-  });
-  return NextResponse.json(
-    {
-      ok: true,
-      authorizationUrl: authorizationUrl(
-        platform,
-        secrets,
-        redirectUri,
-        state,
-        pair?.challenge ?? null,
-      ),
-    },
-    { headers },
-  );
 }

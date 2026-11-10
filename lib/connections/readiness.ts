@@ -16,17 +16,73 @@ export const connectionStatuses = [
 export type ConnectionStatus = (typeof connectionStatuses)[number];
 export type StatusTone = "success" | "warning" | "danger" | "neutral";
 
-/** Dashboard names and booleans only. This object must never carry secret values. */
+/** Every deployment setting uses exactly one evidence-backed state. */
+export const setupStatuses = [
+  "MISSING",
+  "CONFIGURED",
+  "VERIFIED",
+  "OWNER ACTION REQUIRED",
+  "BLOCKED",
+  "NOT APPLICABLE",
+] as const;
+export type SetupStatus = (typeof setupStatuses)[number];
+export const setupStatusTone: Record<SetupStatus, StatusTone> = {
+  MISSING: "danger",
+  CONFIGURED: "neutral",
+  VERIFIED: "success",
+  "OWNER ACTION REQUIRED": "warning",
+  BLOCKED: "danger",
+  "NOT APPLICABLE": "neutral",
+};
+
+/** Dashboard names, non-secret states and non-secret evidence only. */
 export interface SetupCheck {
   id: string;
   names: readonly string[];
   location: string;
+  status: SetupStatus;
   configured: boolean;
+  evidence: string;
   ownerAction: string;
   /** True when the app cannot inspect a dashboard-only owner action. */
   ownerVerification?: boolean;
   /** Omit for deployment-wide checks. */
   platforms?: readonly ConnectionPlatform[];
+}
+
+export interface DeploymentEvidenceRow {
+  key: string;
+  state: string;
+  evidence: string;
+  verified_at: string | null;
+}
+
+/** VERIFIED requires an explicit evidence record and timestamp, never variable presence. */
+export function applyDeploymentEvidence(
+  checks: SetupCheck[],
+  rows: DeploymentEvidenceRow[],
+): SetupCheck[] {
+  const byKey = new Map(rows.map((row) => [row.key, row]));
+  return checks.map((check) => {
+    const row = byKey.get(check.id);
+    if (!row || !(setupStatuses as readonly string[]).includes(row.state)) return check;
+    const state = row.state as SetupStatus;
+    const hasProof = Boolean(row.evidence.trim() && row.verified_at);
+    const effectiveState = state === "VERIFIED" && !hasProof ? "BLOCKED" : state;
+    const safeEvidence = /^[a-z0-9_ -]{1,160}$/i.test(row.evidence.trim())
+      ? row.evidence.trim()
+      : "Evidence recorded privately; no sensitive values displayed.";
+    return {
+      ...check,
+      status: effectiveState,
+      configured: ["CONFIGURED", "VERIFIED", "NOT APPLICABLE"].includes(effectiveState),
+      ownerVerification: effectiveState === "OWNER ACTION REQUIRED",
+      evidence:
+        effectiveState === "BLOCKED" && state === "VERIFIED"
+          ? "VERIFIED requires a timestamped evidence record."
+          : safeEvidence,
+    };
+  });
 }
 
 export interface DeploymentReadiness {
@@ -41,6 +97,8 @@ export interface DeploymentReadiness {
   connectionReadError: boolean;
   providerCredentials: Record<ConnectionPlatform, boolean>;
   callbackPaths: Record<ConnectionPlatform, string>;
+  externalCallbackUrls: Record<ConnectionPlatform, string | null>;
+  bridgeOrigin: string | null;
   checks: SetupCheck[];
 }
 
@@ -52,6 +110,7 @@ export interface ProviderCard extends ProviderAvailability {
   canStart: boolean;
   missing: SetupCheck[];
   callbackPath: string;
+  externalCallbackUrl: string | null;
   providerDashboard: string;
   connection: RealConnection | null;
 }
@@ -149,11 +208,16 @@ function firstBlocker(
 
 function describe(
   status: ConnectionStatus,
-  card: Pick<ProviderCard, "platform" | "callbackPath" | "providerDashboard" | "missing">,
+  card: Pick<
+    ProviderCard,
+    "platform" | "callbackPath" | "externalCallbackUrl" | "providerDashboard" | "missing"
+  >,
 ): string {
   const base = statusDescriptions[status];
   if (status === "Provider credentials missing") {
-    return `${base} Add ${providerSetupNames[card.platform].join(", ")} in Vercel. Register ${card.callbackPath} as the exact redirect URI in ${card.providerDashboard}.`;
+    const redirect =
+      card.externalCallbackUrl ?? `the external callback bridge for ${card.callbackPath}`;
+    return `${base} Add ${providerSetupNames[card.platform].join(", ")} in Vercel. Register ${redirect} as the exact redirect URI in ${card.providerDashboard}.`;
   }
   if (status === "Workspace setup required") {
     return `${base} Only owner/admin roles can connect, refresh or disconnect accounts.`;
@@ -180,10 +244,13 @@ export function buildProviderCards(
         (check.platforms === undefined || check.platforms.includes(platform)),
     );
     const callbackPath = readiness.callbackPaths[platform];
+    const externalCallbackUrl = readiness.externalCallbackUrls[platform];
     const providerDashboard = providerDashboards[platform];
     const canStart = blocker === null && !(connection && connection.state === "connected");
-    const draft: Pick<ProviderCard, "platform" | "callbackPath" | "providerDashboard" | "missing"> =
-      { platform, callbackPath, providerDashboard, missing };
+    const draft: Pick<
+      ProviderCard,
+      "platform" | "callbackPath" | "externalCallbackUrl" | "providerDashboard" | "missing"
+    > = { platform, callbackPath, externalCallbackUrl, providerDashboard, missing };
     return {
       ...provider,
       connectLabel: connectLabels[platform],
@@ -193,6 +260,7 @@ export function buildProviderCards(
       canStart,
       missing,
       callbackPath,
+      externalCallbackUrl,
       providerDashboard,
       connection,
     };

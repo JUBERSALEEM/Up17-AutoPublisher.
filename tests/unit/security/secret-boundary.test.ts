@@ -25,6 +25,15 @@ describe("client source secret boundary", () => {
     expect(board).not.toMatch(/SUPABASE_(?:SERVICE_ROLE|SECRET)_KEY\s*=/);
     expect(board).not.toMatch(/UP17_TOKEN_KEYS\s*=/);
   });
+
+  it("keeps provider codes off the protected app callback and uses one-time receipts", () => {
+    const callback = readFileSync("app/api/connections/callback/[platform]/route.ts", "utf8");
+    expect(callback).toContain('url.searchParams.has("code")');
+    expect(callback).toContain("consumeBridgeReceipt");
+    const start = readFileSync("app/api/connections/start/route.ts", "utf8");
+    expect(start).toContain("callbackBridgeUrl");
+    expect(start).toContain("bridgeAuthorizeUrl");
+  });
 });
 
 function walk(directory: string): string[] {

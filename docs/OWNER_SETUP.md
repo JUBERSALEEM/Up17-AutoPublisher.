@@ -1,107 +1,68 @@
-# Owner setup — SMTP, SSO, provider apps and live OAuth acceptance
+# Owner setup — remaining external account approvals only
 
-**Audience:** repository/project owner only. **Status:** PARTIAL non-secret configuration; live OAuth remains BLOCKED. The agent did not create, copy, print, commit or deploy a Supabase service key, token keyring, SMTP credential, provider client secret, cron bearer secret or Vercel SSO change. The agent did set the non-secret exact preview `UP17_SITE_URL` and reviewed Supabase auth redirect paths. Live acceptance requires every remaining section below and an owner-authenticated real browser. Technical database fixtures are not a substitute for these gates.
+**Audience:** repository/project owner only. **Status:** independent Preview/development configuration is complete; live OAuth, real email delivery and owner acceptance remain BLOCKED. The agent inspected the actual connected Vercel and Supabase projects, applied one reviewed migration, deployed a public OAuth callback bridge, stored server-side secrets through the integrations, preserved global SSO, and verified the hosted schema and quality gates. No secret value is printed, copied to Git, placed in a URL or returned in this document. Everything the existing integrations could safely configure has been configured; only genuine external provider/account permissions, owner-authenticated browser actions, custom SMTP credentials and separately approved Production changes remain.
 
-**Current verified state:** branch `arena/698e4880-up17-autopublisher`, runtime commit `d4cfbde4508442c819e7779906f90c494c1fc0b9`, preview deployment `dpl_2igGhiy79jrgxBhPXABMcqnkS1MN` READY at that exact SHA, `public=false`, SSO-protected. The unified Accounts page now always shows the three real provider cards, exact statuses, explicit Demo mode, a name/boolean-only setup checklist and the route to real connections. Vercel Preview has `UP17_APP_MODE=DEMO`, the two public Supabase names and the exact `UP17_SITE_URL`; it still lacks the server key, keyring, provider credentials and `CRON_SECRET`. Supabase has no custom SMTP and zero users, workspaces, connections, credentials, OAuth attempts or audit rows. No provider was authorized and owner acceptance is NOT RECORDED. See [master OAuth visibility report](MASTER_OAUTH_VISIBILITY_REPORT.md) and [executed evidence](evidence/master-oauth-visibility.txt).
+**Branch and identity.** Fixed branch `arena/698e4880-up17-autopublisher`. Starting commit `d94418ef124f38e1989afe2049cc4d8158d33e89`. Vercel project `prj_uh7RosdHFABdfwRkSRg7JNmu67bK`, team `team_jEJR74nCGB4nVczqRwF0ljmM`, team slug `auto-uploader`, project name `autopublisher`, Hobby plan. Supabase project `hxgokimjdormlktxjsbg`, organisation `xjzpxfeqrdhjsyijotvh`, region `ap-northeast-1`, PostgreSQL 17. Exact Preview origin: `https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app`. See the [autonomous configuration report](evidence/autonomous-configuration-report.md) and [change-control plan](evidence/autonomous-configuration-plan.md).
 
-The exact deployment origin used for the current preview is `https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app`. The owner must confirm the exact URL they opened; connector metadata cannot identify a human-chosen alias. Keep this origin consistent in Vercel, Supabase and every provider console. It has no path, query or fragment. If a different production origin is approved later, replace it everywhere, redeploy and register the new exact callback URLs. Do not use a wildcard in provider OAuth redirect settings.
+## 1. What is already configured and evidence-backed
 
-## 1. Supabase email delivery and URL allowlist
+- Vercel Preview, branch-scoped, has the two public Supabase names, `UP17_APP_MODE=DEMO`, exact `UP17_SITE_URL`, `UP17_OAUTH_CALLBACK_BASE_URL`, `UP17_TOKEN_ACTIVE_KEY_ID`, and Sensitive server-only `SUPABASE_SERVICE_ROLE_KEY`, `UP17_TOKEN_KEYS` and `CRON_SECRET`. Values live only in Vercel's secret manager and are never displayed by the Accounts page. No Production variable was changed.
+- Supabase has the exact Preview Site URL, the reviewed email/auth redirect allowlist, the three exact public bridge callback URLs and their query forms, email signup enabled with confirmation required, refresh rotation, secure email change and MFA TOTP. No custom SMTP is configured and email delivery has NOT been verified.
+- The tenth migration `20261110072807_up17_oauth_callback_bridge` is applied. Hosted verification found every exposed public table with RLS, the private `creator-media` bucket with scoped SELECT/INSERT/UPDATE/DELETE policies, five new service-only bridge RPCs and `public.deployment_evidence`. The local and hosted migration names and canonical SQL MD5 values match.
+- The public Edge Function `up17-oauth-callback` is deployed with `verify_jwt=false` and built-in service credentials. Anonymous external HTTPS requests returned a healthy JSON response and rejected a forged callback without a bridge cookie. A synthetic one-time receipt was consumed once, replay was rejected, the fixture was deleted, and `anon`/`authenticated` EXECUTE grants on the bridge RPCs were verified absent.
+- The protected app accepts only a short-lived one-time `receipt`; direct provider `code`/`state` parameters on the app callback are rejected. Provider URLs are allowlisted, state/PKCE/browser binding are verified, codes are encrypted into private one-time receipts, and access tokens never appear in URLs, logs or browser responses.
+- The Accounts checklist now uses exactly `MISSING`, `CONFIGURED`, `VERIFIED`, `OWNER ACTION REQUIRED`, `BLOCKED` or `NOT APPLICABLE`, backed by the service-only evidence table. `VERIFIED` requires timestamped evidence; no variable is marked VERIFIED merely because it exists.
 
-1. In Supabase project `hxgokimjdormlktxjsbg`, open **Authentication → Sign In / Providers → Email** and keep email confirmation required. The current hosted config has no custom SMTP, so confirmation/recovery delivery is not production-verified.
-2. Choose an SMTP provider and enable custom SMTP under **Project Settings → Authentication** (or the equivalent Auth SMTP settings). Supply the SMTP host, port, user, password, sender address and sender name in the Supabase dashboard, not in Git. Supabase documents the required fields in [Send emails with custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp).
-3. In **Authentication → URL Configuration**, set **Site URL** to `https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app`. The reviewed exact auth paths and path-specific query forms are already present on the hosted project:
-   - `https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app/auth/callback`
-   - `https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app/auth/confirm`
-   - `https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app/auth/update-password`
-   - the same three paths with `?*` query forms, plus reviewed `localhost:3000` and `127.0.0.1:3000` equivalents.
-   Supabase explains query-string wildcards in [Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls). These are Supabase auth allowlist patterns, **not** provider OAuth redirect wildcards. If the owner approves a production origin, add its exact paths and query forms too.
-4. Send a real signup confirmation and a password-recovery email to an inbox you control. Confirm the link reaches `/auth/callback`, the session is established, and recovery reaches `/auth/update-password`. Confirm the reviewed trigger creates a workspace, owner membership and preferences. Do not mark hosted email acceptance until both emails and the workspace path pass.
+## 2. Exact public provider redirect URIs
 
-## 2. Vercel environment variables
+Register these **exact** URLs in each external provider console. They terminate at the public Supabase bridge, not the SSO-protected Vercel app. Do not add wildcard redirect URIs or a Vercel protection-bypass query parameter.
 
-Use **Project Settings → Environment Variables** in Vercel project `prj_uh7RosdHFABdfwRkSRg7JNmu67bK` (team `team_jEJR74nCGB4nVczqRwF0ljmM`). Vercel applies variable changes only to new deployments, so redeploy after saving. See [Managing environment variables](https://vercel.com/docs/environment-variables/managing-environment-variables) and [Rotating secrets safely](https://vercel.com/docs/environment-variables/rotating-secrets).
+| Provider | Exact redirect URI |
+| --- | --- |
+| YouTube / Google | `https://hxgokimjdormlktxjsbg.supabase.co/functions/v1/up17-oauth-callback?mode=callback&platform=youtube` |
+| Instagram / Meta | `https://hxgokimjdormlktxjsbg.supabase.co/functions/v1/up17-oauth-callback?mode=callback&platform=instagram` |
+| TikTok | `https://hxgokimjdormlktxjsbg.supabase.co/functions/v1/up17-oauth-callback?mode=callback&platform=tiktok` |
 
-| Name | Where the value comes from | Suggested Vercel treatment | Current preview state |
-|---|---|---|---|
-| `UP17_APP_MODE` | Keep the reviewed `DEMO` value; unsupported values fail closed | plain; Production/Preview/Development as needed | Configured |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | plain; public by design | Configured |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key, not a secret/service key | plain; public by design | Configured |
-| `UP17_SITE_URL` | Exact canonical HTTPS origin used for auth and OAuth callbacks | plain; per environment | Configured to the exact branch alias |
-| `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` | One Supabase service-role/secret key from the owner's secret store | Sensitive; server-only; never `NEXT_PUBLIC_` | Missing |
-| `UP17_TOKEN_ACTIVE_KEY_ID` | Current key id in the owner's keyring | plain; per environment | Missing |
-| `UP17_TOKEN_KEYS` | JSON object mapping reviewed key ids to base64 32-byte keys | Sensitive; server-only | Missing |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google Cloud OAuth client | first plain, second Sensitive; server-only | Missing |
-| `INSTAGRAM_CLIENT_ID`, `INSTAGRAM_CLIENT_SECRET` | Meta/Instagram app dashboard | first plain, second Sensitive; server-only | Missing |
-| `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET` | TikTok developer app | first plain, second Sensitive; server-only | Missing |
-| `CRON_SECRET` | Long random value generated by the owner | Sensitive; Production for cron, Preview for direct tests | Missing |
+The main application remains protected by Vercel SSO `all_except_custom_domains`. The bridge only validates provider origin, state, browser binding and one-time receipt handling, then returns the signed-in browser to `/api/connections/callback/{platform}?receipt=...`. No separate public app path or global SSO change is required.
 
-The Accounts readiness checklist shows only these names and booleans, never values. The server-only broker accepts either `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` and rejects a publishable key.
+## 3. Genuine remaining owner actions
 
-Generate each 32-byte token-custody key outside the repository and store it only in the owner's secret manager. Keep old keys in the keyring until every encrypted credential using them has been refreshed or disconnected; rotate by adding a new key, changing the active key id, redeploying, refreshing/reconnecting accounts, then retiring the old key. Never place the service key or keyring in a browser-prefixed variable, Git, logs, Supabase Vault as a substitute for encryption, or a support ticket.
+### A. Supabase custom SMTP and real email delivery
 
-## 3. Provider application consoles
+**URL:** `https://supabase.com/dashboard/project/hxgokimjdormlktxjsbg/auth/providers` → **Email** → **SMTP Settings**. The connector can inspect Auth but cannot set `smtp_host`, `smtp_user` or `smtp_pass`, and cannot observe inbox delivery.
 
-Register the exact callback URLs below. The application constructs them from `UP17_SITE_URL`; a mismatch will fail state/redirect validation. Do not use demo accounts to claim live success.
+Enter the SMTP host, port, sender, username and password directly in the Supabase dashboard; never paste them into chat or Git. Success criteria: send one real signup-confirmation email and one password-recovery email to an inbox you control; the confirmation link establishes a session at `/auth/callback`, the reviewed trigger creates a workspace, owner membership and preferences, and recovery reaches `/auth/update-password`. Report configuration separately from actual delivery. The readiness state remains `OWNER ACTION REQUIRED` until this succeeds.
 
-### YouTube / Google
+### B. Google / YouTube application and account authorization
 
-1. In Google Cloud, create/select the owner's project, enable **YouTube Data API v3**, configure the OAuth consent screen and add the app's test users. Request only `https://www.googleapis.com/auth/youtube.readonly` and `https://www.googleapis.com/auth/youtube.upload`. External-user publishing requires the applicable OAuth verification and API compliance review; see [Using OAuth 2.0 for Web Server Applications](https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps) and [YouTube Data API scopes](https://developers.google.com/youtube/v3/guides/auth/installed-apps).
-2. Create an **OAuth client ID → Web application**. Add `https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app/api/connections/callback/youtube` as an Authorized redirect URI. Copy the client ID and client secret into the Vercel Sensitive/plain variables above; never commit them.
-3. Check the approved project's actual quota and verification state. Do not assume public upload eligibility or hard-code a historical quota number.
+**URL:** `https://console.cloud.google.com/apis/credentials` → select the owner's Google Cloud project → **OAuth consent screen** and **Credentials** → **Create credentials** → **OAuth client ID** → **Web application**. Also enable **YouTube Data API v3** under **APIs & Services → Library**. Required scopes: `https://www.googleapis.com/auth/youtube.readonly` and `https://www.googleapis.com/auth/youtube.upload`. Add the exact YouTube URI from section 2 as an **Authorized redirect URI**. Enter the client ID and client secret directly into Vercel at `https://vercel.com/auto-uploader/autopublisher/settings/environment-variables` as `GOOGLE_CLIENT_ID` (plain) and `GOOGLE_CLIENT_SECRET` (Sensitive, Preview). Complete consent-screen/test-user and any applicable scope verification.
 
-### Instagram / Meta
+Success criteria: an owner-authenticated browser signs in, starts a real YouTube authorization, consents on `https://accounts.google.com`, returns through the public bridge, and `/accounts` shows a real channel with `Connected`, granted scopes, encrypted credentials persisted server-side, publishing disabled and a successful refresh/health check. A READY deployment or credentials alone is not success. Google/YouTube remains `BLOCKED` until this occurs.
 
-1. Create/select a Meta Business app with **Instagram API with Instagram Login / Business Login for Instagram**. Use an Instagram professional (Business or Creator) account owned or managed by the app user. The implemented path does not universally require a linked Facebook Page. Official references: [Instagram Platform overview](https://developers.facebook.com/docs/instagram-platform/overview/), [Instagram API with Instagram Login](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/), [Access Token](https://developers.facebook.com/docs/instagram-platform/reference/access_token/) and [Refresh Access Token](https://developers.facebook.com/docs/instagram-platform/reference/refresh_access_token/).
-2. Configure Business Login redirect URI `https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app/api/connections/callback/instagram`. Request `instagram_business_basic` and `instagram_business_content_publish`; complete Advanced Access/app review before public use. Copy the Instagram app ID and app secret into Vercel.
-3. The adapter exchanges the short-lived code token for a long-lived token server-side and refreshes long-lived tokens at least 24 hours old. Remote revocation is not claimed: the UI reports the provider setting where the owner can remove app access.
+### C. Instagram and TikTok — assess only after Google is verified
 
-### TikTok
+**Instagram URL:** `https://developers.facebook.com/apps/` → owner app → **Instagram API with Instagram Login / Business Login for Instagram** → **Business Login settings**. Register the exact Instagram URI from section 2. Request `instagram_business_basic` and `instagram_business_content_publish`; use a professional account and complete Advanced Access/app review. Store `INSTAGRAM_CLIENT_ID` and `INSTAGRAM_CLIENT_SECRET` directly in Vercel.
 
-1. In the TikTok developer console, add **Login Kit** and **Content Posting API**, configure Direct Post/audit requirements and request `user.info.basic` plus `video.publish`. Unaudited clients are restricted to private/self-test posts until the audit is complete; see [Login Kit for Desktop](https://developers.tiktok.com/doc/login-kit-desktop/) and [Direct Post prerequisites](https://developers.tiktok.com/docs/en/content-posting-api-get-started).
-2. Register `https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app/api/connections/callback/tiktok` as the redirect URI. Copy the client key and client secret into Vercel.
-3. Preserve required creator consent, privacy and content-status UX. Do not bypass an unaudited-client restriction or claim publishing capability from a connection token alone.
+**TikTok URL:** `https://developers.tiktok.com/app/` → owner app → **Login Kit** and **Content Posting API** → **Redirect URIs**. Register the exact TikTok URI from section 2. Request `user.info.basic` and `video.publish`; complete Direct Post/audit gates. Store `TIKTOK_CLIENT_KEY` and `TIKTOK_CLIENT_SECRET` directly in Vercel.
 
-## 4. Deployment, SSO and cron
+Success criteria for each: real owner authorization, callback validation, external identity, encrypted token persistence, publishing disabled, and refresh/health/disconnect evidence. Both remain `BLOCKED`; no app review, audit or account authorization can be performed by the connected integrations.
 
-1. The master-task runtime commit `d4cfbde4508442c819e7779906f90c494c1fc0b9` was pushed to the fixed branch and Vercel created deployment `dpl_2igGhiy79jrgxBhPXABMcqnkS1MN` from that exact SHA. Connector verification returned READY, `public=false`, Node 22.x, pinned npm 11.21.2 install/build commands, successful TypeScript and production build, the reviewed cron declaration and `UP17_SITE_URL` in the build environment. An anonymous fetch to the branch alias returns Vercel's **Protected Deployment** login. A READY build alone is not browser or owner acceptance. The earlier Batch D deployment `dpl_F5tKbh3PJXB8yjbHVQZk33hK5gW9` and docs-only preview `dpl_3YhnNmsQca3mYSEeNdJYJrEUQ1PZ` remain historical evidence.
-2. Vercel preview SSO currently blocks anonymous hosted UI/auth walkthroughs. Use an owner-authenticated browser session, or change preview protection explicitly in Vercel project settings for the acceptance window. Do not describe an anonymous 401/SSO redirect as a product failure or as a successful walkthrough. The agent kept SSO protection intact.
-3. `UP17_SITE_URL` is already set to the exact preview branch alias for this branch. Register that origin's three exact provider callbacks and redeploy after any later environment-variable change. If a production origin is approved, set its own exact value and register its own callbacks; do not reuse the preview origin in production.
-4. `vercel.json` declares one daily cron: `0 3 * * *` to `/api/cron/connections`. Vercel Hobby cron jobs run at most daily and only on production deployments, with hourly scheduling precision; previews do not run them. See [Cron usage and pricing](https://vercel.com/docs/cron-jobs/usage-and-pricing), [Managing Cron Jobs](https://vercel.com/docs/cron-jobs/manage-cron-jobs) and [Cron quickstart](https://vercel.com/docs/cron-jobs/quickstart). Configure `CRON_SECRET` as a Sensitive variable and redeploy. For a direct test, send a GET with `Authorization: Bearer $CRON_SECRET` to the deployed `/api/cron/connections`; an unauthenticated call must return 401.
-5. Production promotion, a production cron and any public publishing remain separate owner approvals. No production alias was promoted by the agent.
+### D. Owner-authenticated hosted acceptance
 
-## 5. Live OAuth acceptance checklist
+Use an owner-authenticated browser at `https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app/accounts`. Vercel SSO intentionally blocks anonymous fetches; this is not a product defect. Confirm the exact URL, sign in with a confirmed email, verify workspace owner/admin role, check all six readiness states and their non-secret evidence, and exercise the complete connection lifecycle including rejection of a stale/replayed link and denial for viewer/editor roles. Record owner acceptance separately; it is NOT RECORDED.
 
-Execute each step with a real owner-approved test account and record the result:
+### E. Production, cron and paid services — separate approvals
 
-- Confirm the exact URL opened. Sign up/sign in with confirmed email; confirm the workspace context and owner/admin role. Check that Accounts no longer shows demo identities and that each card reports one exact status from `Not configured`, `Authentication required`, `Workspace setup required`, `Provider credentials missing`, `Encryption keyring missing`, `Ready to connect`, `Connected`, `Limited permissions`, `Needs reauthorization` or `Error`.
-- For each provider whose status is `Ready to connect`, press the exact button (**Connect Google / YouTube**, **Connect Instagram**, **Connect TikTok**), verify the official provider origin in the address bar, complete consent, and return to `/accounts?connection=authorized`.
-- Verify the real account card shows the actual identity, granted scopes, last-verified time, `Connected` or `Limited permissions`, and publishing disabled/paused. A missing publish scope must not be shown as connected-with-full-capability.
-- Exercise **Refresh** and **Health**; verify audit/connection state changes. Exercise **Disconnect**; verify local credentials are deleted and the UI honestly reports when remote revocation was not confirmed.
-- Reject a stale/replayed authorization link and confirm no new connection appears. Confirm a viewer/editor cannot start or manage a connection.
-- Re-run the hosted rollback broker fixture and confirm zero synthetic rows remaining; do not replace its rollback sentinel with a commit.
-- Record owner acceptance separately. Do not claim live OAuth success from local unit tests, synthetic fixtures or a READY deployment.
+No Production deployment was promoted or changed. `vercel.json` declares one daily production-only cron, but Vercel Hobby cron does not run on Preview; the Accounts checklist correctly marks `CRON_SECRET` as `NOT APPLICABLE` in Preview. A Production promotion, Production environment variables, a live scheduled cron execution, custom domains, paid add-ons, SMTP purchase, provider app review fees and any publishing enablement require separate explicit owner approval. The $0-first policy remains in force; no paid plan, storage add-on, AI service or third-party subscription was activated.
 
-## 6. Owner-run cleanup of Batch C probe leftovers
+## 4. Security boundaries
 
-The temporary Storage acceptance Edge Function was deleted. The connector provider's security filter blocked the cleanup SQL before execution; it was never retried or rewritten to bypass that control. Hosted inspection found `public.tmp_consume_acceptance_challenge(p_digest text)`, `up17_private.acceptance_challenges`, and extensions `http` and `pg_net` still present. The `auth.mfa_challenges` and `auth.webauthn_challenges` tables are Supabase Auth internals and must not be dropped.
+- Global Vercel SSO stays intact. The public surface is limited to the reviewed Edge Function, which never returns an access token, provider code, service credential or keyring value.
+- Server-only secrets never enter `NEXT_PUBLIC_` variables, client bundles, URLs, logs or Git. The Accounts board displays names, states, dashboard locations and non-secret evidence only.
+- Tokens are ciphertext at rest with workspace/platform/subject-bound AES-256-GCM AAD. Service RPCs re-check actor membership, state, binding, expiry and one-time consumption.
+- Every new connection starts publishing-disabled and paused. Smart AI, video analysis and publishing workflows were not modified.
+- Provider app review, quota, account eligibility, consent and audit restrictions are live gates, not documentation claims. No social password is requested; official OAuth only.
 
-If no other hosted function/webhook depends on these objects, the owner may run the following in the Supabase SQL Editor. Check dependencies first; keep and document the extensions if they are needed by other project features.
+## 5. Known leftovers requiring separate approval
 
-```sql
-drop function if exists public.tmp_consume_acceptance_challenge(p_digest text);
-drop table if exists up17_private.acceptance_challenges;
-drop extension if exists http;
-drop extension if exists pg_net;
-```
-
-This is a manual owner action, not an instruction to bypass a connector security control. After cleanup, record the resulting inventory and decide whether immediate signed-URL revocation needs a separate storage design; the earlier Storage-API delete probe observed a cached authenticated download during its 30-second poll window and did not claim cryptographic revocation of already-issued signed URLs.
-
-## 7. Security boundaries
-
-- No social password is requested; official OAuth only.
-- Server-only secrets never enter `NEXT_PUBLIC_` variables, client bundles, URLs, logs or Git.
-- Tokens are ciphertext at rest in the private schema; service RPCs re-check actor membership explicitly.
-- Every new connection starts publishing-disabled and paused.
-- Provider app review, quota, account eligibility, consent and audit restrictions are live gates, not documentation claims.
-- Paid AI/services, production release and actual creator-account publication require separate explicit owner approval.
+The historical Batch C probe leftovers (`public.tmp_consume_acceptance_challenge`, `up17_private.acceptance_challenges`, and extensions `http`/`pg_net`) remain. The connector's security filter blocked the original cleanup SQL; it was never rewritten to bypass that control. `acceptance_challenges` still lacks RLS but is not exposed through app RPCs and is revoked from `anon`/`authenticated`; it contains seven historical rows. Removing these objects is a destructive operation and was NOT performed. `auth.mfa_challenges` and `auth.webauthn_challenges` are Supabase Auth internals and must not be dropped. Any cleanup requires a separately reviewed reversible migration and explicit owner approval.

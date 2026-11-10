@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getViewer } from "@/lib/auth/session";
 import { completeOAuth } from "@/lib/connections/broker";
+import { consumeBridgeReceipt } from "@/lib/connections/bridge";
 import { isConnectionPlatform } from "@/lib/connections/types";
 
 export const runtime = "nodejs";
@@ -22,32 +23,32 @@ export async function GET(request: Request, context: { params: Promise<{ platfor
     response.headers.set("Cache-Control", "private, no-store");
     return response;
   };
+  const invalid = (reason: string) => {
+    destination.searchParams.set("connection", reason);
+    destination.searchParams.set("platform", platform);
+    return clear(NextResponse.redirect(destination, 303));
+  };
   if (!isConnectionPlatform(platform)) return clear(NextResponse.redirect(destination, 303));
-  const state = url.searchParams.get("state");
-  const code = url.searchParams.get("code");
+  const receipt = url.searchParams.get("receipt");
   const providerError = url.searchParams.get("error");
   const binding = (await cookies()).get(BINDING_COOKIE)?.value;
   const viewer = await getViewer();
-  if (providerError) {
-    destination.searchParams.set("connection", "denied");
-    destination.searchParams.set("platform", platform);
-    return clear(NextResponse.redirect(destination, 303));
-  }
-  if (
-    !viewer ||
-    !state ||
-    !code ||
-    !binding ||
-    state.length > 256 ||
-    code.length > 4096 ||
-    binding.length > 256
-  ) {
-    destination.searchParams.set("connection", "invalid");
-    destination.searchParams.set("platform", platform);
-    return clear(NextResponse.redirect(destination, 303));
-  }
+  if (providerError) return invalid("denied");
+  // Provider codes terminate at the public bridge. The protected app accepts only
+  // a short-lived, one-time receipt plus the original HttpOnly binding cookie.
+  if (url.searchParams.has("code") || url.searchParams.has("state")) return invalid("invalid");
+  if (!viewer || !receipt || !binding || receipt.length > 256 || binding.length > 256)
+    return invalid("invalid");
   try {
-    await completeOAuth({ actorId: viewer.id, platform, state, binding, code });
+    const resolved = await consumeBridgeReceipt({ receipt, actorId: viewer.id, binding });
+    if (resolved.platform !== platform) return invalid("invalid");
+    await completeOAuth({
+      actorId: viewer.id,
+      platform,
+      state: resolved.state,
+      binding,
+      code: resolved.code,
+    });
     destination.searchParams.set("connection", "authorized");
     destination.searchParams.set("platform", platform);
   } catch {

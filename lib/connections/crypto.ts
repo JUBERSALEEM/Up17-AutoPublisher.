@@ -2,7 +2,7 @@ import "server-only";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 
 export interface CryptoContext {
-  purpose: "oauth_verifier" | "access_token" | "refresh_token";
+  purpose: "oauth_code" | "oauth_verifier" | "access_token" | "refresh_token";
   workspaceId: string;
   platform: string;
   subject: string;
@@ -20,6 +20,8 @@ function keyring(): Keyring {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
+    // Secret managers may store a JSON object as a JSON string literal.
+    if (typeof parsed === "string") parsed = JSON.parse(parsed);
   } catch {
     throw new Error("Token custody keyring is invalid.");
   }

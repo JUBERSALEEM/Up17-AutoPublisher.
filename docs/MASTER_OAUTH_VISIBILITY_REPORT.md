@@ -140,3 +140,7 @@ No provider is marked COMPLETE merely because code exists.
 6. Return to `/accounts`, confirm the status becomes `Ready to connect`, press the exact provider button, verify the official provider origin, consent, return through the real callback, and check identity/scopes/state.
 7. Exercise refresh, health and disconnect; verify encrypted credentials are deleted and remote revocation is honestly reported. Reject stale/replayed/expired links, missing scopes and revoked credentials.
 8. Record owner acceptance separately. Only after this milestone is accepted may the next creator-product phase begin. Smart AI, paid AI, real publishing, the next creator phase and production promotion are out of scope now.
+
+## Superseding active-task record
+
+This report describes the earlier OAuth-visibility milestone. A later active task independently configured all permitted Preview/development prerequisites, applied the tenth migration, deployed the public callback bridge, stored server-side secrets through the integrations and made readiness evidence-backed. Its authoritative delivery record is [autonomous configuration report](evidence/autonomous-configuration-report.md); the current owner actions are in [owner setup](OWNER_SETUP.md). Historical statuses above should not be read as the current hosted configuration.

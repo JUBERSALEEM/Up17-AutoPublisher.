@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyDeploymentEvidence,
   buildProviderCards,
   connectionStatuses,
+  setupStatuses,
+  setupStatusTone,
   statusTone,
   type DeploymentReadiness,
   type SetupCheck,
@@ -40,22 +43,28 @@ const checks: SetupCheck[] = [
     id: "deployment",
     names: ["UP17_SITE_URL"],
     location: "Vercel → Project Settings → Environment Variables",
+    status: "CONFIGURED",
     configured: true,
+    evidence: "site_url_present",
     ownerAction: "Set the exact origin.",
   },
   {
     id: "owner-only",
     names: ["Supabase custom SMTP"],
     location: "Supabase → Authentication",
+    status: "OWNER ACTION REQUIRED",
     configured: false,
     ownerVerification: true,
+    evidence: "smtp_not_exposed_by_connector",
     ownerAction: "Owner must verify delivery.",
   },
   {
     id: "youtube-creds",
     names: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
     location: "Google Cloud Console / Vercel",
+    status: "CONFIGURED",
     configured: true,
+    evidence: "credentials_present_no_authorization",
     platforms: ["youtube"],
     ownerAction: "Register the exact callback.",
   },
@@ -77,6 +86,15 @@ const ready: DeploymentReadiness = {
     instagram: "/api/connections/callback/instagram",
     tiktok: "/api/connections/callback/tiktok",
   },
+  externalCallbackUrls: {
+    youtube:
+      "https://example.supabase.co/functions/v1/up17-oauth-callback?mode=callback&platform=youtube",
+    instagram:
+      "https://example.supabase.co/functions/v1/up17-oauth-callback?mode=callback&platform=instagram",
+    tiktok:
+      "https://example.supabase.co/functions/v1/up17-oauth-callback?mode=callback&platform=tiktok",
+  },
+  bridgeOrigin: "https://example.supabase.co",
   checks,
 };
 
@@ -144,7 +162,9 @@ describe("unified Accounts readiness", () => {
     );
     expect(cards[0].status).toBe("Provider credentials missing");
     expect(cards[0].description).toContain("GOOGLE_CLIENT_ID");
-    expect(cards[0].description).toContain("/api/connections/callback/youtube");
+    expect(cards[0].description).toContain(
+      "https://example.supabase.co/functions/v1/up17-oauth-callback?mode=callback&platform=youtube",
+    );
     expect(cards[1].status).toBe("Ready to connect");
     expect(cards[2].status).toBe("Ready to connect");
   });
@@ -185,5 +205,49 @@ describe("unified Accounts readiness", () => {
     const cards = buildProviderCards(ready, providers, []);
     expect(cards[0].missing.map((check) => check.id)).toEqual([]);
     expect(ready.checks.find((check) => check.id === "owner-only")?.ownerVerification).toBe(true);
+  });
+
+  it("uses exactly the six evidence-backed deployment states", () => {
+    expect(setupStatuses).toEqual([
+      "MISSING",
+      "CONFIGURED",
+      "VERIFIED",
+      "OWNER ACTION REQUIRED",
+      "BLOCKED",
+      "NOT APPLICABLE",
+    ]);
+    for (const status of setupStatuses) expect(setupStatusTone[status]).toBeDefined();
+    for (const item of ready.checks) expect(setupStatuses).toContain(item.status);
+  });
+
+  it("requires timestamped evidence before accepting VERIFIED", () => {
+    const withoutProof = applyDeploymentEvidence(checks, [
+      { key: "deployment", state: "VERIFIED", evidence: "hosted_test", verified_at: null },
+    ]);
+    expect(withoutProof[0].status).toBe("BLOCKED");
+    const withProof = applyDeploymentEvidence(checks, [
+      {
+        key: "deployment",
+        state: "VERIFIED",
+        evidence: "hosted_test",
+        verified_at: "2026-11-08T00:00:00.000Z",
+      },
+    ]);
+    expect(withProof[0].status).toBe("VERIFIED");
+    expect(withProof[0].configured).toBe(true);
+  });
+
+  it("never displays a suspected sensitive evidence value", () => {
+    const sanitized = applyDeploymentEvidence(checks, [
+      {
+        key: "deployment",
+        state: "CONFIGURED",
+        evidence: "eyJhbGciOi.eyJyb2xl.signature",
+        verified_at: null,
+      },
+    ]);
+    expect(sanitized[0].evidence).toBe(
+      "Evidence recorded privately; no sensitive values displayed.",
+    );
   });
 });

@@ -42,6 +42,7 @@ REVIEWED_ENV_EXAMPLE = {
     "NEXT_PUBLIC_SUPABASE_URL": {"https://your-project.supabase.co"},
     "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": {"sb_publishable_your-publishable-key"},
     "UP17_SITE_URL": {"https://your-app.example.com"},
+    "UP17_OAUTH_CALLBACK_BASE_URL": {"https://your-project.supabase.co/functions/v1/up17-oauth-callback"},
     "SUPABASE_SERVICE_ROLE_KEY": {"your-server-only-service-key"},
     "UP17_TOKEN_ACTIVE_KEY_ID": {"primary"},
     "UP17_TOKEN_KEYS": {'{"primary":"your-base64-32-byte-key"}'},
@@ -146,6 +147,9 @@ def artifact_reason(relative: str) -> str | None:
     if parts[0] == "supabase":
         # Owner-authorized Batch C: reviewed migrations and rollback RLS tests only.
         if len(parts) == 3 and parts[1] in {"migrations", "tests"} and re.fullmatch(r"[0-9]{14}_[a-z0-9_]+\.sql" if parts[1] == "migrations" else r"[a-z0-9_]+\.sql", name):
+            return None
+        # Reviewed Edge Function source for the public OAuth callback bridge.
+        if len(parts) == 4 and parts[1] == "functions" and re.fullmatch(r"[a-z0-9-]+", parts[2]) and name == "index.ts":
             return None
         return "cloud configuration/generated artifact requires a separate approval gate"
     if ".config" in parts and "gcloud" in parts:

@@ -187,3 +187,24 @@ Runtime commit `d4cfbde4508442c819e7779906f90c494c1fc0b9`; preview deployment `d
 | Live OAuth / SMTP / provider apps / owner browser | BLOCKED / NOT RUN |
 
 Nine hosted migrations were not reapplied, duplicated or reset. No provider was authorized, no real token was stored, nothing was published, no production promotion occurred and owner acceptance remains NOT RECORDED.
+
+## Autonomous Vercel + Supabase configuration — active session
+
+**Scope:** inspect the actual connected projects, configure every permitted reversible Preview/development prerequisite, deploy a public OAuth callback bridge without disabling global SSO, make readiness evidence-backed, and verify hosted schema/security gates. Live provider authorization, custom SMTP delivery and owner acceptance remain BLOCKED. See the [autonomous configuration report](evidence/autonomous-configuration-report.md), [change-control plan](evidence/autonomous-configuration-plan.md) and [owner setup](OWNER_SETUP.md).
+
+| Check | Actual result |
+|---|---|
+| Project identity / branch / target | PASS — Vercel `prj_uh7RosdHFABdfwRkSRg7JNmu67bK` in team `team_jEJR74nCGB4nVczqRwF0ljmM`; Supabase `hxgokimjdormlktxjsbg` in org `xjzpxfeqrdhjsyijotvh`; fixed branch and Preview only |
+| Vercel Preview env inventory / changes | PASS — four original plain vars preserved; server key, keyring, cron bearer secret and callback base added as branch-scoped Preview vars; no Production change |
+| Supabase tenth migration | PASS — `20261110072807_up17_oauth_callback_bridge` applied; hosted/local canonical MD5 match; nine prior migrations not reapplied |
+| Hosted schema / RLS / storage inventory | PASS — all exposed public tables have RLS; private bucket with scoped SELECT/INSERT/UPDATE/DELETE policies; five service-only bridge RPCs; `anon`/`authenticated` EXECUTE denied |
+| Public callback bridge external reachability | PASS — anonymous HTTPS health returned `ok:true`; forged callback without bridge cookie returned an error; main app SSO unchanged |
+| One-time receipt / replay / grants | PASS — synthetic receipt consumed once; second consume rejected; fixture deleted; service-only grants verified |
+| Evidence-backed readiness | PASS — six exact states, service-only evidence table, 17 rows; VERIFIED requires timestamped evidence; no secret values exposed |
+| Live signup / email delivery / workspace | BLOCKED — no custom SMTP, no owner-authenticated browser session, zero hosted app data |
+| Google / Instagram / TikTok authorization | BLOCKED — no external app credentials, review, consent, callback validation or secure token persistence |
+| Owner acceptance / Production promotion / cron execution | NOT RECORDED / NOT RUN — separate approvals |
+
+Strict local gates and the final Preview verification are recorded in the [autonomous configuration report](evidence/autonomous-configuration-report.md).
+
+Final local execution with pinned Node 22.22.3 / npm 11.21.2: `npm run check` PASS (13 unit files / 78 tests, 1 integration / 4 tests, 48 Python validator tests, 2 TypeScript security files / 8 tests, strict docs 16 / 155 / 191 / 217, 25/25 static pages and 25 routes). Browser gates used the documented registry-only Chromium 153 fallback because the default Playwright CDN executable was absent; the first invocation failed on that environment prerequisite, then clean reruns passed: E2E 124, visual 153, axe 85, clay 62 and development navigation 13. Generated TS config changes were restored. Staged whitespace and high-confidence secret-pattern scans PASS. These are local/build gates, not hosted owner acceptance.

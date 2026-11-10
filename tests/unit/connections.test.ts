@@ -80,6 +80,13 @@ describe("connection crypto", () => {
     expect(() => encryptSecret("synthetic-test-value", context)).toThrow();
   });
 
+  it("accepts a secret-manager JSON string literal without exposing values", () => {
+    vi.stubEnv("UP17_TOKEN_KEYS", JSON.stringify(JSON.stringify({ primary, rotated })));
+    expect(custodyConfigured()).toBe(true);
+    const envelope = encryptSecret("synthetic-test-value", context);
+    expect(decryptSecret(envelope.ciphertext, context)).toBe("synthetic-test-value");
+  });
+
   it("produces unique state values and both documented S256 encodings", () => {
     expect(randomToken(32)).not.toBe(randomToken(32));
     expect(sha256Hex("state")).toBe(createHash("sha256").update("state", "utf8").digest("hex"));
