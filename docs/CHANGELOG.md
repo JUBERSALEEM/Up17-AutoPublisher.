@@ -110,7 +110,7 @@
 
 No website, design primitives, product workflow, database, authentication, upload service, AI analysis, social connection, publishing integration, analytics sync or deployment. No requirement is owner-accepted. All future product work remains visible in the traceability matrix and sprint status.
 
-## Unreleased — autonomous Preview/development configuration (2026-11-08)
+## Unreleased — autonomous Preview/development configuration (2026-11-10)
 
 - Added the tenth hosted migration for evidence-backed readiness, a private OAuth callback bridge, service-only RPCs and a workspace-scoped storage UPDATE policy; verified hosted/local parity.
 - Added and deployed the public `up17-oauth-callback` Edge Function with provider-origin allowlisting, HttpOnly bridge cookies, AES-256-GCM encrypted one-time code receipts and safe `.vercel.app` return origins. Global Vercel SSO remains intact.
@@ -119,3 +119,5 @@ No website, design primitives, product workflow, database, authentication, uploa
 - Replaced presence-only readiness with six evidence-backed states, a service-only evidence table and non-secret evidence summaries; the Accounts board now shows exact states and exact external provider redirect URIs.
 - Added bridge URL, keyring JSON-string, crypto-context, readiness-state, evidence-sanitisation and secret-boundary regression tests; updated `.env.example` and the strict docs/artifact validator for the callback base and reviewed Edge Function source.
 - Updated Supabase Auth Site URL/redirect allowlist with the three exact public bridge callback URLs and query forms. No custom SMTP, provider app, live consent, real upload/cross-workspace test, Production promotion, paid plan, publishing or Smart AI change.
+
+Final runtime commit `df774e42ccf098b0c7c4959a7d144308bbd8cc97` was pushed and verified as Vercel Preview `dpl_4R3BdHpC9qpcNB1Kpo5YeFnn2Jwg` (READY, exact SHA, `public=false`, SSO-protected, Node 22.x). A subsequent docs-only commit records the exact deployment ID and final evidence; runtime code is unchanged. A later docs-only Git Preview, if created, does not replace this explicit exact-SHA runtime deployment.

@@ -5,8 +5,8 @@
 ## 1. Starting and final Git SHAs
 
 - Starting remote/local HEAD: `d94418ef124f38e1989afe2049cc4d8158d33e89`.
-- Final runtime commit: `PENDING_RUNTIME_COMMIT` (to be filled after the final commit and exact-SHA Preview verification).
-- Final documentation/evidence commit: `PENDING_DOCUMENTATION_COMMIT` (report-only; recorded in the final chat delivery).
+- Final runtime commit: `df774e42ccf098b0c7c4959a7d144308bbd8cc97` (exact SHA deployed and verified).
+- Final documentation/evidence commit: recorded in the final chat delivery; a commit cannot contain its own hash. This report is a docs-only update after the runtime deployment.
 - Fixed branch: `arena/698e4880-up17-autopublisher`; no other branch was used.
 
 ## 2. Exact Vercel project and deployment IDs
@@ -14,7 +14,7 @@
 - Team: `team_jEJR74nCGB4nVczqRwF0ljmM` (`auto-uploader`, Hobby, owner `vTSWM9q6zvUweTzNR9pMx0X1`).
 - Project: `prj_uh7RosdHFABdfwRkSRg7JNmu67bK` (`autopublisher`, Next.js, root `null`, pinned `npm@11.21.2 ci` / `run build`, Node `26.x` project setting).
 - Starting READY Preview: `dpl_HtVsEubouySThbBci1LTctTSwAE8` at the starting SHA, `public=false`, SSO-protected.
-- Final READY Preview: `PENDING_FINAL_DEPLOYMENT_ID` at `PENDING_RUNTIME_COMMIT`, `public=false`, SSO-protected.
+- Final READY Preview: `dpl_4R3BdHpC9qpcNB1Kpo5YeFnn2Jwg` at `df774e42ccf098b0c7c4959a7d144308bbd8cc97`, `public=false`, SSO-protected, runtime Node 22.x, branch alias assigned. Connector verification returned exact Git SHA, `readySubstate=STAGED`, plan Hobby and the required Preview env names in the build environment. A later docs-only commit may create another Git Preview; this explicit runtime deployment remains the exact-SHA delivery.
 - Production remains `dpl_9QYxyjkKa492tk87F1XZGeo1DPXL` at `b16202cc61c12a4ae374bedcca94680882064a9f` on `main`; no Production change or promotion occurred.
 
 ## 3. Supabase non-secret identity
@@ -55,7 +55,7 @@ Both `BLOCKED`. No Meta/TikTok app credentials, professional-account/Advanced Ac
 
 `npm run check` PASS with pinned Node 22.22.3 / npm 11.21.2: Prettier format check, ESLint `--max-warnings 0`, strict TypeScript, 13 unit files / 78 tests, 1 integration file / 4 tests, 48 Python validator tests, 2 TypeScript security files / 8 tests, strict docs 16 required documents / 155 requirements / 191 local links / 217 artifact candidates (BLOCKED=4, IN PROGRESS=38, PLANNED=91, TESTED=22), and a production build with 25/25 static pages and 25 routes. Staged diff whitespace check PASS; staged high-confidence secret-pattern scan reported `NO_POPULATED_SECRET_PATTERNS_IN_DIFF`.
 
-Browser gates used the documented registry-only Chromium 153 fallback because the default Playwright CDN executable was absent; the first browser invocation failed on that environment prerequisite, then all five gates passed on the clean rerun: E2E 124, visual/viewport 153, axe 85, clay 62 and development navigation 13. Generated `tsconfig.json`/`next-env.d.ts` changes from the development gate were restored. Hosted checks: migration parity, RLS/inventory, Edge Function health/forged-callback, service-only grants, synthetic receipt one-time/replay and evidence-row state counts all PASS. No test claims live OAuth, email delivery, owner acceptance, authenticated storage upload or production cron execution.
+Browser gates used the documented registry-only Chromium 153 fallback because the default Playwright CDN executable was absent; the first browser invocation failed on that environment prerequisite, then all five gates passed on the clean rerun: E2E 124, visual/viewport 153, axe 85, clay 62 and development navigation 13. Generated `tsconfig.json`/`next-env.d.ts` changes from the development gate were restored. Hosted checks: migration parity, RLS/inventory, Edge Function health/forged-callback, service-only grants, synthetic receipt one-time/replay and evidence-row state counts all PASS. Final Preview `dpl_4R3BdHpC9qpcNB1Kpo5YeFnn2Jwg` is READY at runtime SHA `df774e42ccf098b0c7c4959a7d144308bbd8cc97`, `public=false`, Node 22.x, with branch alias assigned; an anonymous request to `/accounts` still returns Vercel's Protected Deployment login. No test claims live OAuth, email delivery, owner acceptance, authenticated storage upload or production cron execution.
 
 ## 12. Free-tier usage / cost assessment
 
