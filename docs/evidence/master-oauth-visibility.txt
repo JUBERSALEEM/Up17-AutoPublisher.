@@ -1,0 +1,135 @@
+UP17 AutoPublisher — MASTER TASK: real OAuth visibility / configuration / verification
+Branch: arena/698e4880-up17-autopublisher (active)
+Starting remote HEAD: 7b6b6f2eb7fb6e8afdecffd26ec2bf3ca9366464
+Runtime commit: d4cfbde4508442c819e7779906f90c494c1fc0b9
+Runtime preview deployment: dpl_2igGhiy79jrgxBhPXABMcqnkS1MN (READY, exact runtime SHA, public=false, SSO-protected)
+Documentation deployment: recorded in the final session report after the documentation commit is pushed.
+
+=== 1. Reproduction of the owner-visible Accounts experience ===
+
+Local production server was started with the pinned npm environment and inert placeholders:
+  npm_execpath=/home/user/.npm/_npx/c3b7dd07abd2a8cc/node_modules/npm/bin/npm-cli.js
+  npm_config_user_agent='npm/11.21.2 node/v22.22.3'
+  NEXT_PUBLIC_SUPABASE_URL='https://your-project.supabase.co'
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY='sb_publishable_your-publishable-key'
+  UP17_APP_MODE='DEMO'
+  node scripts/run-next.mjs start --hostname 0.0.0.0 --port 3100
+
+GET http://127.0.0.1:3100/accounts returned HTTP 200. Parsed visible DOM text counts:
+  "No real identity is connected": 1
+  "Frontend only": 1
+  "Demo identity": 7
+  "Connect an account": 2
+  "No real accounts connected": 1
+  "OAuth unavailable": 1
+This is the demo AccountsBoard, not the real OAuth board. A fetch_page call to the same loopback URL returned HTTP 500 because the fetch service cannot reach the sandbox loopback; curl and parsed HTML are the authoritative local reproduction.
+
+Code evidence: app/(studio)/accounts/page.tsx before this change returned <AccountsBoard /> whenever getWorkspaceContext() was null. getViewer() requires email_confirmed_at; getWorkspaceContext() requires a workspace_members row plus preferences. Hosted inventory had zero users/workspaces, so an anonymous or unconfirmed owner necessarily saw the demo board. The real board was reachable only after a confirmed signed-in workspace existed, and providerAvailability() still reported all providers unconfigured because no provider secrets were present.
+
+=== 2. Hosted identity and configuration evidence before the fix ===
+
+Vercel project prj_uh7RosdHFABdfwRkSRg7JNmu67bK, team team_jEJR74nCGB4nVczqRwF0ljmM.
+Current branch alias: autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app.
+Prior preview: dpl_3YhnNmsQca3mYSEeNdJYJrEUQ1PZ READY at 7b6b6f2..., public=false, SSO-protected.
+Production deployment: dpl_9QYxyjkKa492tk87F1XZGeo1DPXL is main b16202cc... initial plan-only; production aliases return Vercel SSO login or 404 for the stale wheat alias. The exact URL the owner personally opened was not supplied and cannot be inferred from connector metadata; the branch alias and production aliases were tested anonymously.
+
+Vercel env names present for preview before this milestone:
+  UP17_APP_MODE=DEMO
+  NEXT_PUBLIC_SUPABASE_URL
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+Missing names: UP17_SITE_URL, SUPABASE_SERVICE_ROLE_KEY / SUPABASE_SECRET_KEY,
+  UP17_TOKEN_ACTIVE_KEY_ID, UP17_TOKEN_KEYS,
+  GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET,
+  INSTAGRAM_CLIENT_ID, INSTAGRAM_CLIENT_SECRET,
+  TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET,
+  CRON_SECRET.
+No secret values were copied into Git, logs, chat or this file.
+
+Supabase project hxgokimjdormlktxjsbg: auth/db/rest/storage/pooler healthy; realtime unhealthy. Email enabled, confirmation required, signup enabled, unverified sign-ins disabled. SMTP host/user/password/admin email were null. Nine migrations remained applied; none were reapplied, reset or duplicated.
+
+Hosted inventory after the runtime deployment (combined JSON SELECT):
+  auth_users=0, confirmed_users=0, workspaces=0, workspace_members=0,
+  owner_admin_members=0, preferences=0, platform_connections=0,
+  connected_or_limited=0, social_accounts=0, private_credentials=0,
+  private_oauth_attempts=0, audit_logs=0.
+Therefore no real signup, confirmed email, owner/admin role, connection, encrypted token, refresh, health check or disconnect could be verified.
+
+=== 3. Non-secret hosted configuration performed in this milestone ===
+
+Created a branch-scoped Vercel Preview plain variable:
+  UP17_SITE_URL=https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app
+The runtime deployment build.env and env lists include UP17_SITE_URL alongside the two public Supabase names and UP17_APP_MODE. Provider secrets, service/secret key, keyring and CRON_SECRET remain absent. Vercel SSO protection was left intact; an anonymous fetch to the branch alias /accounts still returns "Protected Deployment – Vercel" login.
+
+Updated Supabase Authentication URL Configuration while preserving email confirmation, signup and rotation settings:
+  Site URL unchanged: https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app
+  Added exact path and path-specific query forms for /auth/callback, /auth/confirm and /auth/update-password on the branch alias, plus local equivalents.
+  get_auth_config after the update confirmed SMTP remained null and mailer_autoconfirm=false.
+The connector update response transiently showed nulls for a few unrelated defaults; a subsequent get_auth_config confirmed those values were unchanged. SMTP, provider apps, app review, service key, keyring, cron bearer secret and an owner-authenticated browser remain owner dependencies.
+
+Exact provider callback URLs for the current preview origin:
+  https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app/api/connections/callback/youtube
+  https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app/api/connections/callback/instagram
+  https://autopublisher-git-arena-698e4880-up17-auto-f7679a-auto-uploader.vercel.app/api/connections/callback/tiktok
+These paths are constructed by callbackUrl(appOrigin(), platform). Provider console registrations and app reviews were NOT performed.
+
+=== 4. Code and documentation changes ===
+
+Runtime commit d4cfbde4508442c819e7779906f90c494c1fc0b9 changed 12 files:
+  app/(studio)/accounts/page.tsx now always calls server-only getAccountsState() and renders the unified real Accounts board; the demo early return is removed.
+  lib/connections/readiness.ts defines the exact ten owner-visible statuses, pure status resolution, exact connect labels, provider dashboards and a name/boolean-only setup-check type.
+  lib/connections/deployment-readiness.ts is server-only; it reads public config, exact site URL, service key presence, keyring validity, provider credential presence, confirmed viewer, workspace/owner-admin role and connection rows. It never returns values.
+  components/accounts/real-accounts-board.tsx now renders three real provider cards with exact labels "Connect Google / YouTube", "Connect Instagram" and "Connect TikTok"; exact statuses; explicit Demo mode; a deployment/owner checklist; the route to real connections; stored real connections; refresh/health/disconnect; and no demo identities or simulated authorization.
+  lib/supabase/config.ts adds supabaseConfigAvailable() so incomplete public config fails closed instead of throwing in layouts.
+  app/(studio)/layout.tsx and app/(studio)/account/page.tsx use the safe config check; the signed-in account page links to Accounts.
+  components/shell/app-shell.tsx reports the real connected count and publishing-disabled state instead of a hardcoded "No accounts connected".
+  app/globals.css adds responsive readiness/checklist styles.
+  tests/unit/accounts-readiness.test.ts covers the ten statuses, precedence, exact labels, stored states and owner-verification boundaries.
+  tests/e2e/core-screens.spec.ts replaces obsolete demo-card/filter/pause expectations with real-card, setup-name, honest-disabled-button and no-simulation expectations.
+  tests/unit/security/secret-boundary.test.ts asserts the readiness module is server-only and the client board contains no process.env or secret assignment.
+  components/accounts/accounts-board.tsx remains in the tree as legacy demo code but is no longer routed from /accounts.
+
+Documentation updates: docs/MASTER_OAUTH_VISIBILITY_REPORT.md, docs/OWNER_SETUP.md,
+docs/OWNER_REQUIREMENTS_BALANCE.md, docs/TEST_EVIDENCE.md, docs/DECISIONS.md,
+docs/CHANGELOG.md, docs/SPRINT_STATUS.md, docs/REQUIREMENTS_TRACEABILITY.md and
+docs/BATCH_D_CONNECTIONS_REPORT.md.
+
+=== 5. Executed gates ===
+
+After staging the runtime diff:
+  git diff --cached --check PASS
+  secret-pattern scan of staged diff: NO_POPULATED_SECRET_PATTERNS_IN_DIFF
+  node scripts/check_docs.py PASS: 16 required docs, 155 requirements, 148 local links, 209 artifact candidates, status counts BLOCKED=4 / IN PROGRESS=38 / PLANNED=91 / TESTED=22, no owner-accepted row.
+
+npm run check PASS:
+  toolchain Node 22.22.3 / npm 11.21.2
+  Prettier format:check PASS
+  ESLint --max-warnings 0 PASS
+  tsc --noEmit PASS
+  unit PASS: 12 files, 68 tests
+  integration PASS: 1 file, 4 tests
+  Python validator PASS: 46 tests
+  TypeScript security PASS: 2 files, 7 tests
+  strict docs PASS: 16 / 155 / 148 / 209
+  production build PASS: compiled successfully, 25/25 static pages, 25 routes.
+
+Browser gates with the reviewed registry-only Chromium fallback:
+  npm run test:e2e PASS: 124 passed
+  npm run test:visual PASS: 153 passed
+  npm run test:a11y PASS: 85 passed
+  npm run test:clay PASS: 62 passed
+  npm run test:navigation:dev PASS: 13 passed on a clean rerun after one dev-only service-worker timeout; generated tsconfig.json / next-env.d.ts changes were restored.
+  Isolated core-screens rerun PASS: 12 tests.
+  A build, READY deployment, local unit test, synthetic fixture or anonymous SSO login is NOT live OAuth or owner acceptance.
+
+=== 6. Status boundaries ===
+
+OAuth code: COMPLETE for the reviewed adapters/routes/tests; unchanged token custody architecture.
+UI: COMPLETE for visibility and exact setup status; owner browser acceptance separate.
+Authentication: BLOCKED (Vercel SSO, no custom SMTP, zero confirmed users/workspaces).
+Configuration: PARTIAL (public config, DEMO mode and exact preview UP17_SITE_URL present; server key, keyring, provider credentials and CRON_SECRET missing).
+YouTube / Instagram / TikTok: BLOCKED (no provider app credentials, registered callbacks, consent-screen/app review, owner consent or real callback).
+Token custody: BLOCKED (no keyring, service key or live encrypted token).
+Lifecycle: BLOCKED (no real connection for refresh/health/disconnect).
+Security: PARTIAL (architecture and local gates pass; hosted role/isolation and real callback not revalidated).
+Owner acceptance: NOT RECORDED.
+No provider is COMPLETE from code alone. Connecting an account never implies publishing approval. No real content was published; Smart AI, paid AI, the next creator phase and production promotion were not started.

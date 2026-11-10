@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — Master OAuth visibility and readiness
+
+- Reproduced the hidden demo Accounts screen and removed the `getWorkspaceContext() === null` early return. `/accounts` now always renders three official provider cards with exact **Connect Google / YouTube**, **Connect Instagram** and **Connect TikTok** buttons and ten exact owner-visible statuses.
+- Added a `server-only` deployment-readiness model that exposes names and booleans only: public Supabase config, exact `UP17_SITE_URL`, server-key presence, keyring validity, provider credential presence, confirmed viewer, owner/admin workspace and connection state. Explicit Demo mode, a setup checklist, the route to real connections and a publishing-disabled boundary are always visible.
+- Replaced legacy demo-card/filter/pause E2E expectations with real-card, exact-status, setup-name and no-simulation assertions. Added readiness unit tests and a client-board/server-only secret-boundary assertion. The shell now reports the real connected count.
+- Configured only non-secret hosted prerequisites: branch-scoped Vercel Preview `UP17_SITE_URL` and exact Supabase auth redirect paths/query forms. Vercel SSO, nine applied migrations, token-custody architecture and the publishing lock remain unchanged.
+- Runtime commit `d4cfbde4508442c819e7779906f90c494c1fc0b9`; preview `dpl_2igGhiy79jrgxBhPXABMcqnkS1MN` READY at the exact SHA, `public=false`, SSO-protected. Strict gates PASS: 68 unit, 4 integration, 46 Python, 7 TypeScript security, 16 docs/155 requirements/148 links/209 artifacts, 25-route build, 124 E2E, 85 axe, 153 visual, 62 clay and 13 development navigation assertions.
+- Live OAuth remains BLOCKED by owner SMTP, server key, keyring, provider apps/secrets/reviews, registered callbacks, official consent and an owner-authenticated browser. No provider was authorized, no real token was stored, nothing was published, production was not promoted and owner acceptance is NOT RECORDED. See [master OAuth visibility report](MASTER_OAUTH_VISIBILITY_REPORT.md) and [owner setup](OWNER_SETUP.md).
+
 ## Unreleased — Batch D official connections broker (2026-11-10)
 
 - Added server-side OAuth state/PKCE/binding handling, AES-256-GCM encrypted token custody, reviewed YouTube/Instagram/TikTok adapters, refresh/health/disconnect lifecycle, a bearer-protected cron endpoint and a real-account board that never enables publishing automatically.

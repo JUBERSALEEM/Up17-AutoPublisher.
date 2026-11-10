@@ -1,6 +1,6 @@
 # Owner requirements balance
 
-**Updated:** 2026-11-10 UTC. This is the current product-delivery balance, not a page count. The original [product brief](PLAN.md) is preserved. The detailed 155-row [requirement register](REQUIREMENTS_TRACEABILITY.md) remains the canonical seven-cell status/evidence source; the separate 155-row four-gate table below gives an owner-readable balance for every requirement. Historical frontend-only reports describe their original scope, not permission to call the product finished.
+**Updated:** current master-task verification. This is the current product-delivery balance, not a page count. The original [product brief](PLAN.md) is preserved. The detailed 155-row [requirement register](REQUIREMENTS_TRACEABILITY.md) remains the canonical seven-cell status/evidence source; the separate 155-row four-gate table below gives an owner-readable balance for every requirement. A master-task milestone status table is appended after the batch balance. Historical frontend-only reports describe their original scope, not permission to call the product finished.
 
 ## Four coarse statuses
 
@@ -18,7 +18,7 @@
 | A | Baseline, environments and deployment repair | PARTIAL | Exact identities verified; npm root cause repaired; Vercel preview READY from a verified commit; anonymous hosted browser check blocked by team SSO. Production alias remains separate. |
 | B | Rich sculptural Clay Light/Dark; flat Bento Light/Dark; all screens and devices | COMPLETE | Central material engine applied across all 12 screens; 62 dedicated checks, 12 reviewed baselines and full local browser/axe/viewport gates pass. Owner/hosted visual acceptance separate. |
 | C | Real authentication, relational persistence, RLS and private storage | PARTIAL | Five hosted migrations, SSR auth, cloud workspace/preferences/inbox and private media policies pass at tested boundaries. Hosted RLS and later Storage-API delete probe pass; email delivery, SSO-protected browser acceptance and temporary SQL cleanup remain blocked. |
-| D | Official multi-account YouTube/Instagram/TikTok OAuth | BLOCKED | Nine migrations, server-only OAuth/token broker, encrypted custody, refresh/health/disconnect, cron, real accounts UI and hosted rollback fixture are implemented/tested. Live acceptance is blocked by owner SMTP, secrets, provider apps/app review and accessible callback deployment; no connected account is claimed. |
+| D | Official multi-account YouTube/Instagram/TikTok OAuth | BLOCKED | Nine migrations, server-only OAuth/token broker, encrypted custody, refresh/health/disconnect, cron and a unified always-visible Accounts readiness UI are implemented/tested. Live acceptance is blocked by owner SMTP, secrets, provider apps/app review and an owner-authenticated callback deployment; no connected account is claimed. |
 | E | Upload, private video playback, game/category selection and versioned metadata | PARTIAL | Labelled demo UI and local draft interactions exist; real private upload/storage/playback and durable video records remain. BGMI and PUBG Mobile stay distinct. |
 | F | Durable, evidence-based video/audio AI analysis | PARTIAL | Explicitly simulated analysis timeline exists; no media worker, extracted evidence, provider result or paid AI authorization. |
 | G | Content-grounded, platform-specific metadata intelligence | PARTIAL | Local editing/suggestions exist; no real content analysis/research grounding or approved AI provider. |
@@ -26,7 +26,28 @@
 | I | Real analytics and research provenance | MISSING | Analytics explicitly unavailable; research briefs are local notes/examples. No platform metrics or retrieved research are represented as real. |
 | J | Security/browser gates, production launch and live smoke verification | MISSING | Local frontend and hosted database gates pass; full product security/live integration gates and real-app production release have not run. READY preview is not a live launch. |
 
-**Batch totals:** COMPLETE 1; PARTIAL 6; BLOCKED 1; MISSING 2. Batch statuses are not additive feature percentages. Batch D code is implemented and database-tested, but its live OAuth acceptance gate is BLOCKED by owner setup. See [Batch C report](BATCH_C_AUTH_REPORT.md), [Batch D report](BATCH_D_CONNECTIONS_REPORT.md) and [owner setup](OWNER_SETUP.md).
+**Batch totals:** COMPLETE 1; PARTIAL 6; BLOCKED 1; MISSING 2. Batch statuses are not additive feature percentages. Batch D code is implemented and database-tested, but its live OAuth acceptance gate is BLOCKED by owner setup. See [Batch C report](BATCH_C_AUTH_REPORT.md), [Batch D report](BATCH_D_CONNECTIONS_REPORT.md), [master OAuth visibility report](MASTER_OAUTH_VISIBILITY_REPORT.md) and [owner setup](OWNER_SETUP.md).
+
+## Master OAuth visibility milestone — separate completion status
+
+Runtime commit `d4cfbde4508442c819e7779906f90c494c1fc0b9`; preview deployment `dpl_2igGhiy79jrgxBhPXABMcqnkS1MN` READY at that exact SHA, `public=false`, SSO-protected. This table is a milestone view, **not** a change to the 155 per-requirement rows above and **not** owner acceptance.
+
+| Area | Status | Boundary |
+|---|---|---|
+| OAuth code | COMPLETE | Reviewed adapters, state/PKCE/binding, callback, broker, custody and lifecycle routes exist unchanged; local gates pass. |
+| UI | COMPLETE | Three exact provider cards, ten exact statuses, explicit Demo mode, setup checklist and journey are always visible; browser/axe/visual gates pass. |
+| Authentication | BLOCKED | Vercel SSO, no custom SMTP, zero confirmed users/workspaces; no owner-authenticated hosted session. |
+| Configuration | PARTIAL | Public Supabase names, DEMO mode and exact preview `UP17_SITE_URL` are present; server key, keyring, provider credentials and `CRON_SECRET` are missing. |
+| Provider apps / redirects / reviews | MISSING | No Google, Meta or TikTok app, registered redirect, consent screen, Advanced Access or Direct Post audit was created. |
+| YouTube | BLOCKED | No app credentials, registered callback, official consent, identity, scopes, refresh token or real callback. |
+| Instagram | BLOCKED | No Business Login app credentials, professional account, callback, permissions, identity or long-lived token. |
+| TikTok | BLOCKED | No Login Kit app credentials, callback, `open_id`, scopes, audit or public/private restriction verification. |
+| Token custody | BLOCKED | No keyring, server key, live encrypted credential or rotation evidence. |
+| Lifecycle | BLOCKED | No real connection exists for refresh, health or disconnect; preview cron does not run. |
+| Security | PARTIAL | Server-only boundaries and local gates pass; hosted role/isolation and real callback were not revalidated in this task. |
+| Owner acceptance | BLOCKED | NOT RECORDED; no owner-authenticated browser or provider authorization was performed. |
+
+No row in the 155-row four-gate table is owner-accepted. A READY deployment, local unit test, synthetic fixture or anonymous SSO login is not live OAuth acceptance. Connecting an account never implies publishing approval. Smart AI, paid AI, real publishing, the next creator phase and production promotion remain out of scope until this milestone is accepted.
 
 ## Four gates used per requirement
 

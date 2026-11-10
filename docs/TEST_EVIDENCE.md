@@ -157,3 +157,33 @@ Detailed logs: [Batch 1](evidence/ui-batch1-validation.txt), [Batch 2](evidence/
 Corrections retained: a 42702 ambiguous PL/pgSQL `connection_id` was fixed by `20261110042107`; a 23514 disconnect-state check violation was fixed by `20261110042815`; the development service-worker cleanup test now verifies a genuinely fresh page after registration removal. The Batch C Storage-API delete probe passed with a 30-second cached-download limitation. Its temporary SQL cleanup was blocked by the connector provider security filter before execution; owner-run instructions are in [owner setup](OWNER_SETUP.md).
 
 Vercel connector verification: the runtime commit was pushed to the fixed branch and built from the exact SHA. The deployment is READY, `public=false` and SSO-protected; build events record pinned `npm@11.21.2 ci`, Next.js 16.4.5, 420 installed packages, 0 vulnerabilities, compiled successfully in 6.1s, TypeScript in 11.9s and Build Completed in 45s. The deployment metadata contains the reviewed `0 3 * * *` cron declaration but no service key, token keyring, provider secret or cron bearer secret. An anonymous request to the branch alias returns Vercel's **Protected Deployment** login; no app page or hosted browser acceptance was reached. Vercel Hobby cron is daily/production-only, so the preview does not execute the cron.
+
+
+## Master task — real OAuth visibility, configuration and verification
+
+**Scope:** reproduce the hidden demo Accounts experience, remove the demo-only early return, always show the three real provider cards with exact statuses, expose name/boolean-only deployment readiness, configure the exact non-secret preview origin and auth redirect paths, and verify strict local/browser gates. Live OAuth, provider consent and owner acceptance are not claimed. See [master OAuth visibility report](MASTER_OAUTH_VISIBILITY_REPORT.md), [executed evidence](evidence/master-oauth-visibility.txt), [owner setup](OWNER_SETUP.md) and [requirements balance](OWNER_REQUIREMENTS_BALANCE.md).
+
+Runtime commit `d4cfbde4508442c819e7779906f90c494c1fc0b9`; preview deployment `dpl_2igGhiy79jrgxBhPXABMcqnkS1MN` READY at that exact SHA, `public=false`, SSO-protected. The deployment build environment includes `UP17_SITE_URL` alongside the two public Supabase names and `UP17_APP_MODE`; provider secrets, service key, keyring and `CRON_SECRET` remain absent.
+
+| Check | Actual result |
+|---|---|
+| Local reproduction of owner-visible page | PASS — HTTP 200 with demo board: "No real identity is connected", seven "Demo identity" labels, "Frontend only" and disabled "OAuth unavailable"; real OAuth board hidden by null workspace |
+| Root-cause code/hosted evidence | PASS — `getViewer()`/`getWorkspaceContext()` requirements, zero hosted users/workspaces/connections, missing env names and SSO login recorded |
+| Non-secret hosted configuration | PASS — branch-scoped Vercel Preview `UP17_SITE_URL` created; Supabase auth redirect query forms and `/auth/update-password` paths added; Vercel SSO kept intact |
+| Hosted inventory after deployment | PASS — zero auth users, confirmed users, workspaces, members, owner/admins, preferences, connections, social accounts, private credentials, OAuth attempts and audit rows |
+| Formatting / zero-warning lint / strict types | PASS |
+| Unit | PASS — 12 files, 68 tests |
+| Integration | PASS — 1 file, 4 tests |
+| Python docs/artifact validator | PASS — 46 tests |
+| TypeScript security | PASS — 2 files, 7 tests |
+| Strict docs | PASS — 16 docs, 155 requirements, 148 links, 209 artifact candidates |
+| Production build | PASS — compiled, 25/25 static pages, 25 routes |
+| Browser E2E | PASS — 124 |
+| Axe | PASS — 85 |
+| Viewport / visual | PASS — 153 |
+| Clay material contract | PASS — 62 |
+| Development navigation | PASS — 13 on clean rerun after one dev-only service-worker timeout; generated TS config changes restored |
+| Staged diff secret scan / whitespace | PASS — no populated secret pattern; `git diff --check` clean |
+| Live OAuth / SMTP / provider apps / owner browser | BLOCKED / NOT RUN |
+
+Nine hosted migrations were not reapplied, duplicated or reset. No provider was authorized, no real token was stored, nothing was published, no production promotion occurred and owner acceptance remains NOT RECORDED.
