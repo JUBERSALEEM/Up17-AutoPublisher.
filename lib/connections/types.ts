@@ -55,10 +55,10 @@ export function isConnectionPlatform(value: unknown): value is ConnectionPlatfor
 }
 
 export const connectionStateLabels: Record<ConnectionState, string> = {
-  pending: "Connection in progress",
+  pending: "Connecting",
   connected: "Connected",
   limited_permissions: "Limited permissions",
   needs_authorisation: "Reauthorization required",
-  error: "Failed",
+  error: "Connection failed",
   disconnected: "Disconnected",
 };

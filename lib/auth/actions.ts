@@ -1,5 +1,6 @@
 "use server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { appOrigin } from "@/lib/supabase/config";
@@ -8,12 +9,15 @@ import {
   signInSchema,
   signUpSchema,
   passwordSchema,
+  otpSchema,
   type AuthFormState,
 } from "./schema";
 import { safeNext } from "./redirects";
 import { getViewer } from "./session";
 
 const PENDING_EMAIL_COOKIE = "up17_pending_email";
+const OTP_RESEND_COOKIE = "up17_otp_resend_at";
+const OTP_RESEND_SECONDS = 60;
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
@@ -21,6 +25,7 @@ const COOKIE_OPTIONS = {
   path: "/auth",
   maxAge: 60 * 60,
 };
+const OTP_COOKIE_OPTIONS = { ...COOKIE_OPTIONS, maxAge: OTP_RESEND_SECONDS };
 
 async function client() {
   const supabase = await createSupabaseServerClient();
@@ -41,24 +46,38 @@ interface AuthFailure {
 
 function failure(error: AuthFailure | null, fallback: string): AuthFormState {
   const code = error?.code ?? "";
-  if (code.includes("over_email_send_rate_limit") || code.includes("over_request_rate_limit"))
+  if (
+    code.includes("over_email_send_rate_limit") ||
+    code.includes("over_request_rate_limit") ||
+    code.includes("over_otp_rate_limit")
+  )
     return {
       status: "error",
-      message: "Too many email requests. Wait a few minutes before trying again.",
+      message: "Too many code requests. Wait a few minutes before trying again.",
       action: "retry",
+    };
+  if (
+    code.includes("otp_expired") ||
+    code.includes("invalid_token") ||
+    code.includes("bad_otp") ||
+    code.includes("token_expired")
+  )
+    return {
+      status: "error",
+      message: "That code is invalid or has expired. Request a fresh six-digit code.",
+      action: "resend",
     };
   if (code === "email_not_confirmed")
     return {
       status: "error",
-      message: "Confirm your email before signing in. Need a new confirmation link?",
-      action: "resend",
+      message: "Enter the six-digit code sent to your email, then sign in.",
+      action: "verify-code",
     };
   if (code === "user_already_registered")
     return {
       status: "error",
-      message:
-        "This address may already be registered. Sign in or request a fresh confirmation link.",
-      action: "sign-in",
+      message: "This address may already be registered. Sign in or enter your verification code.",
+      action: "verify-code",
     };
   if (code === "weak_password" || code === "password_too_short")
     return {
@@ -69,14 +88,10 @@ function failure(error: AuthFailure | null, fallback: string): AuthFormState {
   if (code === "validation_failed")
     return {
       status: "error",
-      message: "Check the email address and password, then try again.",
+      message: "Check the email address and code, then try again.",
       action: "retry",
     };
   return { status: "error", message: fallback, action: "retry" };
-}
-
-function confirmationRedirect(next: unknown): string {
-  return `${appOrigin()}/auth/callback?next=${encodeURIComponent(safeNext(next))}`;
 }
 
 export async function signIn(_state: AuthFormState, form: FormData): Promise<AuthFormState> {
@@ -100,6 +115,11 @@ export async function signIn(_state: AuthFormState, form: FormData): Promise<Aut
   redirect(safeNext(form.get("next")));
 }
 
+/**
+ * Signup deliberately supplies no redirect target. Supabase sends the numeric OTP
+ * through its official Confirm signup email template; no confirmation link is
+ * generated for this flow and no custom OTP is stored by Up17.
+ */
 export async function signUp(_state: AuthFormState, form: FormData): Promise<AuthFormState> {
   const parsed = signUpSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success)
@@ -114,21 +134,58 @@ export async function signUp(_state: AuthFormState, form: FormData): Promise<Aut
     ).auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
-      options: {
-        data: { display_name: parsed.data.displayName },
-        emailRedirectTo: confirmationRedirect(form.get("next")),
-      },
+      options: { data: { display_name: parsed.data.displayName } },
     });
     if (error)
       return failure(error, "The account could not be created. Check the details and try again.");
   } catch {
     return unavailable;
   }
+  const store = await cookies();
   // The address is only in a protected short-lived cookie, never in a URL or log.
-  (await cookies()).set(PENDING_EMAIL_COOKIE, parsed.data.email, COOKIE_OPTIONS);
+  store.set(PENDING_EMAIL_COOKIE, parsed.data.email, COOKIE_OPTIONS);
+  store.set(OTP_RESEND_COOKIE, "1", OTP_COOKIE_OPTIONS);
   redirect(`/auth/verify-email?next=${encodeURIComponent(safeNext(form.get("next")))}`);
 }
 
+/** Verify the official Supabase signup OTP and establish its real session. */
+export async function verifySignupOtp(
+  _state: AuthFormState,
+  form: FormData,
+): Promise<AuthFormState> {
+  const parsed = otpSchema.safeParse({ email: form.get("email"), token: form.get("token") });
+  if (!parsed.success)
+    return {
+      status: "error",
+      message: "Enter the six-digit numeric code from your email.",
+      action: "retry",
+    };
+  try {
+    const supabase = await client();
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: parsed.data.email,
+      token: parsed.data.token,
+      type: "signup",
+    });
+    if (error)
+      return failure(error, "The code could not be verified. Request a fresh six-digit code.");
+    if (!data.session || !data.user?.email_confirmed_at)
+      return {
+        status: "error",
+        message: "Verification succeeded but no confirmed session was established. Sign in.",
+        action: "sign-in",
+      };
+  } catch {
+    return unavailable;
+  }
+  const store = await cookies();
+  store.set(PENDING_EMAIL_COOKIE, "", { ...COOKIE_OPTIONS, maxAge: 0 });
+  store.set(OTP_RESEND_COOKIE, "", { ...OTP_COOKIE_OPTIONS, maxAge: 0 });
+  revalidatePath("/", "layout");
+  redirect(safeNext(form.get("next")));
+}
+
+/** Resend the official numeric signup OTP. Supabase enforces expiry and rate limits. */
 export async function resendConfirmation(
   _state: AuthFormState,
   form: FormData,
@@ -140,23 +197,29 @@ export async function resendConfirmation(
       message: "Enter a valid email address.",
       action: "retry",
     };
+  const store = await cookies();
+  if (store.get(OTP_RESEND_COOKIE))
+    return {
+      status: "error",
+      message: "Wait for the resend cooldown before requesting another code.",
+      action: "retry",
+    };
   try {
     const { error } = await (
       await client()
     ).auth.resend({
       type: "signup",
       email: parsed.data,
-      options: { emailRedirectTo: confirmationRedirect(form.get("next")) },
     });
-    if (error) return failure(error, "A new confirmation email could not be requested right now.");
+    if (error) return failure(error, "A fresh six-digit code could not be requested right now.");
   } catch {
     return unavailable;
   }
-  (await cookies()).set(PENDING_EMAIL_COOKIE, parsed.data, COOKIE_OPTIONS);
+  store.set(PENDING_EMAIL_COOKIE, parsed.data, COOKIE_OPTIONS);
+  store.set(OTP_RESEND_COOKIE, "1", OTP_COOKIE_OPTIONS);
   return {
     status: "success",
-    message:
-      "If this address can be confirmed, a fresh email is on its way. Open the link in this browser, then sign in.",
+    message: "A fresh six-digit code is on its way. It expires and can be used once.",
   };
 }
 
@@ -215,6 +278,8 @@ export async function updatePassword(
 export async function signOut() {
   const supabase = await createSupabaseServerClient();
   if (supabase) await supabase.auth.signOut();
-  (await cookies()).set(PENDING_EMAIL_COOKIE, "", { ...COOKIE_OPTIONS, maxAge: 0 });
+  const store = await cookies();
+  store.set(PENDING_EMAIL_COOKIE, "", { ...COOKIE_OPTIONS, maxAge: 0 });
+  store.set(OTP_RESEND_COOKIE, "", { ...OTP_COOKIE_OPTIONS, maxAge: 0 });
   redirect("/login");
 }

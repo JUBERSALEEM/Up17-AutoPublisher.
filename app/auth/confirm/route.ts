@@ -6,14 +6,8 @@ import { safeNext } from "@/lib/auth/redirects";
 export async function GET(request: NextRequest) {
   const tokenHash = request.nextUrl.searchParams.get("token_hash");
   const type = request.nextUrl.searchParams.get("type");
-  const allowed: EmailOtpType[] = [
-    "signup",
-    "invite",
-    "magiclink",
-    "recovery",
-    "email_change",
-    "email",
-  ];
+  /** Signup confirmation links are retired; this route serves recovery/invite/etc. only. */
+  const allowed: EmailOtpType[] = ["invite", "magiclink", "recovery", "email_change", "email"];
   if (tokenHash && type && allowed.includes(type as EmailOtpType)) {
     const client = await createSupabaseServerClient();
     if (client) {

@@ -85,6 +85,7 @@ export function RealAccountsBoard({
     (connection) => connection.state === "connected" || connection.state === "limited_permissions",
   ).length;
   const firstReadyPlatform = cards.find((card) => card.canStart)?.platform ?? null;
+  const firstActionablePlatform = cards[0]?.platform ?? null;
   const selectedCard = connectPlatform
     ? (cards.find((card) => card.platform === connectPlatform) ?? null)
     : null;
@@ -107,6 +108,11 @@ export function RealAccountsBoard({
     if (pendingMarker && (noticeAuthorized || markerResolved)) setPending(null);
   }, [markerResolved, noticeAuthorized, pendingMarker]);
 
+  const openCard = (platform: ConnectionPlatform) => {
+    setMessage(null);
+    setConnectPlatform(platform);
+  };
+
   const blockerSummaries = cards
     .filter((card) => card.blocker)
     .map((card) => `${card.label}: ${card.blocker}. ${card.description}`);
@@ -114,7 +120,9 @@ export function RealAccountsBoard({
     ? "A connection action is in progress. Wait for the provider window or current request to finish."
     : blockerSummaries.length
       ? blockerSummaries.join(" ")
-      : "No provider has every owner-verified readiness check recorded yet.";
+      : firstReadyPlatform
+        ? "At least one provider has every server-side and timestamped VERIFIED readiness check recorded. Open a provider card to start real OAuth."
+        : "No provider has every timestamped VERIFIED readiness check recorded yet.";
   const managementReason = pending
     ? "A connection action is in progress; wait for it to finish."
     : !canManage
@@ -124,7 +132,7 @@ export function RealAccountsBoard({
     ? "A connection action is in progress; wait for it to finish."
     : selectedCard?.canStart
       ? "This starts real official OAuth on the provider's own domain."
-      : `${selectedCard?.blocker ?? "Setup incomplete"}: ${selectedCard?.description ?? "Complete the owner setup checklist first."}`;
+      : `${selectedCard?.blocker ?? "Setup incomplete"}: ${selectedCard?.description ?? "Complete the owner setup checklist first."} Open the provider dashboard from this dialog for exact dashboard-only steps.`;
   const disconnectReason = pending
     ? "A connection action is in progress; wait for it to finish."
     : "Disconnect attempts provider revocation where supported, then deletes the encrypted local credential.";
@@ -220,11 +228,12 @@ export function RealAccountsBoard({
             <Button
               variant="primary"
               icon={<Plus size={18} />}
-              disabled={!canManage || !firstReadyPlatform || pending}
+              disabled={pending || !firstActionablePlatform}
               aria-describedby="connect-account-reason"
               title={topReason}
               onClick={() => {
-                if (firstReadyPlatform) setConnectPlatform(firstReadyPlatform);
+                if (firstActionablePlatform)
+                  openCard(firstReadyPlatform ?? firstActionablePlatform);
               }}
             >
               Connect an account
@@ -271,8 +280,8 @@ export function RealAccountsBoard({
       ) : null}
       {inProgressPlatform ? (
         <p className="unavailable-note">
-          <strong>Connection in progress.</strong> Finish consent in the official provider window,
-          then return here. If you cancelled,{" "}
+          <strong>Connecting.</strong> Finish consent in the official provider window, then return
+          here. If you cancelled,{" "}
           <button
             type="button"
             className="text-link small"
@@ -292,21 +301,34 @@ export function RealAccountsBoard({
           <Link href="/login" className="text-link">
             Sign in
           </Link>{" "}
-          with a confirmed email, or{" "}
+          or{" "}
           <Link href="/signup" className="text-link">
             create an account
           </Link>
-          . Custom SMTP delivery is owner-verified; use the confirmation-help page if email is
-          interrupted.
+          . New signups use a six-digit numeric email code.
         </p>
-      ) : !canManage ? (
+      ) : !readiness.emailConfirmed ? (
+        <p className="unavailable-note">
+          <strong>Email confirmation required.</strong>{" "}
+          <Link href="/auth/verify-email" className="text-link">
+            Enter your six-digit code
+          </Link>{" "}
+          before workspace or connection controls can be used.
+        </p>
+      ) : !readiness.workspaceReady ? (
         <p className="unavailable-note">
           <strong>Workspace setup required.</strong>{" "}
           <Link href="/onboarding" className="text-link">
             Finish verified onboarding
           </Link>{" "}
-          for your first owner workspace, or ask an owner/admin for an invitation. Viewer/editor
-          roles cannot connect, refresh or disconnect accounts.
+          for your first owner workspace.
+        </p>
+      ) : !canManage ? (
+        <p className="unavailable-note">
+          <strong>Owner authorization required.</strong> Your server-recognized role is{" "}
+          <strong>{readiness.role ?? "unavailable"}</strong>. Only owner/admin roles can connect,
+          refresh or disconnect accounts. Ask an existing owner/admin for an invitation; privileges
+          are never granted from the browser.
         </p>
       ) : null}
       {readiness.connectionReadError ? (
@@ -438,10 +460,11 @@ export function RealAccountsBoard({
                   <Button
                     size="sm"
                     variant="primary"
-                    disabled={!card.canStart || pending}
+                    disabled={pending}
                     aria-describedby={`${card.platform}-status ${card.platform}-blocker`}
                     title={cardReason}
-                    onClick={() => setConnectPlatform(card.platform)}
+                    data-testid={`connect-${card.platform}`}
+                    onClick={() => openCard(card.platform)}
                   >
                     {card.connectLabel}
                   </Button>
@@ -491,8 +514,8 @@ export function RealAccountsBoard({
         <ol className="accounts-journey">
           <li>
             <strong>Sign in.</strong> <Link href="/signup">Create account</Link> or{" "}
-            <Link href="/login">Sign in</Link>, confirm the email, then finish verified onboarding.
-            Custom SMTP and delivery testing are owner dashboard steps.
+            <Link href="/login">Sign in</Link>, enter the six-digit email code, then finish verified
+            onboarding. Custom SMTP and delivery testing are owner dashboard steps.
           </li>
           <li>
             <strong>Get an owner/admin workspace.</strong> Verified onboarding creates the first
@@ -507,8 +530,9 @@ export function RealAccountsBoard({
           <li>
             <strong>Register exact provider callbacks.</strong> Use the three public bridge redirect
             URIs above in Google Cloud, Meta for Developers and TikTok Developer Portal. Complete
-            consent-screen, professional-account, Advanced Access and Direct Post audit gates only
-            when the corresponding publishing milestone is approved.
+            the consent-screen and eligible-account gates for foundation access. Advanced Access,
+            Direct Post audit and publishing permissions belong to a separately approved publishing
+            milestone and are never requested here.
           </li>
           <li>
             <strong>Connect.</strong> Return here, press the enabled provider button, verify the
@@ -626,10 +650,20 @@ export function RealAccountsBoard({
         open={Boolean(connectPlatform)}
         onClose={() => setConnectPlatform(null)}
         title={connectPlatform ? `Connect ${connectPlatform}` : "Connect an account"}
-        description="You will be redirected to the official provider authorization page."
+        description="Review the exact provider state, owner steps and official authorization action."
         footer={
           <>
             <Button onClick={() => setConnectPlatform(null)}>Close</Button>
+            {selectedCard ? (
+              <a
+                className="btn btn-secondary btn-sm"
+                href={selectedCard.providerDashboard}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                Open provider dashboard
+              </a>
+            ) : null}
             <Button
               variant="primary"
               disabled={!selectedCard?.canStart || pending}
@@ -654,7 +688,10 @@ export function RealAccountsBoard({
           </p>
           {selectedCard ? (
             <p className="unavailable-note">
-              <strong>{selectedCard.label}:</strong> {selectedCard.description}
+              <strong>
+                {selectedCard.label}: {selectedCard.status}
+              </strong>
+              . {selectedCard.description}
             </p>
           ) : null}
           <p id="continue-reason" className="field-hint small">

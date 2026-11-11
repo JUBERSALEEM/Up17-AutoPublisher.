@@ -135,7 +135,7 @@ export function AppShell({
       ? signedIn
         ? emailConfirmed
           ? "Workspace setup pending"
-          : "Confirm your email to finish setup"
+          : "Enter your six-digit email code to finish setup"
         : "No private session"
       : "Demo profile · not signed in";
   const workspaceTitle = cloud
@@ -158,10 +158,10 @@ export function AppShell({
     : !authAvailable
       ? "Authentication is not configured in this local preview. Set the public Supabase URL and publishable key in the deployment."
       : signedIn && !emailConfirmed
-        ? "Confirm your email before a first workspace can be created."
+        ? "Enter the six-digit email code before a first workspace can be created."
         : signedIn && emailConfirmed
           ? "Finish verified onboarding; it creates your first owner workspace server-side."
-          : "Sign up, confirm your email, then verified onboarding creates your first owner workspace.";
+          : "Sign up, enter the six-digit email code, then verified onboarding creates your first owner workspace.";
   useEffect(() => {
     document.documentElement.dataset.motion = preferences.reduceMotion ? "reduce" : "system";
   }, [preferences.reduceMotion]);
@@ -345,7 +345,7 @@ export function AppShell({
                       "Private session · social accounts not connected"
                     ) : signedIn && !emailConfirmed ? (
                       <Link href="/auth/verify-email" onClick={close}>
-                        Confirm your email to finish setup
+                        Enter your six-digit email code
                       </Link>
                     ) : authAvailable ? (
                       <Link href="/login" onClick={close}>

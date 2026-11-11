@@ -30,13 +30,13 @@
 
 ## Master OAuth visibility milestone — separate completion status
 
-Runtime commit `d4cfbde4508442c819e7779906f90c494c1fc0b9`; preview deployment `dpl_2igGhiy79jrgxBhPXABMcqnkS1MN` READY at that exact SHA, `public=false`, SSO-protected. This table is a milestone view, **not** a change to the 155 per-requirement rows above and **not** owner acceptance.
+Runtime commit `d4cfbde4508442c819e7779906f90c494c1fc0b9`; preview deployment `dpl_2igGhiy79jrgxBhPXABMcqnkS1MN` READY at that exact SHA, `public=false`, SSO-protected. This is a historical milestone view, **not** a change to the 155 per-requirement rows above and **not** owner acceptance. The current DB has one confirmed owner session/workspace and the current UI has 15 statuses, but SMTP, provider OAuth and owner-authenticated browser acceptance remain blocked.
 
 | Area | Status | Boundary |
 |---|---|---|
 | OAuth code | COMPLETE | Reviewed adapters, state/PKCE/binding, callback, broker, custody and lifecycle routes exist unchanged; local gates pass. |
-| UI | COMPLETE | Three exact provider cards, ten exact statuses, explicit Demo mode, setup checklist and journey are always visible; browser/axe/visual gates pass. |
-| Authentication | BLOCKED | Vercel SSO, no custom SMTP, zero confirmed users/workspaces; no owner-authenticated hosted session. |
+| UI | COMPLETE (historical) | Three exact provider cards, historically ten exact statuses (15 currently), explicit Demo mode, setup checklist and journey are always visible; browser/axe/visual gates pass. |
+| Authentication | BLOCKED (historical) | At that runtime Vercel SSO, no custom SMTP and zero confirmed users/workspaces meant no owner-authenticated hosted session. The current DB has one owner session/workspace, but numeric OTP/SMTP delivery and agent-accessible owner browser acceptance remain blocked. |
 | Configuration | PARTIAL | Public Supabase names, DEMO mode and exact preview `UP17_SITE_URL` are present; server key, keyring, provider credentials and `CRON_SECRET` are missing. |
 | Provider apps / redirects / reviews | MISSING | No Google, Meta or TikTok app, registered redirect, consent screen, Advanced Access or Direct Post audit was created. |
 | YouTube | BLOCKED | No app credentials, registered callback, official consent, identity, scopes, refresh token or real callback. |

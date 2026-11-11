@@ -2,6 +2,29 @@
 
 This ledger records executed checks, not aspirational test names. See [TEST_STRATEGY.md](TEST_STRATEGY.md) for the future application catalog.
 
+## Current numeric OTP and strict evidence gate (2026-11-08)
+
+**Scope:** official six-digit signup OTP, 15-state Accounts readiness, removal of owner self-attestation, strict external provider evidence, updated auth/Accounts/browser assertions, fresh local/build verification and safe hosted evidence inspection. Hosted template/SMTP configuration, real inbox delivery, provider consent/callback, encrypted token persistence, authenticated storage acceptance and owner-authenticated hosted browser acceptance are NOT VERIFIED.
+
+| Check | Actual result |
+|---|---|
+| Pinned `npm run check` | PASS — format, ESLint `--max-warnings 0`, strict TypeScript, 14 unit files / 90 tests, 1 integration file / 4 tests, 48 Python validator tests, 2 TypeScript security files / 8 tests, strict docs structure/traceability/link/artifact policy, production build 27/27 static pages and 27 routes |
+| Standalone Edge Function strict TypeScript check | PASS — reviewed Deno runtime declarations; static check only, not hosted Deno execution |
+| `npm run test:e2e` | PASS — 128, including numeric OTP paste/Backspace, legacy signup-link rejection, exact-state Connect review dialog and no simulated OAuth |
+| `npm run test:visual` | PASS — 154, including `/auth/verify-email` at 320px after a scoped `min-width: 0` grid fix |
+| `npm run test:a11y` | PASS — 86 |
+| `npm run test:clay` | PASS — 62 |
+| `npm run test:navigation:dev` | PASS — 13; generated `tsconfig.json`/`next-env.d.ts` rewrites restored |
+| Separate local production-build Chromium | PASS — 18/18 across `/login`, `/signup`, `/auth/verify-email`, `/accounts`, `/onboarding`, `/settings` at desktop, mobile and 320px; exact headings, no overflow, OTP controls and disabled “Continue to provider” review dialog checked |
+| Hosted owner/session inspection | PASS — `auth.users=1`, confirmed=1, signed-in=1, one owner workspace/membership/preferences and one session; agent has no owner browser cookies |
+| Hosted Auth config inspection | PASS/BLOCKED — link-based Confirm signup template, `mailer_otp_length=8`, `mailer_autoconfirm=false`, all `smtp_*` null; connector cannot set template/length/SMTP |
+| Hosted evidence inspection | PASS/BLOCKED — 26 rows; `auth-otp-code=CONFIGURED`, `otp-template`/`email-smtp=OWNER ACTION REQUIRED`, provider credentials `BLOCKED`, all provider redirect/review/account rows `OWNER ACTION REQUIRED`; no provider `VERIFIED` |
+| Real OTP email / recovery / Google consent / callback / token storage | NOT VERIFIED / NOT RUN — owner inbox, Supabase dashboard/Management API and provider dashboards required |
+| Owner-authenticated hosted browser / storage isolation / Production / cron / publishing | NOT RECORDED / NOT RUN — separate owner approvals |
+
+No fake user, autoconfirm bypass, SMTP credential, provider credential, owner self-attestation evidence, connection, token, permanent SSO bypass or Production change was created in this update. Expected incremental cost is $0 on existing free allowances, subject to usage limits and separately approved paid services. Exact owner actions are in [owner setup](OWNER_SETUP.md); decisions are in [decisions](DECISIONS.md).
+
+
 
 ## Batch C — auth/data foundation (2026-11-08)
 

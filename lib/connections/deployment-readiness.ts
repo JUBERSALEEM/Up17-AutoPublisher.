@@ -1,5 +1,5 @@
 import "server-only";
-import { getViewer } from "@/lib/auth/session";
+import { getAccountSession, getViewer, type AccountSession } from "@/lib/auth/session";
 import { getWorkspaceContext, type WorkspaceContext } from "@/lib/auth/workspace";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseConfig } from "@/lib/supabase/config";
@@ -44,6 +44,7 @@ function publicSupabaseConfigured(): boolean {
   }
 }
 
+/** Only a trusted Vercel deployment origin counts; request headers are never trusted. */
 function exactSiteUrlConfigured(): boolean {
   const raw = process.env.UP17_SITE_URL;
   if (!raw) return false;
@@ -130,7 +131,7 @@ function check(input: {
   };
 }
 
-function setupChecks(flags: Record<ConnectionPlatform, boolean>): SetupCheck[] {
+function setupChecks(flags: Record<ConnectionPlatform, boolean>, siteUrlOk: boolean): SetupCheck[] {
   const urls = externalCallbackUrls();
   const production = process.env.VERCEL_ENV === "production";
   const cronPresent = Boolean(process.env.CRON_SECRET);
@@ -150,8 +151,8 @@ function setupChecks(flags: Record<ConnectionPlatform, boolean>): SetupCheck[] {
       id: "site-url",
       names: ["UP17_SITE_URL"],
       location: "Vercel → Project Settings → Environment Variables → Preview/Production",
-      state: status(exactSiteUrlConfigured()),
-      evidence: exactSiteUrlConfigured()
+      state: status(siteUrlOk),
+      evidence: siteUrlOk
         ? "site_url_matches_deployment_origin_no_email_redirect_test"
         : "site_url_missing_or_mismatched",
       ownerAction: BRANCH_ORIGIN_NOTE,
@@ -212,13 +213,24 @@ function setupChecks(flags: Record<ConnectionPlatform, boolean>): SetupCheck[] {
         "Production cron requires a long random bearer secret and a successful scheduled execution record. Preview deployments do not run cron.",
     }),
     check({
+      id: "otp-template",
+      names: ["Confirm signup email template", "Email OTP length"],
+      location:
+        "Supabase → Authentication → Email Templates → Confirm signup; Authentication → Sign In / Providers → Email; or Management API PATCH /v1/projects/{ref}/config/auth",
+      state: "OWNER ACTION REQUIRED",
+      evidence:
+        "hosted_connector_inspected_link_template_otp_length_8_smtp_null_no_template_setter",
+      ownerAction:
+        "Replace the Confirm signup template's {{ .ConfirmationURL }} link with a numeric {{ .Token }} code only, set mailer_otp_length to 6, keep mailer_otp_exp and autoconfirm false, then send a real signup OTP. The connector cannot set these fields or Custom SMTP.",
+    }),
+    check({
       id: "email-smtp",
       names: ["Supabase custom SMTP", "email delivery"],
       location: "Supabase → Authentication → Sign In / Providers → Email / SMTP Settings",
       state: "OWNER ACTION REQUIRED",
       evidence: "smtp_settings_not_exposed_by_connector_no_delivery_test",
       ownerAction:
-        "Configure custom SMTP directly in Supabase and send a real signup-confirmation and password-recovery email. The connector cannot set SMTP host/user/password.",
+        "Configure custom SMTP directly in Supabase and send a real numeric signup OTP and password-recovery email. The connector cannot set SMTP host/user/password.",
     }),
     check({
       id: "auth-redirects",
@@ -227,7 +239,7 @@ function setupChecks(flags: Record<ConnectionPlatform, boolean>): SetupCheck[] {
       state: "CONFIGURED",
       evidence: "hosted_auth_config_inspected_no_email_delivery_test",
       ownerAction:
-        "The exact Site URL and reviewed redirect allowlist are configured. Verify a real confirmation email and session before treating them as VERIFIED.",
+        "The exact Site URL and reviewed redirect allowlist are configured. Verify a real OTP email and session before treating them as VERIFIED.",
     }),
     check({
       id: "storage-rls",
@@ -243,7 +255,7 @@ function setupChecks(flags: Record<ConnectionPlatform, boolean>): SetupCheck[] {
       names: ["Supabase migrations"],
       location: "Supabase → SQL → schema_migrations; Git → supabase/migrations",
       state: "CONFIGURED",
-      evidence: "ten_hosted_migrations_and_local_files_inspected",
+      evidence: "eleven_hosted_migrations_and_local_files_inspected",
       ownerAction:
         "Keep local and hosted migration names and canonical SQL parity. Never reapply a confirmed migration.",
     }),
@@ -322,7 +334,10 @@ function providerConfigurationVerified(checks: SetupCheck[]): Record<ConnectionP
 export async function providerConfigurationReady(platform: ConnectionPlatform): Promise<boolean> {
   try {
     const evidence = await loadEvidence();
-    const checks = applyDeploymentEvidence(setupChecks(providerCredentialFlags()), evidence);
+    const checks = applyDeploymentEvidence(
+      setupChecks(providerCredentialFlags(), exactSiteUrlConfigured()),
+      evidence,
+    );
     return providerConfigurationVerified(checks)[platform];
   } catch {
     return false;
@@ -386,6 +401,14 @@ async function loadEvidence(): Promise<DeploymentEvidenceRow[]> {
   }
 }
 
+async function safeSession(): Promise<AccountSession | null> {
+  try {
+    return await getAccountSession();
+  } catch {
+    return null;
+  }
+}
+
 async function safeViewer(): Promise<boolean> {
   try {
     return Boolean(await getViewer());
@@ -404,7 +427,8 @@ async function safeWorkspace(): Promise<WorkspaceContext | null> {
 
 export async function getAccountsState(): Promise<AccountsState> {
   const demoMode = isSafeDemoMode();
-  const authenticated = await safeViewer();
+  const session = await safeSession();
+  const emailConfirmed = await safeViewer();
   const workspace = await safeWorkspace();
   const providers = providerAvailability();
   const providerCredentials = providerCredentialFlags();
@@ -434,12 +458,17 @@ export async function getAccountsState(): Promise<AccountsState> {
     }
   }
   const evidence = await loadEvidence();
-  const checks = applyDeploymentEvidence(setupChecks(providerCredentials), evidence);
+  const checks = applyDeploymentEvidence(
+    setupChecks(providerCredentials, exactSiteUrlConfigured()),
+    evidence,
+  );
   const readiness: DeploymentReadiness = {
     demoMode,
-    authenticated,
+    authenticated: Boolean(session),
+    emailConfirmed,
     workspaceReady: Boolean(workspace),
     canManage,
+    role: workspace?.role ?? null,
     publicSupabaseConfigured: publicSupabaseConfigured(),
     exactSiteUrlConfigured: exactSiteUrlConfigured(),
     serverKeyConfigured: serverKeyConfigured(),

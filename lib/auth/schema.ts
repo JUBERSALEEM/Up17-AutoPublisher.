@@ -12,9 +12,17 @@ export const signUpSchema = z.object({
   password: passwordSchema,
   displayName: z.string().trim().min(1).max(80),
 });
+/** Up17 requires six digits; the owner must set Supabase's official OTP length to 6. */
+export const otpSchema = z.object({
+  email: emailSchema,
+  token: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "Enter the six-digit code."),
+});
 export type AuthFormState = {
   status: "idle" | "error" | "success";
   message: string;
-  action?: "sign-in" | "resend" | "retry";
+  action?: "sign-in" | "resend" | "verify-code" | "retry";
 };
 export const initialAuthState: AuthFormState = { status: "idle", message: "" };

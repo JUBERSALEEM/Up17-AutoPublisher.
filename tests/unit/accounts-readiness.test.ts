@@ -76,8 +76,10 @@ const checks: SetupCheck[] = [
 const ready: DeploymentReadiness = {
   demoMode: true,
   authenticated: true,
+  emailConfirmed: true,
   workspaceReady: true,
   canManage: true,
+  role: "owner",
   publicSupabaseConfigured: true,
   exactSiteUrlConfigured: true,
   serverKeyConfigured: true,
@@ -123,18 +125,20 @@ function connection(
 
 describe("unified Accounts readiness", () => {
   it("defines every owner-visible status with a tone", () => {
-    expect(connectionStatuses).toHaveLength(13);
-    expect(new Set(connectionStatuses).size).toBe(13);
+    expect(connectionStatuses).toHaveLength(15);
+    expect(new Set(connectionStatuses).size).toBe(15);
     for (const status of connectionStatuses) expect(statusTone[status]).toBeDefined();
     for (const status of [
       "Sign in required",
+      "Email confirmation required",
       "Workspace setup required",
-      "Provider credentials missing",
+      "Owner authorization required",
+      "Credentials missing",
       "Provider configuration incomplete",
-      "Ready",
-      "Connection in progress",
+      "Ready to connect",
+      "Connecting",
       "Connected",
-      "Failed",
+      "Connection failed",
       "Reauthorization required",
     ] as const) {
       expect(connectionStatuses).toContain(status);
@@ -151,15 +155,20 @@ describe("unified Accounts readiness", () => {
     expect(cards.every((card) => card.nextSteps.length > 0)).toBe(true);
   });
 
-  it("resolves deployment and owner blockers in precedence order", () => {
+  it("resolves deployment, identity, workspace and provider blockers in precedence order", () => {
     const cases: Array<[Partial<DeploymentReadiness>, string]> = [
       [{ publicSupabaseConfigured: false }, "Not configured"],
       [{ exactSiteUrlConfigured: false }, "Not configured"],
       [{ serverKeyConfigured: false }, "Not configured"],
       [{ authenticated: false }, "Sign in required"],
+      [{ emailConfirmed: false }, "Email confirmation required"],
       [{ workspaceReady: false }, "Workspace setup required"],
-      [{ canManage: false }, "Workspace setup required"],
+      [{ canManage: false }, "Owner authorization required"],
       [{ connectionReadError: true }, "Error"],
+      [
+        { providerCredentials: { youtube: false, instagram: false, tiktok: false } },
+        "Credentials missing",
+      ],
       [{ keyringConfigured: false }, "Encryption keyring missing"],
       [
         {
@@ -184,18 +193,18 @@ describe("unified Accounts readiness", () => {
       providers,
       [],
     );
-    expect(cards[0].status).toBe("Provider credentials missing");
+    expect(cards[0].status).toBe("Credentials missing");
     expect(cards[0].description).toContain("GOOGLE_CLIENT_ID");
     expect(cards[0].description).toContain(
       "https://example.supabase.co/functions/v1/up17-oauth-callback?mode=callback&platform=youtube",
     );
-    expect(cards[1].status).toBe("Ready");
-    expect(cards[2].status).toBe("Ready");
+    expect(cards[1].status).toBe("Ready to connect");
+    expect(cards[2].status).toBe("Ready to connect");
   });
 
-  it("reports Ready only when every server-side and owner-verified gate is present", () => {
+  it("reports Ready to connect only when every server-side and owner-verified gate is present", () => {
     const cards = buildProviderCards(ready, providers, []);
-    expect(cards.every((card) => card.status === "Ready")).toBe(true);
+    expect(cards.every((card) => card.status === "Ready to connect")).toBe(true);
     expect(cards.every((card) => card.canStart)).toBe(true);
     expect(cards.every((card) => card.blocker === null)).toBe(true);
   });
@@ -205,8 +214,8 @@ describe("unified Accounts readiness", () => {
       ["connected", "Connected"],
       ["limited_permissions", "Limited permissions"],
       ["needs_authorisation", "Reauthorization required"],
-      ["pending", "Connection in progress"],
-      ["error", "Failed"],
+      ["pending", "Connecting"],
+      ["error", "Connection failed"],
     ];
     for (const [state, expected] of states) {
       const cards = buildProviderCards(ready, providers, [connection("youtube", state)]);
@@ -215,7 +224,7 @@ describe("unified Accounts readiness", () => {
     const disconnected = buildProviderCards(ready, providers, [
       connection("youtube", "disconnected"),
     ]);
-    expect(disconnected[0].status).toBe("Ready");
+    expect(disconnected[0].status).toBe("Ready to connect");
   });
 
   it("keeps connected and in-progress accounts visible while disabling duplicate starts", () => {
@@ -225,7 +234,7 @@ describe("unified Accounts readiness", () => {
     expect(connectedCards[1].status).toBe("Connected");
     expect(connectedCards[1].canStart).toBe(false);
     const pendingCards = buildProviderCards(ready, providers, [connection("youtube", "pending")]);
-    expect(pendingCards[0].status).toBe("Connection in progress");
+    expect(pendingCards[0].status).toBe("Connecting");
     expect(pendingCards[0].canStart).toBe(false);
   });
 

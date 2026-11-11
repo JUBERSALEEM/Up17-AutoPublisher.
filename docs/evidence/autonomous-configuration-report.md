@@ -66,7 +66,7 @@ Vercel Hobby and Supabase Free/existing project resources only: Next.js Preview,
 1. Enter custom SMTP host/user/password directly in Supabase and verify one real signup-confirmation and one password-recovery email.
 2. Create/approve the Google/YouTube OAuth client, consent screen, test users, YouTube Data API v3 and applicable scope verification; enter the client ID/secret directly into Vercel and register the exact public bridge redirect URI.
 3. After Google succeeds, create/approve Instagram and TikTok apps, reviews/audits, exact redirect URIs and credentials directly in the provider/Vercel dashboards.
-4. Use an owner-authenticated browser to verify signup, workspace ownership, all six readiness states, real connection lifecycle, replay rejection and viewer/editor denial; record owner acceptance.
+4. Use an owner-authenticated browser to verify signup, workspace ownership, all six setup states and the current 15 connection statuses, real connection lifecycle, replay rejection and viewer/editor denial; record owner acceptance.
 5. Separately approve any Production promotion, Production environment variables, live cron, custom domain or publishing enablement.
 
 These are genuine external account permissions/approvals: the Vercel connector cannot create an owner-authenticated browser session or platform bypass secret, the Supabase connector cannot set SMTP credentials, and no connected integration can create Google/Meta/TikTok app credentials, pass provider app review or consent as the owner. Never expose passwords, service keys or OAuth secrets in chat; use the provider dashboards/secret managers.

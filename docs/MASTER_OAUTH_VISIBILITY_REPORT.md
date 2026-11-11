@@ -8,6 +8,8 @@
 **Executed evidence:** [master-oauth-visibility.txt](evidence/master-oauth-visibility.txt).
 **Owner actions:** [OWNER_SETUP.md](OWNER_SETUP.md). **Balance:** [OWNER_REQUIREMENTS_BALANCE.md](OWNER_REQUIREMENTS_BALANCE.md).
 
+**Historical report.** This report describes runtime commit `d4cfbde4508442c819e7779906f90c494c1fc0b9` and its zero-user, ten-status state. The current implementation uses numeric signup OTP, 15 owner-visible connection statuses, strict timestamped external evidence, no owner self-attestation and one confirmed owner session/workspace. Hosted Auth template/SMTP and real provider OAuth remain BLOCKED.
+
 A READY build, local unit test, synthetic DB fixture, anonymous SSO login or connected-looking card is **not** OAuth acceptance. No provider was actually authorized, no real token was issued or stored, nothing was published, and owner acceptance is **NOT RECORDED**.
 
 ## 1. Why real OAuth was invisible
@@ -28,7 +30,7 @@ The exact URL the owner personally opened is **not confirmed**. Available eviden
 Runtime commit `d4cfbde4508442c819e7779906f90c494c1fc0b9` removes the demo early return and makes `/accounts` a unified, server-readiness page:
 
 - Three cards are **always** visible with exact buttons **Connect Google / YouTube**, **Connect Instagram** and **Connect TikTok**.
-- Each card reports one of the ten exact statuses: `Not configured`, `Authentication required`, `Workspace setup required`, `Provider credentials missing`, `Encryption keyring missing`, `Ready to connect`, `Connected`, `Limited permissions`, `Needs reauthorization`, `Error`. A stored connection's state is shown even when a setup blocker is also present.
+- At that historical runtime each card reported one of ten exact statuses (the current board has 15): `Not configured`, `Authentication required`, `Workspace setup required`, `Provider credentials missing`, `Encryption keyring missing`, `Ready to connect`, `Connected`, `Limited permissions`, `Needs reauthorization`, `Error`. A stored connection's state is shown even when a setup blocker is also present.
 - `lib/connections/readiness.ts` is a pure status model; `lib/connections/deployment-readiness.ts` is `server-only` and exposes **names and booleans only**, never values. It checks public Supabase config, exact `UP17_SITE_URL`, server key presence, keyring validity, provider credential presence, confirmed viewer, owner/admin workspace and connection rows.
 - The page explicitly identifies `UP17_APP_MODE=DEMO`, explains that other product screens may show sample data, and states that the real cards are live deployment controls with **no simulated authorization**.
 - A deployment/owner checklist lists exact Vercel variable names, Supabase dashboard locations, provider consoles, SMTP and app-review gates. A separate journey links `/sign-up` and `/sign-in`, explains confirmed-email/workspace creation, exact callbacks and official consent.
@@ -116,7 +118,7 @@ One development-only service-worker test initially timed out during a long aggre
 | Area | Status | Evidence-bound reason |
 |---|---|---|
 | OAuth code | COMPLETE | Reviewed adapters, state/PKCE/binding, callback, broker, custody and lifecycle routes exist unchanged; local security/unit gates pass. |
-| UI | COMPLETE | Three exact cards, ten exact statuses, demo explanation, checklist and journey are always visible; browser/axe/visual gates pass. |
+| UI | COMPLETE (historical) | Three exact cards, historically ten exact statuses (15 currently), demo explanation, checklist and journey are always visible; browser/axe/visual gates pass. |
 | Authentication | BLOCKED | Vercel SSO, no custom SMTP, zero confirmed users/workspaces; no owner-authenticated hosted session. |
 | Configuration | PARTIAL | Public Supabase names, DEMO mode and exact preview `UP17_SITE_URL` are present; server key, keyring, provider credentials and `CRON_SECRET` are missing. |
 | Provider apps / redirects / reviews | MISSING | No Google, Meta or TikTok app, registered redirect, consent screen, Advanced Access or Direct Post audit was created. |

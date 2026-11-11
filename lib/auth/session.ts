@@ -11,7 +11,7 @@ export interface AccountSession {
 
 /**
  * Verifies the caller with the auth server. An unconfirmed session is kept
- * distinguishable so signup can recover from an interrupted confirmation email.
+ * distinguishable so signup can recover from an interrupted numeric OTP.
  */
 export const getAccountSession = cache(async (): Promise<AccountSession | null> => {
   const client = await createSupabaseServerClient();

@@ -103,9 +103,17 @@ test("accounts show real OAuth cards and exact setup blockers @e2e", async ({ pa
   ] as const) {
     const button = page.getByRole("button", { name: label, exact: true });
     await expect(button).toBeVisible();
-    await expect(button).toBeDisabled();
+    await expect(button).toBeEnabled();
+    await expect(button).toHaveAttribute("title", /Not configured/);
   }
-  await expect(page.getByRole("button", { name: "Connect an account" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Connect an account" })).toBeEnabled();
+  await page.getByRole("button", { name: "Connect Google / YouTube", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText("YouTube: Not configured");
+  await expect(dialog.getByRole("button", { name: "Continue to provider" })).toBeDisabled();
+  await expect(dialog.getByRole("link", { name: "Open provider dashboard" })).toBeVisible();
+  await expect(dialog.locator("#continue-reason")).toContainText("Not configured");
+  await dialog.getByRole("button", { name: "Close", exact: true }).click();
   await expect(page.locator("#connect-account-reason")).toContainText("Not configured");
   await expect(page.locator("#youtube-status")).toContainText("Deployment setup is incomplete");
   await expect(page.locator("#youtube-blocker")).toContainText("Not configured");

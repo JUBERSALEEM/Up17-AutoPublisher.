@@ -3528,6 +3528,55 @@ input[type="radio"] {
   gap: var(--space-4);
   justify-content: space-between;
 }
+.otp-card {
+  max-width: 560px;
+}
+.auth-card {
+  grid-template-columns: minmax(0, 1fr);
+}
+.auth-card .stack {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+.auth-card .input,
+.auth-card .field,
+.auth-card .field-hint {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.otp-inputs {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-2);
+  width: 100%;
+}
+.otp-input {
+  min-width: 0;
+  width: 100%;
+  padding-inline: 0;
+  text-align: center;
+  font-size: var(--text-xl);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+.otp-resend-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.otp-resend-form .field-hint {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+@media (max-width: 480px) {
+  .otp-inputs {
+    gap: var(--space-1);
+  }
+  .otp-input {
+    font-size: var(--text-lg);
+  }
+}
 .account-actions {
   display: flex;
   flex-wrap: wrap;
@@ -3610,6 +3659,24 @@ input[type="radio"] {
 }
 .setup-missing li {
   overflow-wrap: anywhere;
+}
+.provider-setup {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--surface-inset);
+}
+.provider-setup .toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-sm);
+}
+.provider-setup .toggle-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
 }
 .setup-checklist {
   display: grid;

@@ -4,20 +4,13 @@ import { useActionState } from "react";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { Button, Card, Input } from "@/components/ui";
 import { initialAuthState } from "@/lib/auth/schema";
-import {
-  signIn,
-  signUp,
-  resetPassword,
-  updatePassword,
-  resendConfirmation,
-} from "@/lib/auth/actions";
+import { signIn, signUp, resetPassword, updatePassword } from "@/lib/auth/actions";
 
 const actions = {
   "sign-in": signIn,
   "sign-up": signUp,
   reset: resetPassword,
   update: updatePassword,
-  verify: resendConfirmation,
 };
 
 export function AuthForm({
@@ -25,13 +18,11 @@ export function AuthForm({
   next = "/account",
   expired = false,
   authAvailable = true,
-  defaultEmail = "",
 }: {
-  mode: "sign-in" | "sign-up" | "reset" | "update" | "verify";
+  mode: "sign-in" | "sign-up" | "reset" | "update";
   next?: string;
   expired?: boolean;
   authAvailable?: boolean;
-  defaultEmail?: string;
 }) {
   const [state, submit, pending] = useActionState(actions[mode], initialAuthState);
   const titles = {
@@ -39,26 +30,22 @@ export function AuthForm({
     "sign-up": "Create your creator account",
     reset: "Reset your password",
     update: "Choose a new password",
-    verify: "Confirm your email",
   };
   const descriptions = {
     "sign-in":
       "Sign in to your private workspace. Video, AI, scheduling, analytics and publishing screens remain labelled sample workflows.",
     "sign-up":
-      "Create a real account with email and password. Confirmation is required before the verified workspace is created.",
+      "Create a real account with email and password. A six-digit email code confirms the address before your verified workspace is created.",
     reset:
       "Request a one-time recovery link. For security, the result is the same whether or not the address has an account.",
     update:
       "Choose a new password for your confirmed account. Other sessions are revoked where supported.",
-    verify:
-      "Check your inbox for the confirmation link. Open it in this browser, then sign in. If the email was interrupted, request a fresh one below.",
   };
   const submitLabels = {
     "sign-in": "Sign in",
     "sign-up": "Create account",
     reset: "Send recovery link",
     update: "Update password",
-    verify: "Resend confirmation email",
   };
   const submitDisabled = pending || !authAvailable;
   const submitReason = !authAvailable
@@ -93,11 +80,19 @@ export function AuthForm({
             role={state.status === "error" ? "alert" : "status"}
           >
             {state.message}
+            {state.action === "verify-code" ? (
+              <>
+                {" "}
+                <Link href="/auth/verify-email" className="text-link">
+                  Enter verification code
+                </Link>
+              </>
+            ) : null}
             {state.action === "resend" ? (
               <>
                 {" "}
                 <Link href="/auth/verify-email" className="text-link">
-                  Resend confirmation email
+                  Request a fresh code
                 </Link>
               </>
             ) : null}
@@ -111,7 +106,7 @@ export function AuthForm({
             ) : null}
           </p>
         ) : null}
-        {state.status !== "success" || mode === "verify" ? (
+        {state.status !== "success" ? (
           <form action={submit} className="stack">
             <input type="hidden" name="next" value={next} />
             {mode === "sign-up" ? (
@@ -129,12 +124,11 @@ export function AuthForm({
                 name="email"
                 type="email"
                 autoComplete="email"
-                defaultValue={defaultEmail}
                 maxLength={254}
                 required
               />
             ) : null}
-            {mode !== "reset" && mode !== "verify" ? (
+            {mode !== "reset" ? (
               <Input
                 label={mode === "update" ? "New password" : "Password"}
                 name="password"
@@ -182,20 +176,11 @@ export function AuthForm({
               <Link href="/signup" className="text-link">
                 Create an account
               </Link>
+              <Link href="/auth/verify-email" className="text-link">
+                Enter verification code
+              </Link>
               <Link href="/reset-password" className="text-link">
                 Forgot password?
-              </Link>
-              <Link href="/auth/verify-email" className="text-link">
-                Confirm email
-              </Link>
-            </>
-          ) : mode === "verify" ? (
-            <>
-              <Link href="/login" className="text-link">
-                Already confirmed? Sign in
-              </Link>
-              <Link href="/signup" className="text-link">
-                Use a different address
               </Link>
             </>
           ) : (
@@ -205,9 +190,9 @@ export function AuthForm({
           )}
         </div>
         <p className="field-hint">
-          Email confirmation is required. Custom SMTP delivery is owner-verified; use resend if a
-          message does not arrive. Creating this account does not connect a social account or enable
-          publishing.
+          Signup uses a six-digit numeric email code. Password recovery stays a separate one-time
+          link. Custom SMTP delivery still requires owner verification; creating this account does
+          not connect a social account or enable publishing.
         </p>
       </Card>
     </div>

@@ -96,13 +96,71 @@ describe("owner authentication domain separation", () => {
     }
   });
 
-  it("replaces misleading demo auth copy and exposes interrupted-confirmation recovery", () => {
+  it("uses official numeric signup OTP and keeps recovery links separate", () => {
     const form = read("components/auth/auth-form.tsx");
-    expect(form).toContain("Custom SMTP delivery is owner-verified");
-    expect(form).toContain("Resend confirmation email");
+    const actions = read("lib/auth/actions.ts");
+    const otp = read("components/auth/otp-form.tsx");
+    expect(form).toContain("Custom SMTP delivery still requires owner verification");
+    expect(form).toContain("six-digit numeric email code");
+    expect(form).not.toContain("Resend confirmation email");
     expect(form).not.toContain("Production email delivery is still being verified");
     expect(read("app/auth/verify-email/page.tsx")).toContain("up17_pending_email");
-    expect(read("lib/auth/actions.ts")).toContain("resendConfirmation");
-    expect(read("lib/auth/actions.ts")).toContain("/auth/verify-email");
+    expect(read("app/auth/verify-email/page.tsx")).toContain("OtpForm");
+    expect(actions).toContain("verifyOtp");
+    expect(actions).toContain('type: "signup"');
+    expect(actions).toContain("auth.resend");
+    expect(actions).toContain("resendConfirmation");
+    expect(actions).toContain("up17_otp_resend_at");
+    expect(actions).toContain("/auth/verify-email");
+    expect(actions).not.toMatch(/auth\.signUp\(\{[\s\S]*?emailRedirectTo/);
+    expect(actions).toContain("resetPasswordForEmail");
+    expect(read("app/auth/confirm/route.ts")).not.toContain('"signup"');
+    expect(otp).toContain("data-testid={`otp-digit-${index + 1}`}");
+    expect(otp).toContain("onPaste");
+    expect(otp).toContain("ArrowLeft");
+    expect(otp).toContain("Backspace");
+    expect(otp).toContain("Resend code");
+    expect(otp).toContain("Back to signup");
+    expect(otp).not.toContain("localStorage.setItem");
+  });
+
+  it("keeps provider VERIFIED evidence external and never fabricates it from a checkbox", () => {
+    const start = read("app/api/connections/start/route.ts");
+    const readiness = read("lib/connections/deployment-readiness.ts");
+    const board = read("components/accounts/real-accounts-board.tsx");
+    expect(start).toContain("providerConfigurationReady");
+    expect(start).toContain('workspace.role !== "owner"');
+    expect(start).toContain("providerSecrets(platform)");
+    expect(readiness).toContain("otp-template");
+    expect(readiness).toContain("{{ .Token }}");
+    expect(readiness).toContain("providerConfigurationVerified");
+    expect(readiness).not.toContain("await headers()");
+    expect(board).not.toContain("setup-actions");
+    expect(board).not.toContain("owner-attested");
+    expect(board).not.toContain("deployment_evidence");
+  });
+
+  it("shows exact owner-visible connection states and never hides disabled reasons", () => {
+    const board = read("components/accounts/real-accounts-board.tsx");
+    const readiness = read("lib/connections/readiness.ts");
+    for (const state of [
+      "Sign in required",
+      "Email confirmation required",
+      "Workspace setup required",
+      "Owner authorization required",
+      "Credentials missing",
+      "Provider configuration incomplete",
+      "Ready to connect",
+      "Connecting",
+      "Connected",
+      "Connection failed",
+      "Reauthorization required",
+    ]) {
+      expect(readiness).toContain(state);
+    }
+    expect(board).toContain("Open provider dashboard");
+    expect(board).toContain("Exact provider redirect URI");
+    expect(board).toContain("disabled={!selectedCard?.canStart || pending}");
+    expect(board).toContain("data-testid={`connect-${card.platform}`}");
   });
 });

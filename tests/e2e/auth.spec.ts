@@ -9,7 +9,7 @@ test("unconfigured local auth stays honest and account controls do not fake a se
   await page.goto("/sign-in");
   await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
   await expect(
-    page.getByText("Custom SMTP delivery is owner-verified", { exact: false }),
+    page.getByText("Custom SMTP delivery still requires owner verification", { exact: false }),
   ).toBeVisible();
   await page.getByLabel("Email address").fill("not-an-email");
   await page.getByLabel("Password", { exact: true }).fill("synthetic-test-password");
@@ -27,7 +27,7 @@ test("unconfigured local auth stays honest and account controls do not fake a se
   await expect(page.getByRole("button", { name: "Sign out" })).toHaveCount(0);
 });
 
-test("owner-requested login/signup aliases and confirmation recovery render real auth @e2e", async ({
+test("owner-requested login/signup aliases and numeric OTP verification render real auth @e2e", async ({
   page,
 }) => {
   await page.goto("/login");
@@ -39,8 +39,12 @@ test("owner-requested login/signup aliases and confirmation recovery render real
   await expect(page.getByRole("heading", { name: "Create your creator account" })).toBeVisible();
   await expect(page.getByTestId("preview-access-note")).toBeVisible();
   await page.goto("/auth/verify-email");
-  await expect(page.getByRole("heading", { name: "Confirm your email" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Resend confirmation email" })).toBeDisabled();
+  await expect(page.getByRole("heading", { name: "Verify your email" })).toBeVisible();
+  await expect(page.getByTestId("otp-form")).toBeVisible();
+  await expect(page.getByTestId("preview-access-note")).toBeVisible();
+  await expect(page.locator('[data-testid^="otp-digit-"]')).toHaveCount(6);
+  await expect(page.getByRole("button", { name: "Resend code" })).toBeDisabled();
+  await expect(page.getByTestId("otp-cooldown")).toContainText("Resend available in 60 seconds");
   await expect(
     page.getByText("Authentication is not configured in this local preview").first(),
   ).toBeVisible();
@@ -53,7 +57,53 @@ test("owner-requested login/signup aliases and confirmation recovery render real
   ).toBeVisible();
 });
 
-test("auth callback rejects an unsafe next target and expired code @e2e", async ({ page }) => {
+test("six-digit OTP entry supports paste and backspace without storing a code @e2e", async ({
+  page,
+}) => {
+  await page.goto("/auth/verify-email");
+  const inputs = page.locator('[data-testid^="otp-digit-"]');
+  await expect(inputs).toHaveCount(6);
+  // The local preview has no Supabase public config, so the controls are disabled
+  // with an exact reason. Programmatic events still exercise the client handlers.
+  await expect(
+    page.getByText("Authentication is not configured in this local preview").first(),
+  ).toBeVisible();
+  await page.evaluate(() => {
+    const target = document.querySelector(".otp-inputs");
+    if (!target) throw new Error("OTP group missing");
+    const data = new DataTransfer();
+    data.setData("text/plain", "123456");
+    target.dispatchEvent(
+      new ClipboardEvent("paste", {
+        clipboardData: data,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  });
+  for (const [index, digit] of ["1", "2", "3", "4", "5", "6"].entries()) {
+    await expect(inputs.nth(index)).toHaveValue(digit);
+  }
+  await expect(page.locator('input[name="token"]')).toHaveValue("123456");
+  await page.evaluate(() => {
+    const second = document.querySelector('[data-testid="otp-digit-2"]');
+    if (!second) throw new Error("Second OTP input missing");
+    second.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Backspace", bubbles: true, cancelable: true }),
+    );
+  });
+  await expect(page.locator('input[name="token"]')).toHaveValue("13456");
+  await expect(page.getByText("Codes are never stored by Up17", { exact: false })).toBeVisible();
+});
+
+test("legacy signup confirmation links are rejected and unsafe next targets stay internal @e2e", async ({
+  page,
+}) => {
+  await page.goto(
+    "/auth/confirm?token_hash=synthetic-test-hash&type=signup&next=https://evil.invalid",
+  );
+  await expect(page).toHaveURL(/\/sign-in\?error=expired-link$/);
+  await expect(page.locator('p[role="alert"]')).toContainText("invalid or expired");
   await page.goto("/auth/callback?code=synthetic-test-code&next=https://evil.invalid");
   await expect(page).toHaveURL(/\/sign-in\?error=expired-link$/);
   await expect(page.locator('p[role="alert"]')).toContainText("invalid or expired");
@@ -81,7 +131,7 @@ test("session-bearing navigation is not publicly cacheable @e2e", async ({ reque
   expect(response.headers()["cache-control"]).toContain("no-store");
 });
 
-for (const route of ["/sign-in", "/sign-up", "/reset-password"]) {
+for (const route of ["/sign-in", "/sign-up", "/reset-password", "/auth/verify-email"]) {
   test(`${route} passes axe @a11y`, async ({ page }) => {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

@@ -5,15 +5,17 @@ import { providerRequirements, type ProviderRequirement } from "./provider-requi
 export const connectionStatuses = [
   "Not configured",
   "Sign in required",
+  "Email confirmation required",
   "Workspace setup required",
-  "Provider credentials missing",
+  "Owner authorization required",
+  "Credentials missing",
   "Provider configuration incomplete",
   "Encryption keyring missing",
-  "Ready",
-  "Connection in progress",
+  "Ready to connect",
+  "Connecting",
   "Connected",
   "Limited permissions",
-  "Failed",
+  "Connection failed",
   "Reauthorization required",
   "Error",
 ] as const;
@@ -92,9 +94,14 @@ export function applyDeploymentEvidence(
 
 export interface DeploymentReadiness {
   demoMode: boolean;
+  /** Any Supabase Auth session, confirmed or not. */
   authenticated: boolean;
+  /** The session's email is confirmed with Supabase Auth. */
+  emailConfirmed: boolean;
   workspaceReady: boolean;
   canManage: boolean;
+  /** Server-recognized workspace role; null until a workspace exists. */
+  role: string | null;
   publicSupabaseConfigured: boolean;
   exactSiteUrlConfigured: boolean;
   serverKeyConfigured: boolean;
@@ -144,15 +151,17 @@ export const providerSetupNames: Record<ConnectionPlatform, readonly string[]> =
 export const statusTone: Record<ConnectionStatus, StatusTone> = {
   "Not configured": "danger",
   "Sign in required": "warning",
+  "Email confirmation required": "warning",
   "Workspace setup required": "warning",
-  "Provider credentials missing": "warning",
+  "Owner authorization required": "warning",
+  "Credentials missing": "warning",
   "Provider configuration incomplete": "warning",
   "Encryption keyring missing": "warning",
-  Ready: "success",
-  "Connection in progress": "neutral",
+  "Ready to connect": "success",
+  Connecting: "neutral",
   Connected: "success",
   "Limited permissions": "warning",
-  Failed: "danger",
+  "Connection failed": "danger",
   "Reauthorization required": "warning",
   Error: "danger",
 };
@@ -161,24 +170,28 @@ const statusDescriptions: Record<ConnectionStatus, string> = {
   "Not configured":
     "Deployment setup is incomplete: the public Supabase URL/key, exact site URL, server-only key or callback bridge is missing. Complete the deployment checklist below.",
   "Sign in required":
-    "Sign in with a confirmed email. Sign up, open the confirmation link in this browser, and finish verified workspace onboarding.",
+    "Sign in with your Up17 email and password. New signups use a six-digit numeric email code, not a confirmation link.",
+  "Email confirmation required":
+    "Enter the six-digit numeric code Supabase sent to your email. Up17 does not create a workspace or allow connections until Supabase confirms the address.",
   "Workspace setup required":
-    "Finish verified onboarding to create your first owner workspace, or ask an existing owner/admin for an invitation. Viewer and editor roles cannot manage connections.",
-  "Provider credentials missing":
-    "The provider app credentials are absent from this deployment's server-only environment.",
+    "Finish verified onboarding to create your first owner workspace, or ask an existing owner/admin for an invitation.",
+  "Owner authorization required":
+    "Your workspace role is not owner/admin. Only owner/admin roles can start, refresh, health-check or disconnect real provider connections. Viewer and editor roles cannot manage connections.",
+  "Credentials missing":
+    "The provider app credentials are absent from this deployment's server-only environment. Add them in Vercel Preview; never paste values into chat or Git.",
   "Provider configuration incomplete":
-    "External provider app setup, exact redirect URI registration, consent/review and account eligibility are not evidence-verified. Complete the exact owner actions listed on this card.",
+    "External provider app setup, exact redirect URI registration, consent/review and account eligibility are not evidence-verified. Complete the exact owner actions listed on this card and record timestamped VERIFIED evidence from genuine provider-side checks; no checkbox or self-attestation can start real OAuth.",
   "Encryption keyring missing":
     "The server-side AES-256-GCM keyring is absent or invalid. Tokens cannot be encrypted until the owner configures it in Vercel.",
-  Ready:
-    "Ready to start official provider authorization. You will be sent to the provider's own page; only foundation read-only/identity scopes are requested and publishing remains disabled.",
-  "Connection in progress":
+  "Ready to connect":
+    "Server-side gates and timestamped VERIFIED external setup evidence are recorded. This starts real official provider authorization; only foundation read-only/identity scopes are requested and publishing remains disabled.",
+  Connecting:
     "Authorization has started but no provider identity is stored. Finish consent in the provider window, or dismiss this state and start again.",
   Connected:
     "A real identity is connected for the read-only foundation. Credentials stay encrypted server-side; publishing permissions were not requested and publishing remains disabled.",
   "Limited permissions":
     "The stored account is missing foundation scopes. Reconnect to request the reviewed minimum permissions again.",
-  Failed:
+  "Connection failed":
     "The stored connection has an error. Check the last error code, fix the provider setup and reconnect; no connection is invented.",
   "Reauthorization required":
     "The stored account needs fresh official authorization. Reconnect to continue.",
@@ -194,11 +207,11 @@ function storedStatus(connection: RealConnection | null): ConnectionStatus | nul
     case "limited_permissions":
       return "Limited permissions";
     case "pending":
-      return "Connection in progress";
+      return "Connecting";
     case "needs_authorisation":
       return "Reauthorization required";
     case "error":
-      return "Failed";
+      return "Connection failed";
     case "disconnected":
       return null;
     default:
@@ -217,9 +230,11 @@ function firstBlocker(
   )
     return "Not configured";
   if (!readiness.authenticated) return "Sign in required";
-  if (!readiness.workspaceReady || !readiness.canManage) return "Workspace setup required";
+  if (!readiness.emailConfirmed) return "Email confirmation required";
+  if (!readiness.workspaceReady) return "Workspace setup required";
+  if (!readiness.canManage) return "Owner authorization required";
   if (readiness.connectionReadError) return "Error";
-  if (!readiness.providerCredentials[platform]) return "Provider credentials missing";
+  if (!readiness.providerCredentials[platform]) return "Credentials missing";
   if (!readiness.keyringConfigured) return "Encryption keyring missing";
   if (!readiness.providerConfigurationVerified[platform])
     return "Provider configuration incomplete";
@@ -240,7 +255,7 @@ function describe(
   >,
 ): string {
   const base = statusDescriptions[status];
-  if (status === "Provider credentials missing") {
+  if (status === "Credentials missing") {
     const redirect =
       card.externalCallbackUrl ?? `the external callback bridge for ${card.callbackPath}`;
     return `${base} Add ${providerSetupNames[card.platform].join(", ")} in Vercel. Register ${redirect} as the exact redirect URI at ${card.providerDashboard}.`;
@@ -251,6 +266,10 @@ function describe(
   }
   if (status === "Workspace setup required")
     return `${base} Only owner/admin roles can connect, refresh or disconnect accounts.`;
+  if (status === "Owner authorization required")
+    return `${base} Ask an existing owner/admin for an invitation; do not grant privileges from the browser.`;
+  if (status === "Email confirmation required")
+    return `${base} Use the resend control on the verification page if the code expired.`;
   if (status === "Sign in required")
     return `${base} Email delivery is managed by Supabase; custom SMTP must be owner-verified before broad rollout.`;
   return base;
@@ -267,7 +286,7 @@ export function buildProviderCards(
       connections.find((item) => item.platform === platform && item.state !== "disconnected") ??
       null;
     const blocker = firstBlocker(readiness, platform);
-    const status = storedStatus(connection) ?? blocker ?? "Ready";
+    const status = storedStatus(connection) ?? blocker ?? "Ready to connect";
     const missing = readiness.checks.filter(
       (check) =>
         (check.platforms === undefined || check.platforms.includes(platform)) &&

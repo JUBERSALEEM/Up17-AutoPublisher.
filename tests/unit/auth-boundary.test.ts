@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { safeNext, sameOrigin } from "@/lib/auth/redirects";
-import { signInSchema, signUpSchema, passwordSchema } from "@/lib/auth/schema";
+import { signInSchema, signUpSchema, passwordSchema, otpSchema } from "@/lib/auth/schema";
 
 describe("auth redirect and input boundary", () => {
   it.each([
@@ -64,5 +64,22 @@ describe("auth redirect and input boundary", () => {
     ).toBe(false);
     expect(passwordSchema.safeParse("a".repeat(12)).success).toBe(true);
     expect(passwordSchema.safeParse("a".repeat(129)).success).toBe(false);
+  });
+  it("accepts only an official six-digit numeric OTP and a normalized email", () => {
+    const valid = otpSchema.safeParse({ email: " Owner@Example.invalid ", token: " 123456 " });
+    expect(valid.success).toBe(true);
+    if (valid.success) {
+      expect(valid.data.email).toBe("owner@example.invalid");
+      expect(valid.data.token).toBe("123456");
+    }
+    expect(otpSchema.safeParse({ email: "owner@example.invalid", token: "12345" }).success).toBe(
+      false,
+    );
+    expect(otpSchema.safeParse({ email: "owner@example.invalid", token: "1234567" }).success).toBe(
+      false,
+    );
+    expect(otpSchema.safeParse({ email: "owner@example.invalid", token: "12a456" }).success).toBe(
+      false,
+    );
   });
 });
