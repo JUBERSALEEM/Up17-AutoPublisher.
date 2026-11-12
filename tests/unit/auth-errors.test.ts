@@ -62,6 +62,41 @@ describe("safe authentication failures", () => {
     expect(rendered).toContain("a safe fallback.");
   });
 
+  it("classifies a GoTrue 500 confirmation-email handover even when its code is missing", () => {
+    const state = authFailure(
+      { status: 500, message: "Error sending confirmation email" },
+      "A safe fallback.",
+      "aa942f791f0f",
+    );
+    expect(state.message).toContain("could not send the verification email");
+    expect(state.reference).toBe("aa942f791f0f");
+    expect(state.diagnostic).toMatchObject({
+      layer: "supabase-auth",
+      category: "verification-email",
+      code: "redacted",
+      status: 500,
+    });
+    expect(JSON.stringify(state)).not.toContain("Error sending confirmation email");
+  });
+
+  it("classifies the documented unexpected_failure email-send response without leaking its message", () => {
+    const state = authFailure(
+      {
+        code: "unexpected_failure",
+        status: 500,
+        message: "Error sending confirmation email; SMTP 535 synthetic-test-refusal",
+      },
+      "A safe fallback.",
+    );
+    expect(state.message).toContain("could not send the verification email");
+    expect(state.diagnostic).toMatchObject({
+      category: "verification-email",
+      code: "unexpected_failure",
+      status: 500,
+    });
+    expect(JSON.stringify(state).toLowerCase()).not.toContain("synthetic-test-refusal");
+  });
+
   it("redacts existence-revealing codes from the owner-facing diagnostic", () => {
     expect(
       authFailure({ code: "user_already_exists", status: 422 }, "fallback").diagnostic,

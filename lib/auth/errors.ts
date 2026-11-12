@@ -43,15 +43,22 @@ const EMAIL_DELIVERY_CODES = ["email_send_failed", "email_address_not_authorized
 const EMAIL_DELIVERY_MESSAGE =
   "We could not send the verification email. This is not caused by the details you entered. Please try again in a few minutes; if it continues, contact support.";
 
-/** GoTrue returns a generic 500 for a refused confirmation-email handover. */
+const EMAIL_HANDOVER_MESSAGE =
+  /sending (confirmation|verification|recovery|magic link|invite) email/i;
+
+/**
+ * GoTrue v2.197.0 returns a generic 500 for a refused confirmation-email
+ * handover. The public response normally carries `unexpected_failure`, but some
+ * provider/proxy paths omit the code while retaining the safe status and email
+ * wording. Classification uses the raw provider message internally only; it is
+ * never returned, logged or shown to the user.
+ */
 function isEmailDeliveryFailure(error: AuthFailureLike | null): boolean {
   const code = error?.code ?? "";
   if (EMAIL_DELIVERY_CODES.includes(code)) return true;
-  return (
-    code === "unexpected_failure" &&
-    typeof error?.message === "string" &&
-    /sending (confirmation|verification|recovery|magic link|invite) email/i.test(error.message)
-  );
+  if (typeof error?.message !== "string" || !EMAIL_HANDOVER_MESSAGE.test(error.message))
+    return false;
+  return code === "unexpected_failure" || (!code && error.status === 500);
 }
 
 interface FailureClassification {

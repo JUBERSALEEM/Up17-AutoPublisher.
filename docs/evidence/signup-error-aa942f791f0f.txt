@@ -1,0 +1,79 @@
+Up17 AutoPublisher — critical signup failure: reference aa942f791f0f
+Date: 2026-11-12 UTC
+
+Owner-reported diagnostic:
+- Error reference: aa942f791f0f
+- Layer: supabase-auth
+- Category: provider-error
+- HTTP status: 500
+- Code: redacted
+- Affected deployment: dpl_CKrQk1mFmKyJss8ovdqS97L4sMMQ
+- Affected commit: c7d5d40df55a68b271c15f9d7cbcc9994a62fc3f
+- Affected immutable URL: https://autopublisher-n3i2ud9vl-auto-uploader.vercel.app
+- Supabase project: hxgokimjdormlktxjsbg
+
+Deployment currency verified at 2026-11-12 07:46:46 UTC:
+- Local Git HEAD, remote branch HEAD and Vercel gitSource.sha are all c7d5d40df55a68b271c15f9d7cbcc9994a62fc3f.
+- list_deployments ranks dpl_CKrQk1mFmKyJss8ovdqS97L4sMMQ as the newest deployment.
+- get_deployment reports READY, STAGED, public=false, aliasAssigned=true, Vercel SSO/OIDC preview claims, Node 22.x, Next 16.4.5/Turbopack.
+- Deployment created 07:37:29.865 UTC, READY 07:38:14.012 UTC, Build Completed 07:38:09.288 UTC, build cache uploaded 07:38:29.689 UTC.
+- Anonymous /login still receives the Vercel SSO page.
+
+A. Root cause
+- Exact provider-side rejection: UNAVAILABLE. Vercel Runtime Logs and Supabase Auth/GoTrue/Postgres/SMTP logs are not exposed by the enabled connectors. Direct dashboard fetches require owner authentication. The exact signup attempt timestamp, correlated request/trace id, raw GoTrue response body and SMTP reply are therefore UNKNOWN.
+- Exact actionable configuration defect identified from live Supabase Auth config at 2026-11-12 07:47 UTC: custom SMTP uses smtp.gmail.com on port 587 with STARTTLS/TLS, a full Gmail address as username, and a 64-character hexadecimal SMTP credential. Google documents Gmail app passwords as 16-digit passcodes (https://support.google.com/mail/answer/185833?hl=en) and smtp.gmail.com port 587 for TLS (https://support.google.com/a/answer/176600?hl=en). A 64-character hexadecimal value is not a Gmail app password. The credential value is withheld and was not copied into Git, docs or chat.
+- Safe provider response observed by the owner is HTTP 500, layer supabase-auth, category provider-error, code redacted. GoTrue v2.197.0 source (https://raw.githubusercontent.com/supabase/auth/v2.197.0/internal/api/mail.go) maps a refused confirmation-email handover to NewInternalServerError("Error sending confirmation email") inside the signup transaction. The app's earlier classification required error_code=unexpected_failure; a provider/proxy response that omits that code while retaining status 500 falls through to provider-error. The project-specific raw code remains unavailable; unexpected_failure is not claimed as project evidence.
+- Alternative causes ruled out by direct evidence, not by assumption: disable_signup=false, external_email_enabled=true, mailer_autoconfirm=false, mailer_otp_length=6, mailer_otp_exp=3600, audit_log_disable_postgres=true, hooks/captcha/external providers disabled. The custom confirmation template contains {{ .Token }} and valid HTML; signUp() supplies no redirect target, so the moving branch alias in site_url/uri_allow_list is not used for this request. The database trigger is SECURITY DEFINER owned by postgres, inserts only into profiles with on conflict do nothing, and is safe; GoTrue source rolls back the whole signup transaction when confirmation-email send fails, explaining zero committed rows. No application exception is indicated by the owner's supabase-auth layer/status.
+- Database/state evidence at 2026-11-12 07:48:25.51217 UTC: users_after_deploy=0, flow_states_after_deploy=0, one_time_tokens_after_deploy=0, refresh_tokens_after_deploy=0, sessions_after_deploy=0, audit_entries_after_deploy=0, net_http_responses_after_deploy=0. Historical totals remain users=1, flow_states=1, audit_entries=0. No row contains aa942f791f0f. auth/db/rest/storage are ACTIVE_HEALTHY; GoTrue v2.197.0.
+- Why earlier fixes did not resolve it: commit 5e70b636 added structured diagnostics and classification; commit c7d5d40 propagated the reference and exposed a whitelisted UI summary. Neither changed the hosted SMTP credential. GoTrue still fails at the confirmation-email handover, so signup still returns HTTP 500. This is not an app-side correlation or DB-trigger defect.
+
+B. Correction
+- lib/auth/errors.ts: isEmailDeliveryFailure() now classifies GoTrue's 500 confirmation-email handover when the provider code is absent but the safe status/message pattern indicates a refused email send. Raw provider text is used only for internal classification and is never returned, logged or displayed.
+- tests/unit/auth-errors.test.ts: regression tests cover a 500 with missing code and the documented unexpected_failure email-send response; both assert the safe verification-email message, whitelisted diagnostic, reference preservation and exclusion of raw SMTP/provider text.
+- docs/CORE_STABILITY_REPORT.md, docs/evidence/core-stability-validation.txt and this file: focused audit and acceptance table.
+- Database changes: NONE. Configuration changes made by the agent: NONE. No SMTP credential, Auth setting, OTP setting, environment value, RLS policy, trigger, migration, SSO setting, Production setting, storage policy, OAuth setting or publishing setting was changed. The enabled Supabase connector has no tool to replace the SMTP credential; update_auth_config does not expose SMTP fields.
+- Required owner-controlled configuration correction: in Supabase Authentication SMTP settings, replace the custom SMTP credential with a freshly generated 16-digit Google app password for the configured Gmail account (2-Step Verification enabled), remove display spaces, keep smtp.gmail.com, port 587, TLS/STARTTLS, the full Gmail username and the existing sender name; or switch to a separately verified transactional provider. Do not send the password, bearer token or secret to chat or Git.
+
+C. Validation
+Local automated gates after the code and test changes (2026-11-12 07:56–08:10 UTC):
+- npm run format: PASS. npm run check: PASS, check_exit=0.
+- Unit: 16 files / 107 tests PASS. Integration: 2 files / 16 tests PASS. TypeScript security: 2 files / 8 tests PASS. Python documentation validator: 48 tests PASS. Strict docs/traceability/link/credential-boundary checks PASS.
+- Production build: 27/27 static pages, 28 routes including /sign-up, /auth/verify-email, /auth/confirm, /auth/callback, /auth/update-password, /api/media/access, /api/cron/connections and Proxy.
+- Browser suites with pinned Chromium: E2E 129/129, visual 154/154, axe 86/86, clay 62/62, dev navigation 13/13. tsconfig.json and next-env.d.ts restored after dev navigation. Log names: /tmp/up17-aa94-check.log, /tmp/up17-aa94-e2e.log, /tmp/up17-aa94-visual.log, /tmp/up17-aa94-a11y.log, /tmp/up17-aa94-clay.log, /tmp/up17-aa94-navigation-dev.log.
+- These are local gates only. No hosted signup success is claimed.
+
+Hosted acceptance table (PASS / FAIL / NOT TESTED):
+- New email signup: FAIL — owner-reported HTTP 500 / provider-error / aa942f791f0f on c7d5d40.
+- Confirmation email actually delivered: NOT TESTED.
+- Six-digit OTP successfully verifies: NOT TESTED.
+- Invalid OTP rejected: NOT TESTED.
+- Expired OTP rejected; resend available: NOT TESTED.
+- Resend cooldown enforced: NOT TESTED.
+- Duplicate registration safe response: NOT TESTED.
+- Sign-in before verification requires verification: NOT TESTED.
+- Sign-in after verification successful: NOT TESTED.
+- Password recovery works independently: NOT TESTED.
+- Profile creation correct: NOT TESTED.
+- Workspace creation correct: NOT TESTED.
+- Workspace isolation enforced: NOT TESTED.
+- Existing owner access preserved: NOT TESTED.
+- Navigation all routes work: local PASS / hosted NOT TESTED.
+- Mobile 320px no horizontal overflow: local PASS / hosted NOT TESTED.
+- Six-digit numeric OTP, verifyOtp({type:"signup"}), email confirmation required, mailer_autoconfirm=false, resend cooldown, recovery separation, duplicate non-enumeration and verified-user workspace lifecycle: code/config PASS; hosted behavior NOT TESTED.
+- RLS, private storage, Vercel SSO, private Preview, Production isolation and publishing lock: configuration/inspection PASS; hosted acceptance NOT TESTED.
+
+D. Deployment
+- Affected deployment: c7d5d40df55a68b271c15f9d7cbcc9994a62fc3f / dpl_CKrQk1mFmKyJss8ovdqS97L4sMMQ / https://autopublisher-n3i2ud9vl-auto-uploader.vercel.app.
+- Final correction commit SHA, fresh deployment ID and immutable Preview URL are recorded in evidence/final-delivery-aa942f791f0f.txt and the final user-facing delivery record. A committed document cannot contain its own commit SHA; the final deployment must be verified from Git HEAD and Vercel gitSource.sha.
+- Required deployment verification: READY, STAGED, public=false, exact deployed SHA, required routes/API functions in build. No Production promotion.
+
+E. Security
+- RLS remains enabled on all public tables; function/trigger definitions, 11 applied migrations, one-owner data, private creator-media bucket and publishing lock are unchanged.
+- Vercel SSO, private Preview, private storage, six-digit email OTP, verifyOtp({type:"signup"}), email confirmation, mailer_autoconfirm=false, resend cooldown, recovery separation, duplicate non-enumeration and strict provider evidence gate remain intact.
+- Production, social OAuth, publishing settings, SMTP settings, Auth settings, environment values and database policies were not changed by the agent. No autoconfirm, verification bypass, service-role bypass, fake user, fake OTP, fabricated delivery, bearer URL or secret exposure was used.
+
+F. Remaining blockers
+- Exact Gmail SMTP reply (for example 535/534), GoTrue internal error code, request/trace id and signup attempt timestamp remain UNAVAILABLE because owner-authenticated Vercel Runtime Logs and Supabase Auth/Postgres/SMTP logs are outside the connector tool set.
+- Required owner action: replace the invalid custom SMTP credential in the Supabase dashboard as described in B, without sharing it. Then perform one real owner-controlled signup on the final immutable Preview after Vercel SSO, using /sign-up, a real new address and a 12–128 character password.
+- For that retry, capture the new Error reference and Safe diagnostic; provide same-timestamp Vercel Runtime Logs filtered for up17.auth.diagnostic and x-up17-auth-reference, Supabase Auth/Postgres logs with the exact SMTP reply/code/status, and evidence of a delivered six-digit email. Continue through valid/invalid/expired OTP, resend cooldown, duplicate, sign-in before/after verification, recovery, onboarding, workspace isolation, existing owner access and hosted desktop/mobile navigation.
+- Core Stability is NOT complete. Signup is not genuinely proven. Social OAuth and publishing remain paused.
