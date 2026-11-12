@@ -18,6 +18,7 @@ import { authFailure, signupVerificationState, type SignupVerificationState } fr
 import {
   authDiagnosticReference,
   recordAuthDiagnostic,
+  safeAuthDiagnostic,
   type AuthDiagnosticStage,
 } from "./diagnostics";
 
@@ -33,8 +34,8 @@ const COOKIE_OPTIONS = {
 };
 const OTP_COOKIE_OPTIONS = { ...COOKIE_OPTIONS, maxAge: OTP_RESEND_SECONDS };
 
-async function client() {
-  const supabase = await createSupabaseServerClient();
+async function client(reference: string) {
+  const supabase = await createSupabaseServerClient(reference);
   if (!supabase) throw new Error("Authentication is not configured.");
   return supabase;
 }
@@ -46,7 +47,13 @@ const SIGNUP_NO_CODE_MESSAGE =
   "We could not start email verification for this address. If it is already registered, sign in or use password recovery; otherwise wait a minute and try again.";
 
 function unavailable(reference: string): AuthFormState {
-  return { status: "error", message: UNAVAILABLE_MESSAGE, action: "retry", reference };
+  return {
+    status: "error",
+    message: UNAVAILABLE_MESSAGE,
+    action: "retry",
+    reference,
+    diagnostic: safeAuthDiagnostic(null, "application-error", "application"),
+  };
 }
 
 function logAuthError(
@@ -93,7 +100,7 @@ export async function signIn(_state: AuthFormState, form: FormData): Promise<Aut
       reference,
     };
   try {
-    const { error } = await (await client()).auth.signInWithPassword(parsed.data);
+    const { error } = await (await client(reference)).auth.signInWithPassword(parsed.data);
     if (error) {
       logAuthError("sign-in", "signInWithPassword", error, reference);
       return authFailure(
@@ -126,7 +133,7 @@ export async function signUp(_state: AuthFormState, form: FormData): Promise<Aut
     };
   try {
     const { data, error } = await (
-      await client()
+      await client(reference)
     ).auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
@@ -175,7 +182,7 @@ export async function verifySignupOtp(
       reference,
     };
   try {
-    const supabase = await client();
+    const supabase = await client(reference);
     const { data, error } = await supabase.auth.verifyOtp({
       email: parsed.data.email,
       token: parsed.data.token,
@@ -240,7 +247,7 @@ export async function resendConfirmation(
   }
   try {
     const { error } = await (
-      await client()
+      await client(reference)
     ).auth.resend({
       type: "signup",
       email: parsed.data,
@@ -272,7 +279,7 @@ export async function resetPassword(_state: AuthFormState, form: FormData): Prom
     return { status: "error", message: "Enter a valid email address.", action: "retry", reference };
   try {
     const { error } = await (
-      await client()
+      await client(reference)
     ).auth.resetPasswordForEmail(parsed.data, {
       redirectTo: `${appOrigin()}/auth/callback?next=/auth/update-password`,
     });
@@ -317,7 +324,7 @@ export async function updatePassword(
     };
   let otherSessions: "revoked" | "unknown" = "unknown";
   try {
-    const supabase = await client();
+    const supabase = await client(reference);
     const { error } = await supabase.auth.updateUser({ password: parsed.data });
     if (error) {
       logAuthError("update-password", "updateUser", error, reference);
@@ -337,7 +344,7 @@ export async function updatePassword(
 }
 
 export async function signOut() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient(authDiagnosticReference());
   if (supabase) await supabase.auth.signOut();
   const store = await cookies();
   store.set(PENDING_EMAIL_COOKIE, "", { ...COOKIE_OPTIONS, maxAge: 0 });

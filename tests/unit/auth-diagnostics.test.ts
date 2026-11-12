@@ -1,7 +1,12 @@
 import type { ReactElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { authFailure } from "@/lib/auth/errors";
-import { authDiagnosticReference, recordAuthDiagnostic } from "@/lib/auth/diagnostics";
+import {
+  AUTH_DIAGNOSTIC_HEADER,
+  authDiagnosticHeaders,
+  authDiagnosticReference,
+  recordAuthDiagnostic,
+} from "@/lib/auth/diagnostics";
 import { AuthErrorReference } from "@/components/auth/auth-error-reference";
 
 afterEach(() => vi.restoreAllMocks());
@@ -24,8 +29,14 @@ describe("safe signup failure classification", () => {
     });
     expect(result.message).toContain("verification email");
     expect(result.message).toContain("not caused by the details");
+    expect(result.diagnostic).toMatchObject({
+      layer: "supabase-auth",
+      category: "verification-email",
+      code: "unexpected_failure",
+      status: 500,
+    });
     const rendered = JSON.stringify(result);
-    for (const forbidden of ["535", "smtp", "unexpected_failure", "Check the details"]) {
+    for (const forbidden of ["535", "smtp", "Error sending", "Check the details"]) {
       expect(rendered.toLowerCase()).not.toContain(forbidden.toLowerCase());
     }
   });
@@ -69,6 +80,7 @@ describe("structured redacted server diagnostics", () => {
       [
         "action",
         "code",
+        "deploymentId",
         "event",
         "level",
         "outcome",
@@ -88,6 +100,7 @@ describe("structured redacted server diagnostics", () => {
       code: "redacted",
       status: null,
     });
+    expect(event.deploymentId).toMatch(/^[a-z0-9_.:-]+$/);
     for (const forbidden of [
       "synthetic-test-credential",
       "synthetic-test-token",
@@ -122,6 +135,14 @@ describe("structured redacted server diagnostics", () => {
     expect(errorSpy).not.toHaveBeenCalled();
   });
 
+  it("propagates only safe correlation ids to Supabase request headers", () => {
+    expect(authDiagnosticHeaders("abc123def456")).toEqual({
+      [AUTH_DIAGNOSTIC_HEADER]: "abc123def456",
+    });
+    expect(authDiagnosticHeaders("<script>")).toEqual({});
+    expect(authDiagnosticHeaders(undefined)).toEqual({});
+  });
+
   it("produces short, safe correlation ids and rejects unsafe UI references", () => {
     const reference = authDiagnosticReference();
     expect(reference).toMatch(/^[a-z0-9]{12}$/);
@@ -132,5 +153,24 @@ describe("structured redacted server diagnostics", () => {
     expect(JSON.stringify(element?.props)).toContain("Error reference");
     expect(AuthErrorReference({ reference: "<script>" })).toBeNull();
     expect(AuthErrorReference({ reference: undefined })).toBeNull();
+  });
+
+  it("renders a whitelisted safe diagnostic without a raw provider message", () => {
+    const reference = "abc123def456";
+    const diagnostic = {
+      layer: "supabase-auth" as const,
+      category: "provider-error" as const,
+      code: "unexpected_failure",
+      status: 500,
+    };
+    const element = AuthErrorReference({ reference, diagnostic }) as ReactElement | null;
+    expect(element).not.toBeNull();
+    const props = JSON.stringify(element?.props ?? {});
+    expect(props).toContain("Safe diagnostic");
+    expect(props).toContain("provider-error");
+    expect(props).toContain("unexpected_failure");
+    expect(props).not.toContain("smtp");
+    expect(props).not.toContain("535");
+    expect(AuthErrorReference({ reference: "<script>", diagnostic })).not.toBeNull();
   });
 });

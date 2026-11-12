@@ -107,7 +107,7 @@ export function AuthForm({
             ) : null}
           </p>
         ) : null}
-        <AuthErrorReference reference={state.reference} />
+        <AuthErrorReference reference={state.reference} diagnostic={state.diagnostic} />
         {state.status !== "success" ? (
           <form action={submit} className="stack">
             <input type="hidden" name="next" value={next} />

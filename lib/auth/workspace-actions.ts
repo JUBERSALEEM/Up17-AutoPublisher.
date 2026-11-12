@@ -46,7 +46,7 @@ export async function bootstrapFirstWorkspace(): Promise<BootstrapResult> {
       message: "Sign in with a confirmed email before creating a private workspace.",
     };
   try {
-    const client = await createSupabaseServerClient();
+    const client = await createSupabaseServerClient(reference);
     if (!client) {
       recordAuthDiagnostic({
         stage: "bootstrap-workspace",

@@ -20,11 +20,40 @@ export const otpSchema = z.object({
     .trim()
     .regex(/^\d{6}$/, "Enter the six-digit code."),
 });
+
+export type AuthDiagnosticLayer = "supabase-auth" | "application" | "configuration";
+export type AuthDiagnosticCategory =
+  | "rate-limit"
+  | "expired-code"
+  | "verification-required"
+  | "duplicate-or-existing"
+  | "weak-password"
+  | "invalid-credentials"
+  | "session-expired"
+  | "signup-disabled"
+  | "invalid-email"
+  | "captcha"
+  | "validation"
+  | "verification-email"
+  | "provider-error"
+  | "application-error"
+  | "configuration";
+
+/** Whitelisted, non-secret diagnostic fields that may be shown beside an error reference. */
+export type AuthDiagnosticSummary = {
+  layer: AuthDiagnosticLayer;
+  category: AuthDiagnosticCategory;
+  code: string;
+  status: number | null;
+};
+
 export type AuthFormState = {
   status: "idle" | "error" | "success";
   message: string;
   action?: "sign-in" | "resend" | "verify-code" | "retry";
   /** Short redacted server-log correlation id; never an email, OTP or token. */
   reference?: string;
+  /** Safe provider code/status/category only; never a raw provider message. */
+  diagnostic?: AuthDiagnosticSummary;
 };
 export const initialAuthState: AuthFormState = { status: "idle", message: "" };

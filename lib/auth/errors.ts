@@ -1,6 +1,7 @@
-import type { AuthFormState } from "./schema";
+import { safeAuthDiagnostic } from "./diagnostics";
+import type { AuthDiagnosticCategory, AuthFormState } from "./schema";
 
-/** Only the safe, documented Supabase Auth code is used to choose a public message. */
+/** Only safe, documented Supabase Auth metadata is used to choose a public message. */
 export interface AuthFailureLike {
   code?: string;
   status?: number;
@@ -53,77 +54,110 @@ function isEmailDeliveryFailure(error: AuthFailureLike | null): boolean {
   );
 }
 
-function result(
-  message: string,
-  action: AuthFormState["action"] = "retry",
-  reference?: string,
-): AuthFormState {
-  return {
-    status: "error",
-    message,
-    action,
-    ...(reference ? { reference } : {}),
-  };
+interface FailureClassification {
+  message: string;
+  action: NonNullable<AuthFormState["action"]>;
+  category: AuthDiagnosticCategory;
+}
+
+/** Convert an Auth error into a safe message and a whitelisted diagnostic category. */
+function classify(error: AuthFailureLike | null, fallback: string): FailureClassification {
+  const code = error?.code ?? "";
+  if (RATE_LIMIT_CODES.some((candidate) => code.includes(candidate)))
+    return {
+      message: "Too many requests. Wait a few minutes before trying again.",
+      action: "retry",
+      category: "rate-limit",
+    };
+  if (EXPIRED_CODES.some((candidate) => code.includes(candidate)))
+    return {
+      message: "That code is invalid or has expired. Request a fresh six-digit code.",
+      action: "resend",
+      category: "expired-code",
+    };
+  if (code === "email_not_confirmed")
+    return {
+      message: "Enter the six-digit code sent to your email, then sign in.",
+      action: "verify-code",
+      category: "verification-required",
+    };
+  if (DUPLICATE_CODES.includes(code))
+    return {
+      message:
+        "This address may already be registered. Sign in or use password recovery if you have forgotten it.",
+      action: "sign-in",
+      category: "duplicate-or-existing",
+    };
+  if (WEAK_PASSWORD_CODES.includes(code))
+    return {
+      message:
+        "Choose a stronger, different password of 12–128 characters that you have not reused.",
+      action: "retry",
+      category: "weak-password",
+    };
+  if (INVALID_CREDENTIAL_CODES.includes(code))
+    return {
+      message: "Email or password not recognised.",
+      action: "retry",
+      category: "invalid-credentials",
+    };
+  if (SESSION_EXPIRED_CODES.some((candidate) => code.includes(candidate)))
+    return {
+      message: "Your session expired. Sign in again.",
+      action: "sign-in",
+      category: "session-expired",
+    };
+  if (SIGNUP_DISABLED_CODES.includes(code))
+    return {
+      message: "New account creation is unavailable right now. Try again later.",
+      action: "retry",
+      category: "signup-disabled",
+    };
+  if (INVALID_EMAIL_CODES.includes(code))
+    return {
+      message: "Enter a valid email address that can receive the verification code.",
+      action: "retry",
+      category: "invalid-email",
+    };
+  if (code === "captcha_failed")
+    return {
+      message: "The verification check did not complete. Try again.",
+      action: "retry",
+      category: "captcha",
+    };
+  if (code === "validation_failed")
+    return {
+      message: "Check the details you entered and try again.",
+      action: "retry",
+      category: "validation",
+    };
+  if (isEmailDeliveryFailure(error))
+    return {
+      message: EMAIL_DELIVERY_MESSAGE,
+      action: "retry",
+      category: "verification-email",
+    };
+  return { message: fallback, action: "retry", category: "provider-error" };
 }
 
 /**
- * Convert Auth errors into useful, non-enumerating copy. Raw provider/SMTP/token
- * details and stack traces are intentionally never included.
+ * Convert Auth errors into useful, non-enumerating copy plus a whitelisted safe
+ * diagnostic summary. Raw provider/SMTP/token details and stack traces are
+ * intentionally never included.
  */
 export function authFailure(
   error: AuthFailureLike | null,
   fallback: string,
   reference?: string,
 ): AuthFormState {
-  const code = error?.code ?? "";
-  if (RATE_LIMIT_CODES.some((candidate) => code.includes(candidate)))
-    return result("Too many requests. Wait a few minutes before trying again.", "retry", reference);
-  if (EXPIRED_CODES.some((candidate) => code.includes(candidate)))
-    return result(
-      "That code is invalid or has expired. Request a fresh six-digit code.",
-      "resend",
-      reference,
-    );
-  if (code === "email_not_confirmed")
-    return result(
-      "Enter the six-digit code sent to your email, then sign in.",
-      "verify-code",
-      reference,
-    );
-  if (DUPLICATE_CODES.includes(code))
-    return result(
-      "This address may already be registered. Sign in or use password recovery if you have forgotten it.",
-      "sign-in",
-      reference,
-    );
-  if (WEAK_PASSWORD_CODES.includes(code))
-    return result(
-      "Choose a stronger, different password of 12–128 characters that you have not reused.",
-      "retry",
-      reference,
-    );
-  if (INVALID_CREDENTIAL_CODES.includes(code))
-    return result("Email or password not recognised.", "retry", reference);
-  if (SESSION_EXPIRED_CODES.includes(code))
-    return result("Your session expired. Sign in again.", "sign-in", reference);
-  if (SIGNUP_DISABLED_CODES.includes(code))
-    return result(
-      "New account creation is unavailable right now. Try again later.",
-      "retry",
-      reference,
-    );
-  if (INVALID_EMAIL_CODES.includes(code))
-    return result(
-      "Enter a valid email address that can receive the verification code.",
-      "retry",
-      reference,
-    );
-  if (code === "captcha_failed")
-    return result("The verification check did not complete. Try again.", "retry", reference);
-  if (code === "validation_failed")
-    return result("Check the details you entered and try again.", "retry", reference);
-  if (isEmailDeliveryFailure(error)) return result(EMAIL_DELIVERY_MESSAGE, "retry", reference);
-  return result(fallback, "retry", reference);
+  const failure = classify(error, fallback);
+  return {
+    status: "error",
+    message: failure.message,
+    action: failure.action,
+    ...(reference ? { reference } : {}),
+    diagnostic: safeAuthDiagnostic(error, failure.category),
+  };
 }
 
 /**

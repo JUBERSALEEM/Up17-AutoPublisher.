@@ -109,6 +109,14 @@ describe("server auth actions against synthetic Auth responses (not hosted deliv
     expect(result.status).toBe("error");
     expect(result.action).toBe("retry");
     expect(result.reference).toMatch(/^[a-z0-9]{12}$/);
+    // The same reference is handed to the Supabase client for request-log correlation.
+    expect(mocks.createSupabaseServerClient).toHaveBeenCalledWith(result.reference);
+    expect(result.diagnostic).toMatchObject({
+      layer: "supabase-auth",
+      category: "verification-email",
+      code: "unexpected_failure",
+      status: 500,
+    });
     expect(result.message).toContain("verification email");
     expect(result.message).toContain("not caused by the details");
     expect(mocks.redirect).not.toHaveBeenCalled();

@@ -127,6 +127,12 @@ export function OtpForm({
       : resendState.status === "error"
         ? resendState.reference
         : undefined;
+  const errorDiagnostic =
+    verifyState.status === "error"
+      ? verifyState.diagnostic
+      : resendState.status === "error"
+        ? resendState.diagnostic
+        : undefined;
 
   return (
     <div className="page auth-page">
@@ -171,7 +177,7 @@ export function OtpForm({
             {success}
           </p>
         ) : null}
-        <AuthErrorReference reference={errorReference} />
+        <AuthErrorReference reference={errorReference} diagnostic={errorDiagnostic} />
         <form action={verifyAction} className="stack">
           <input type="hidden" name="next" value={next} />
           {defaultEmail ? (

@@ -37,14 +37,45 @@ describe("safe authentication failures", () => {
     });
   });
 
-  it("never echoes the raw error code, message, status or secrets", () => {
-    const rendered = JSON.stringify(
-      authFailure({ code: "unexpected_failure", status: 500 }, "A safe fallback."),
+  it("keeps raw provider messages and secrets out of the UI state", () => {
+    const state = authFailure(
+      {
+        code: "unexpected_failure",
+        status: 500,
+        message: "535 smtp refusal; token=synthetic-test-token; password=synthetic-test-password",
+      },
+      "A safe fallback.",
     );
-    for (const value of ["unexpected_failure", "500", "smtp", "token", "password"]) {
-      expect(rendered.toLowerCase()).not.toContain(value);
+    expect(state.message).toBe("A safe fallback.");
+    expect(state.message).not.toContain("unexpected_failure");
+    // The whitelisted code/status are deliberately exposed for owner diagnosis.
+    expect(state.diagnostic).toMatchObject({
+      layer: "supabase-auth",
+      category: "provider-error",
+      code: "unexpected_failure",
+      status: 500,
+    });
+    const rendered = JSON.stringify(state).toLowerCase();
+    for (const value of ["535", "smtp", "synthetic-test-token", "synthetic-test-password"]) {
+      expect(rendered).not.toContain(value.toLowerCase());
     }
-    expect(rendered).toContain("A safe fallback.");
+    expect(rendered).toContain("a safe fallback.");
+  });
+
+  it("redacts existence-revealing codes from the owner-facing diagnostic", () => {
+    expect(
+      authFailure({ code: "user_already_exists", status: 422 }, "fallback").diagnostic,
+    ).toMatchObject({
+      category: "duplicate-or-existing",
+      code: "redacted",
+      status: 422,
+    });
+    expect(
+      authFailure({ code: "invalid_credentials", status: 400 }, "fallback").diagnostic?.code,
+    ).toBe("redacted");
+    expect(
+      authFailure({ code: "email_not_confirmed", status: 400 }, "fallback").diagnostic?.code,
+    ).toBe("redacted");
   });
 
   it("does not distinguish a missing account from wrong credentials", () => {
