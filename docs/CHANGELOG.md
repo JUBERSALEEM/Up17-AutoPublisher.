@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — first-load workspace initialization (2026-11-12)
+
+- Fixed the first-load `"Workspace setup is temporarily unavailable. Reload this page to retry."` false failure. `/onboarding` had called `bootstrapFirstWorkspace()` in a Server Component render; Next.js 16 threw when its `revalidatePath()` ran after the workspace RPC had already committed. Successful sign-in/OTP/authenticated handoffs now use a fresh `/workspace/setup` GET Route Handler that validates the confirmed session, performs the idempotent RPC in request context, reads RLS-visible workspace context and redirects without a manual refresh or automatic page refresh. `/onboarding` retains an explicit safe failure and manual Server Action retry.
+- Added deterministic regressions for the old render-phase false failure, confirmed-session-before-RPC ordering, bootstrap-before-context-read ordering, loop-safe redirects, no refresh header, and server-provided client workspace state. See [workspace first-load audit](evidence/workspace-first-load-698e4880.txt).
+- No DB migration, RLS/Auth/SMTP config change, Production change, SSO change, publishing change, fake account, OTP bypass or hidden error was introduced. Hosted fresh-signup/existing-account Preview checks require an owner-authenticated browser and remain NOT TESTED; Core Stability remains incomplete.
+
 ## Unreleased — numeric email OTP and strict external-evidence gate (2026-11-08)
 
 - Replaced signup confirmation links with the official Supabase six-digit numeric OTP flow: `signUp()` supplies no redirect target, `verifySignupOtp()` uses `verifyOtp({ type: "signup" })` and requires a confirmed session, `resendConfirmation()` uses `auth.resend({ type: "signup" })` with a 60-second HttpOnly cooldown, and `/auth/confirm` rejects legacy signup `token_hash` links. Password recovery remains a separate one-time link.

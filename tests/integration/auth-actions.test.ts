@@ -218,7 +218,9 @@ describe("server auth actions against synthetic Auth responses (not hosted deliv
     form.set("email", TEST_EMAIL);
     form.set("password", TEST_PASSWORD);
     form.set("next", "/settings");
-    await expect(signIn(initialAuthState, form)).rejects.toThrow(`${REDIRECT_MARKER}/settings`);
+    await expect(signIn(initialAuthState, form)).rejects.toThrow(
+      `${REDIRECT_MARKER}/workspace/setup?next=%2Fsettings`,
+    );
   });
 
   it("maps an expired or invalid official OTP to a resend action", async () => {
@@ -255,9 +257,9 @@ describe("server auth actions against synthetic Auth responses (not hosted deliv
     const form = new FormData();
     form.set("email", TEST_EMAIL);
     form.set("token", "123456");
-    form.set("next", "/onboarding");
+    form.set("next", "/settings");
     await expect(verifySignupOtp(initialAuthState, form)).rejects.toThrow(
-      `${REDIRECT_MARKER}/onboarding`,
+      `${REDIRECT_MARKER}/workspace/setup?next=%2Fsettings`,
     );
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/", "layout");
     expect(mocks.cookieSet.mock.calls.map(([name]) => name)).toEqual([
@@ -303,9 +305,30 @@ describe("server auth actions against synthetic Auth responses (not hosted deliv
     const client = authClient();
     mocks.createSupabaseServerClient.mockResolvedValue(client);
     const result = await bootstrapFirstWorkspace();
-    expect(result).toMatchObject({ ok: false });
+    expect(result).toMatchObject({ ok: false, reason: "auth" });
     expect(result.message).toContain("confirmed email");
     expect(client.rpc).not.toHaveBeenCalled();
+  });
+
+  it("reproduces why a committed RPC used to display the first-load setup error", async () => {
+    const client = authClient();
+    client.rpc.mockResolvedValue({ data: WORKSPACE_ID, error: null });
+    mocks.createSupabaseServerClient.mockResolvedValue(client);
+    mocks.getViewer.mockResolvedValue({
+      id: "11111111-1111-4111-8111-111111111111",
+      email: TEST_EMAIL,
+      confirmed: true,
+    });
+    // The exact Next.js 16 render-phase invariant from the old /onboarding call.
+    mocks.revalidatePath.mockImplementationOnce(() => {
+      throw new Error('revalidatePath("/") can\'t be called during render');
+    });
+    const result = await bootstrapFirstWorkspace();
+    expect(client.rpc).toHaveBeenCalledOnce();
+    expect(result).toMatchObject({ ok: false, reason: "unavailable" });
+    expect(result.message).toBe(
+      "Workspace setup is temporarily unavailable. Reload this page to retry.",
+    );
   });
 
   it("creates only the confirmed viewer's first workspace through the RPC", async () => {
@@ -319,6 +342,7 @@ describe("server auth actions against synthetic Auth responses (not hosted deliv
     });
     const result = await bootstrapFirstWorkspace();
     expect(result).toMatchObject({ ok: true, workspaceId: WORKSPACE_ID });
+    expect(result.reason).toBeUndefined();
     expect(client.rpc).toHaveBeenCalledWith("up17_ensure_first_workspace", {});
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/", "layout");
   });

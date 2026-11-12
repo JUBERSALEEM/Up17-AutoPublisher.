@@ -9,6 +9,7 @@ import { getWorkspaceContext } from "./workspace";
 import { getViewer } from "./session";
 import { defaultPreferences, timezones } from "@/features/preferences/model";
 import { authDiagnosticReference, recordAuthDiagnostic } from "./diagnostics";
+import type { WorkspaceSetupFailureReason } from "./workspace-setup";
 
 const schema = z
   .object({
@@ -30,7 +31,12 @@ const schema = z
   })
   .strict();
 export type SaveResult = { ok: boolean; message: string; revision?: number };
-export type BootstrapResult = { ok: boolean; message: string; workspaceId?: string };
+export type BootstrapResult = {
+  ok: boolean;
+  message: string;
+  workspaceId?: string;
+  reason?: WorkspaceSetupFailureReason;
+};
 
 /**
  * Secure first-workspace initialization. The RPC derives identity exclusively
@@ -43,6 +49,7 @@ export async function bootstrapFirstWorkspace(): Promise<BootstrapResult> {
   if (!viewer)
     return {
       ok: false,
+      reason: "auth",
       message: "Sign in with a confirmed email before creating a private workspace.",
     };
   try {
@@ -54,7 +61,7 @@ export async function bootstrapFirstWorkspace(): Promise<BootstrapResult> {
         outcome: "auth-unavailable",
         reference,
       });
-      return { ok: false, message: "Authentication is not configured." };
+      return { ok: false, reason: "auth", message: "Authentication is not configured." };
     }
     const { data, error } = await client.rpc("up17_ensure_first_workspace", {});
     if (error || typeof data !== "string") {
@@ -67,6 +74,7 @@ export async function bootstrapFirstWorkspace(): Promise<BootstrapResult> {
       });
       return {
         ok: false,
+        reason: "rpc",
         message:
           "Workspace setup could not finish. Reload this page to retry; no data was changed.",
       };
@@ -83,6 +91,7 @@ export async function bootstrapFirstWorkspace(): Promise<BootstrapResult> {
     });
     return {
       ok: false,
+      reason: "unavailable",
       message: "Workspace setup is temporarily unavailable. Reload this page to retry.",
     };
   }

@@ -13,6 +13,7 @@ import {
   type AuthFormState,
 } from "./schema";
 import { safeNext } from "./redirects";
+import { workspaceSetupPath } from "./workspace-setup";
 import { getViewer } from "./session";
 import { authFailure, signupVerificationState, type SignupVerificationState } from "./errors";
 import {
@@ -113,7 +114,8 @@ export async function signIn(_state: AuthFormState, form: FormData): Promise<Aut
     logUnexpected("sign-in", "signInWithPassword", error, reference);
     return unavailable(reference);
   }
-  redirect(safeNext(form.get("next")));
+  // A new request runs the idempotent setup handler with the committed cookies.
+  redirect(workspaceSetupPath(form.get("next")));
 }
 
 /**
@@ -213,7 +215,7 @@ export async function verifySignupOtp(
   store.set(PENDING_EMAIL_COOKIE, "", { ...COOKIE_OPTIONS, maxAge: 0 });
   store.set(OTP_RESEND_COOKIE, "", { ...OTP_COOKIE_OPTIONS, maxAge: 0 });
   revalidatePath("/", "layout");
-  redirect(safeNext(form.get("next")));
+  redirect(workspaceSetupPath(form.get("next")));
 }
 
 /** Resend the official numeric signup OTP. Supabase enforces expiry and rate limits. */
@@ -340,7 +342,7 @@ export async function updatePassword(
     logUnexpected("update-password", "updateUser", error, reference);
     return unavailable(reference);
   }
-  redirect(`/account?password=updated&other_sessions=${otherSessions}`);
+  redirect(workspaceSetupPath(`/account?password=updated&other_sessions=${otherSessions}`));
 }
 
 export async function signOut() {

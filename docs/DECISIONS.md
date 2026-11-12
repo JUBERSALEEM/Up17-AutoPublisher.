@@ -206,3 +206,5 @@ The current milestone runtime source commit `e4ba4bf034c49bc882233be99c51b174fc0
 - Restore the documented `/api/media/access` route instead of weakening its E2E test. Same-origin JSON, no-store and no demo signed URL remain required.
 - Compare full git history before claiming a regression: `848308f` did not change navigation utilities, proxy, service worker, PWA provider, redirects or navigation E2E tests relative to `2e9191d`; the earlier `226ae1b` fix remains intact.
 - Keep Production, Vercel SSO, RLS, private storage, the publishing lock and `UP17_APP_MODE=DEMO` unchanged. No fake users, autoconfirm, verification bypass, social OAuth, publishing permission or paid service was introduced.
+
+- First-workspace initialization is now a request-scoped `/workspace/setup` GET Route Handler after auth cookies are committed, not a mutation in a Server Component render. `/onboarding` retains an explicit safe failure and manual Server Action retry. This fixes the Next.js 16 render-phase `revalidatePath()` false failure without hiding the message or adding an automatic browser refresh. See [workspace first-load audit](evidence/workspace-first-load-698e4880.txt).

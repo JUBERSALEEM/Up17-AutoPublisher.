@@ -6,17 +6,24 @@ import { PageHeader } from "@/components/features/common";
 import { getAccountSession } from "@/lib/auth/session";
 import { getWorkspaceContext } from "@/lib/auth/workspace";
 import { bootstrapFirstWorkspace } from "@/lib/auth/workspace-actions";
-import { safeNext } from "@/lib/auth/redirects";
+import {
+  WORKSPACE_SETUP_FAILURE_MESSAGES,
+  workspaceDestination,
+  workspaceSetupFailurePath,
+  workspaceSetupFailureReason,
+  workspaceSetupPath,
+} from "@/lib/auth/workspace-setup";
 import { supabaseConfigAvailable } from "@/lib/supabase/config";
 
 export const metadata = { title: "Set up your workspace" };
 
+/** Manual retry remains a Server Action: mutations and revalidation never run during render. */
 async function retrySetup(form: FormData): Promise<void> {
   "use server";
-  const next = safeNext(form.get("next"));
+  const next = workspaceDestination(form.get("next"));
   const result = await bootstrapFirstWorkspace();
   if (result.ok) redirect(next);
-  redirect(`/onboarding?error=setup-failed&next=${encodeURIComponent(next)}`);
+  redirect(workspaceSetupFailurePath(next, workspaceSetupFailureReason(result.reason)));
 }
 
 export default async function Page({
@@ -25,7 +32,7 @@ export default async function Page({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const next = safeNext(params.next);
+  const next = workspaceDestination(params.next);
   if (!supabaseConfigAvailable())
     return (
       <div className="page">
@@ -47,14 +54,14 @@ export default async function Page({
     );
   const session = await getAccountSession();
   if (!session) redirect(`/login?next=${encodeURIComponent(next)}`);
-  if (!session.confirmed)
-    redirect(
-      `/auth/verify-email?next=${encodeURIComponent("/onboarding?next=" + encodeURIComponent(next))}`,
-    );
+  if (!session.confirmed) redirect(`/auth/verify-email?next=${encodeURIComponent(next)}`);
   const workspace = await getWorkspaceContext();
   if (workspace) redirect(next);
-  const result = await bootstrapFirstWorkspace();
-  if (result.ok) redirect(next);
+  // The setup Route Handler is the only automatic first-load entry point. It
+  // follows a committed auth session, performs the RPC in request context and
+  // redirects here only with an explicit failure reason.
+  if (params.error !== "setup-failed") redirect(workspaceSetupPath(next));
+  const reason = workspaceSetupFailureReason(params.reason);
   return (
     <div className="page">
       <PageHeader
@@ -66,12 +73,10 @@ export default async function Page({
       <Card className="settings-section">
         <CardHeader
           title="Workspace setup needs another try"
-          description="No owner role or workspace was created by the failed attempt. The verified bootstrap is idempotent and safe to retry."
+          description="The verified bootstrap is idempotent and safe to retry. It derives identity only from the confirmed session."
         />
         <p className="validation-summary" role="alert">
-          {params.error === "setup-failed"
-            ? "The previous retry did not finish. Confirm your session and try again."
-            : result.message}
+          {WORKSPACE_SETUP_FAILURE_MESSAGES[reason]}
         </p>
         <p className="muted small">
           <ShieldCheck size={15} aria-hidden="true" /> Your account id comes from the verified

@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/features/common";
 import { getWorkspaceContext } from "@/lib/auth/workspace";
 import { getAccountSession } from "@/lib/auth/session";
 import { supabaseConfigAvailable } from "@/lib/supabase/config";
+import { workspaceSetupPath } from "@/lib/auth/workspace-setup";
 import { signOut } from "@/lib/auth/actions";
 import { selectWorkspace } from "@/lib/auth/workspace-actions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -31,7 +32,7 @@ export default async function Page({
   if (!session) redirect("/login?next=/account");
   if (!session.confirmed) redirect("/auth/verify-email?next=/account");
   const workspace = await getWorkspaceContext();
-  if (!workspace) redirect("/onboarding?next=/account");
+  if (!workspace) redirect(workspaceSetupPath("/account"));
   const params = await searchParams;
   const client = await createSupabaseServerClient();
   const { data: memberships } = await client!

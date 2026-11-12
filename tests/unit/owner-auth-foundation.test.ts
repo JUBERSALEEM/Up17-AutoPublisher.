@@ -59,9 +59,18 @@ describe("owner authentication domain separation", () => {
     expect(migration).toContain("service_role");
     expect(migration).not.toContain("p_user");
     expect(migration).not.toContain("p_actor");
-    expect(read("app/(studio)/onboarding/page.tsx")).toContain("bootstrapFirstWorkspace");
+    const onboarding = read("app/(studio)/onboarding/page.tsx");
+    const setupRoute = read("app/workspace/setup/route.ts");
+    // Bootstrap is a manual Server Action only; the automatic first-load path is
+    // a fresh GET Route Handler after the auth cookies have been committed.
+    expect(onboarding.match(/bootstrapFirstWorkspace\(/g)).toHaveLength(1);
+    expect(onboarding).toContain('"use server"');
+    expect(onboarding).toContain("workspaceSetupPath(next)");
+    expect(setupRoute).toContain("getAccountSession");
+    expect(setupRoute).toContain("bootstrapFirstWorkspace");
+    expect(setupRoute).toContain("getWorkspaceContext");
     expect(read("app/(studio)/account/page.tsx")).toContain("/auth/verify-email");
-    expect(read("app/(studio)/account/page.tsx")).toContain("/onboarding");
+    expect(read("app/(studio)/account/page.tsx")).toContain('workspaceSetupPath("/account")');
   });
 
   it("requires owner-verified provider configuration before a server-side OAuth start", () => {

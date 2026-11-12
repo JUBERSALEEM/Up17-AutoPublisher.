@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/auth/redirects";
+import { workspaceSetupPath } from "@/lib/auth/workspace-setup";
 
 export async function GET(request: NextRequest) {
   const tokenHash = request.nextUrl.searchParams.get("token_hash");
@@ -15,15 +16,13 @@ export async function GET(request: NextRequest) {
         token_hash: tokenHash,
         type: type as EmailOtpType,
       });
-      if (!error)
-        return NextResponse.redirect(
-          new URL(
-            type === "recovery"
-              ? "/auth/update-password"
-              : safeNext(request.nextUrl.searchParams.get("next")),
-            request.url,
-          ),
-        );
+      if (!error) {
+        const destination =
+          type === "recovery"
+            ? "/auth/update-password"
+            : workspaceSetupPath(safeNext(request.nextUrl.searchParams.get("next")));
+        return NextResponse.redirect(new URL(destination, request.url));
+      }
     }
   }
   return NextResponse.redirect(new URL("/sign-in?error=expired-link", request.url));

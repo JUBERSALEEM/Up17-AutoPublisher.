@@ -1,0 +1,57 @@
+Workspace initialization fails on first load — evidence-backed correction
+Branch: arena/698e4880-up17-autopublisher (active)
+Date: 2026-11-12 UTC
+Scope: application code and regression tests only. No DB migration, RLS change, Auth/SMTP config change, environment change, Production change, SSO change, publishing change, fake account, OTP bypass or automatic page refresh.
+
+OWNER SYMPTOM
+- After signup/email verification or sign-in, the first UI load showed exactly: "Workspace setup is temporarily unavailable. Reload this page to retry."
+- One manual refresh resolved it. The same message is retained for genuine setup failures; it is not hidden.
+
+DEPLOYMENT/DB CURRENCY (before correction)
+- Latest Preview at task start: dpl_2UPcnNeYLJhMixSxpeBjyigtFsyp, READY/STAGED/public=false, SHA b6adce5aa4a2da02c06f030cc5c023aa3f899dc5, URL https://autopublisher-bemxpt5hs-auto-uploader.vercel.app. Verified with vercel.list_deployments and get_deployment.
+- Supabase project hxgokimjdormlktxjsbg ACTIVE_HEALTHY, Postgres 17, GoTrue v2.197.0; auth/db/rest/storage/pooler services healthy.
+- DB inventory: 2 users, 2 confirmed users, 2 profiles, 2 workspaces, 2 memberships, 2 preferences, 3 sessions, 3 refresh tokens. Lifecycle for the newest account: user/profile created 08:30:26.118819/08:30:26.116871 UTC, confirmed 08:30:41.785861 UTC, session/refresh token 08:30:41.792393/08:30:41.800947 UTC, workspace/membership/preferences created 08:30:46.476186 UTC. The rows were committed before the first-load error; a refresh could therefore read them.
+- Live trigger/function/RLS evidence: on_auth_user_created enabled ("O") on auth.users; up17_private.new_user() SECURITY DEFINER owned by postgres; public.up17_ensure_first_workspace() SECURITY DEFINER owned by postgres with ACL {postgres=X/postgres,authenticated=X/postgres}; RLS enabled on profiles, workspaces, workspace_members and preferences; authenticated policies profiles_own, members_read, workspaces_member_read, workspaces_owner_update and preferences_own present. No DB defect was identified and no DB change was made.
+
+ROOT CAUSE (reproduced locally)
+- app/(studio)/onboarding/page.tsx called bootstrapFirstWorkspace() during Server Component render. lib/auth/workspace-actions.ts called revalidatePath("/", "layout") after the successful RPC, inside the same try/catch. The RPC committed the workspace/membership/preferences rows, then Next.js 16.4.5 threw the render-phase invariant: "Route ...: `revalidatePath("/")` can't be called during render. Call it from a Server Action or Route Handler instead." The catch returned the owner-visible temporarily-unavailable message even though setup had succeeded. A manual refresh re-ran getWorkspaceContext(), found the committed rows and redirected to /account.
+- Reproduction: a temporary Next dev page rendered revalidatePath("/", "layout") and returned HTTP 200 with exactly that thrown invariant; a temporary /api Route Handler returned NO_THROW for the same call. A deterministic regression test now mocks that invariant after a successful RPC and asserts the old catch result, while source/source-path tests assert the production render path no longer calls bootstrap.
+- This was a render-phase mutation/cache-invalidation defect, not an SMTP/Auth, DB trigger, RPC security, RLS or client-polling failure. The SDK/source review also shows signInWithPassword()/verifyOtp() await session storage and subscribers before the post-auth redirect, and @supabase/ssr awaits cookie setAll; the proxy refreshes claims and private, no-store HTML.
+
+SIX REQUESTED AREAS
+1. Auth session availability/timing: getAccountSession() uses auth-server getUser(); signUp has no session until official six-digit OTP verification; verifySignupOtp() requires data.session and email_confirmed_at; signInWithPassword() and verifyOtp() await session persistence. Successful sign-in, OTP verification, password update, /auth/callback exchange and non-recovery /auth/confirm now redirect through a fresh /workspace/setup GET after cookies are committed. The setup Route Handler itself requires a confirmed session before any RPC.
+2. Profile/workspace race: live lifecycle shows profile created at signup and workspace only after confirmation/session. up17_ensure_first_workspace() checks email_confirmed_at, uses a per-user advisory transaction lock, returns an existing membership or creates workspace+owner membership+preferences atomically. No profile/workspace race was found; rows existed before the false error.
+3. Trigger/RPC: live function definitions, ownership, EXECUTE grants, trigger state and RLS were inspected; no migration or function change was needed. Identity remains auth.uid(); no client user id/role.
+4. RLS/membership: live RLS and policies are intact. The setup handler reads getWorkspaceContext() after the RPC through the authenticated client before redirecting, so a stale render cannot enter the app without membership/preferences. Stale workspace cookie fallback remains.
+5. Client workspace state: PreferencesProvider uses server-provided cloud context, has no fetch/polling/reload for first-load setup, and only calls router.refresh() after a preference save. AppShell has no workspace fetch. The first-load failure was server-side, and no client auto-refresh was added.
+6. First request before session ready: rejected by the new request boundary. The bootstrap is no longer in render; /workspace/setup is a separate GET after the auth response, calls getAccountSession() first, redirects unauthenticated/unconfirmed users to /login or /auth/verify-email, and only then calls the RPC. Integration tests assert no RPC without a confirmed session.
+
+CODE CORRECTION
+- New app/workspace/setup/route.ts: dynamic GET Route Handler; validates confirmed session, calls idempotent bootstrap, revalidates in legal Route Handler context, verifies getWorkspaceContext(), redirects to a loop-safe internal destination or an explicit safe failure page. No window reload, meta refresh, client auto-submit or automatic page refresh.
+- New lib/auth/workspace-setup.ts: safe setup/failure/destination helpers, whitelisted failure reasons/messages, and prevention of /workspace/setup or /onboarding redirect loops.
+- app/(studio)/onboarding/page.tsx: no render-time write; first visit redirects to /workspace/setup; explicit setup failures show the exact safe message plus a manual Server Action retry.
+- lib/auth/actions.ts: signIn, verifySignupOtp and updatePassword use workspaceSetupPath(); six-digit OTP/verification, resend cooldown, recovery separation, duplicate non-enumeration and confirmation gate unchanged.
+- app/auth/callback/route.ts and app/auth/confirm/route.ts: successful authenticated handoffs use the setup route (recovery still goes to /auth/update-password).
+- app/(studio)/account/page.tsx: users without workspace context go to /workspace/setup, not a render-time bootstrap.
+- lib/auth/workspace-actions.ts: BootstrapResult now carries a whitelisted failure reason; RPC, RLS, identity checks, revalidatePath and exact temporary-failure message are preserved.
+
+REGRESSION TESTS (local automated only)
+- tests/integration/auth-actions.test.ts: reproduces the committed-RPC/render-revalidate false failure; verifies auth/OTP/setup redirect paths and unchanged session/security behavior.
+- tests/integration/workspace-setup.test.ts: safe paths/loop prevention, confirmed-session gate before write, bootstrap->RLS context read->redirect order, absence of Refresh header, explicit failure-page redirect and context-read failure handling.
+- tests/unit/workspace-initialization.test.ts: no mutation in render path, Route Handler ordering, server-provided client context without polling/reload, and unchanged verified RPC/RLS source boundaries.
+- tests/unit/owner-auth-foundation.test.ts: updated to enforce the render/action separation and setup Handler boundary.
+
+LOCAL GATES (not hosted acceptance)
+- Pinned toolchain Node 22.22.3 / npm 11.21.2; format and check exit 0. Log: /tmp/up17-workspace-check.log.
+- check: 17 unit files / 112 tests, 3 integration files / 23 tests, 48 Python validator tests, 2 TypeScript security files / 8 tests, strict docs PASS, production build 27/27 static pages and 29 routes including /workspace/setup and Proxy.
+- Local production-build Chromium: E2E 129/129, visual 154/154, axe 86/86, clay 62/62; development navigation 13/13. Logs: /tmp/up17-workspace-e2e.log, -visual.log, -a11y.log, -clay.log, -navigation-dev.log. Generated tsconfig.json/next-env.d.ts were restored.
+- Local production-server route smoke: GET /workspace/setup?next=%2Fsettings returned 307 to /login?next=%2Fsettings, then the configured alias returned 200 at /sign-in?next=%2Fsettings; no setup error and no refresh header.
+- These are local/browser gates with synthetic mocks; they do not prove real hosted email delivery, OTP verification, owner-authenticated fresh signup or existing-account navigation.
+
+HOSTED ACCEPTANCE AFTER CORRECTION
+- Fresh signup on exact Preview: NOT TESTED. Existing account sign-in on exact Preview: NOT TESTED. Owner-authenticated Preview navigation, delivered email, OTP verification and workspace isolation: NOT TESTED. Vercel SSO blocks anonymous requests; enabled connectors expose no Runtime/Auth/Postgres/SMTP log search, protected fetch, Shareable Link, browser request/response or owner-browser tool.
+- Required owner actions on the final immutable exact-SHA Preview after Vercel SSO: (1) open /sign-up, create one real owner-controlled new email/password account with a 12–128 character password; (2) read the delivered six-digit email code and verify at /auth/verify-email; (3) confirm the workspace appears on the first post-verification load with NO "Workspace setup is temporarily unavailable" message and NO manual refresh; (4) sign out and sign in with the existing account and confirm the workspace appears on the first load without refresh; (5) report any Error reference/Safe diagnostic and same-timestamp Vercel Runtime/Supabase Auth/Postgres logs if either case fails. Do not use fake accounts, invented OTPs, service-role bypasses, autoconfirm or SSO disablement.
+- Core Stability remains NOT complete; social OAuth/publishing remain paused until all nine owner-authenticated criteria pass.
+
+DEPLOYMENT IDENTITY
+- The fresh private Preview ID, immutable URL and exact Git/Vercel SHA are recorded after deployment in the final delivery report and the untracked final-delivery record; a committed file cannot contain its own commit SHA. No Production promotion.
