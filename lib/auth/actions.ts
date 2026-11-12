@@ -14,6 +14,7 @@ import {
 } from "./schema";
 import { safeNext } from "./redirects";
 import { getViewer } from "./session";
+import { authFailure, signupVerificationState } from "./errors";
 
 const PENDING_EMAIL_COOKIE = "up17_pending_email";
 const OTP_RESEND_COOKIE = "up17_otp_resend_at";
@@ -39,60 +40,8 @@ const unavailable: AuthFormState = {
   action: "retry",
 };
 
-interface AuthFailure {
-  code?: string;
-  status?: number;
-}
-
-function failure(error: AuthFailure | null, fallback: string): AuthFormState {
-  const code = error?.code ?? "";
-  if (
-    code.includes("over_email_send_rate_limit") ||
-    code.includes("over_request_rate_limit") ||
-    code.includes("over_otp_rate_limit")
-  )
-    return {
-      status: "error",
-      message: "Too many code requests. Wait a few minutes before trying again.",
-      action: "retry",
-    };
-  if (
-    code.includes("otp_expired") ||
-    code.includes("invalid_token") ||
-    code.includes("bad_otp") ||
-    code.includes("token_expired")
-  )
-    return {
-      status: "error",
-      message: "That code is invalid or has expired. Request a fresh six-digit code.",
-      action: "resend",
-    };
-  if (code === "email_not_confirmed")
-    return {
-      status: "error",
-      message: "Enter the six-digit code sent to your email, then sign in.",
-      action: "verify-code",
-    };
-  if (code === "user_already_registered")
-    return {
-      status: "error",
-      message: "This address may already be registered. Sign in or enter your verification code.",
-      action: "verify-code",
-    };
-  if (code === "weak_password" || code === "password_too_short")
-    return {
-      status: "error",
-      message: "Choose a stronger password of 12–128 characters that you have not reused.",
-      action: "retry",
-    };
-  if (code === "validation_failed")
-    return {
-      status: "error",
-      message: "Check the email address and code, then try again.",
-      action: "retry",
-    };
-  return { status: "error", message: fallback, action: "retry" };
-}
+const SIGNUP_NO_CODE_MESSAGE =
+  "We could not start email verification for this address. If it is already registered, sign in or use password recovery; otherwise wait a minute and try again.";
 
 export async function signIn(_state: AuthFormState, form: FormData): Promise<AuthFormState> {
   const parsed = signInSchema.safeParse(Object.fromEntries(form));
@@ -105,7 +54,7 @@ export async function signIn(_state: AuthFormState, form: FormData): Promise<Aut
   try {
     const { error } = await (await client()).auth.signInWithPassword(parsed.data);
     if (error)
-      return failure(
+      return authFailure(
         error,
         "Email or password not recognised, or sign-in is temporarily unavailable.",
       );
@@ -129,7 +78,7 @@ export async function signUp(_state: AuthFormState, form: FormData): Promise<Aut
       action: "retry",
     };
   try {
-    const { error } = await (
+    const { data, error } = await (
       await client()
     ).auth.signUp({
       email: parsed.data.email,
@@ -137,7 +86,19 @@ export async function signUp(_state: AuthFormState, form: FormData): Promise<Aut
       options: { data: { display_name: parsed.data.displayName } },
     });
     if (error)
-      return failure(error, "The account could not be created. Check the details and try again.");
+      return authFailure(
+        error,
+        "We could not create the account. Check the details and try again.",
+      );
+    const verification = signupVerificationState(data);
+    if (verification === "duplicate-or-no-code")
+      return { status: "error", message: SIGNUP_NO_CODE_MESSAGE, action: "sign-in" };
+    if (verification !== "ready")
+      return {
+        status: "error",
+        message: "Email verification could not be started. Try again later.",
+        action: "retry",
+      };
   } catch {
     return unavailable;
   }
@@ -168,7 +129,7 @@ export async function verifySignupOtp(
       type: "signup",
     });
     if (error)
-      return failure(error, "The code could not be verified. Request a fresh six-digit code.");
+      return authFailure(error, "That code could not be verified. Request a fresh six-digit code.");
     if (!data.session || !data.user?.email_confirmed_at)
       return {
         status: "error",
@@ -211,7 +172,11 @@ export async function resendConfirmation(
       type: "signup",
       email: parsed.data,
     });
-    if (error) return failure(error, "A fresh six-digit code could not be requested right now.");
+    if (error)
+      return authFailure(
+        error,
+        "A fresh code could not be requested right now. Wait a moment and try again.",
+      );
   } catch {
     return unavailable;
   }
@@ -233,7 +198,11 @@ export async function resetPassword(_state: AuthFormState, form: FormData): Prom
     ).auth.resetPasswordForEmail(parsed.data, {
       redirectTo: `${appOrigin()}/auth/callback?next=/auth/update-password`,
     });
-    if (error) return failure(error, "A recovery email could not be requested right now.");
+    if (error)
+      return authFailure(
+        error,
+        "A recovery email could not be requested right now. Try again in a moment.",
+      );
   } catch {
     return unavailable;
   }
@@ -266,7 +235,10 @@ export async function updatePassword(
     const supabase = await client();
     const { error } = await supabase.auth.updateUser({ password: parsed.data });
     if (error)
-      return failure(error, "The password could not be updated. Open a fresh recovery link.");
+      return authFailure(
+        error,
+        "The password could not be updated. Open a fresh recovery link and try again.",
+      );
     const { error: signOutError } = await supabase.auth.signOut({ scope: "others" });
     otherSessions = signOutError ? "unknown" : "revoked";
   } catch {

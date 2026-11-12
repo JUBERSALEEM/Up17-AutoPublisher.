@@ -108,4 +108,21 @@ Historical hosted verification at that commit found migration 11 applied, Edge F
 
 **Executed gates.** Pinned `npm run check` PASS (format, zero-warning lint, strict TypeScript, 14 unit files / 90 tests, 1 integration file / 4 tests, 48 Python validator tests, 2 TypeScript security files / 8 tests, strict docs, 27/27 static pages and 27 routes). Standalone strict Edge Function TypeScript check PASS. Browser gates PASS: E2E 128, visual 154, axe 86, clay 62 and development navigation 13; generated TS config rewrites restored. Separate local production-build Chromium PASS 18/18 for six routes at desktop/mobile/320px. Staged whitespace and high-confidence secret scans remain part of the delivery gate. These are local/build/technical checks, not hosted owner acceptance.
 
-**Blockers.** Hosted Supabase Auth still uses a confirmation-link template, eight-digit OTP setting and no SMTP; only the owner dashboard or an owner-created Management API token can change them. Real numeric-code email delivery and password recovery must be tested with an owner inbox. Google Cloud/Meta/TikTok apps, exact redirect registration, consent/review/account eligibility, provider credentials, real consent/callback and timestamped `VERIFIED` external evidence remain owner-only. Owner-authenticated hosted browser verification, authenticated storage upload/cross-workspace denial, Production promotion, cron execution and publishing remain NOT RECORDED. See [owner setup](OWNER_SETUP.md), [test evidence](TEST_EVIDENCE.md), [decisions](DECISIONS.md) and [change log](CHANGELOG.md).
+**Blockers.** Fresh hosted Auth now shows owner-configured six-digit numeric template, OTP length 6 and custom SMTP; this supersedes the older link-based/no-SMTP snapshot. Exact signup errors are unavailable via SQL because Postgres audit logging is disabled, and real numeric-code delivery, `verifyOtp`, duplicate/invalid/expired code, recovery, a genuinely new verified account, workspace isolation and owner-authenticated browser acceptance remain NOT TESTED. Google Cloud/Meta/TikTok apps, exact redirect registration, consent/review/account eligibility, provider credentials, real consent/callback and timestamped `VERIFIED` external evidence remain owner-only and paused. Owner-authenticated hosted browser verification, authenticated storage upload/cross-workspace denial, Production promotion, cron execution and publishing remain NOT RECORDED. See [owner setup](OWNER_SETUP.md), [test evidence](TEST_EVIDENCE.md), [decisions](DECISIONS.md) and [change log](CHANGELOG.md).
+
+
+## Core Stability Phase status (2026-11-08)
+
+**Status:** local stabilisation complete; hosted acceptance NOT TESTED, so the phase is **not complete** and OAuth work remains paused. See [Core Stability report](CORE_STABILITY_REPORT.md) and [validation log](evidence/core-stability-validation.txt).
+
+| Area | Status | Evidence |
+|---|---|---|
+| Missing media route / existing E2E failure | FIXED / PASS | 129/129 E2E after fix; targeted media test 1/1 |
+| Duplicate-email signup and generic auth errors | FIXED / PASS (code-level) | 6 new unit tests; hosted delivery NOT TESTED |
+| Menu routes, desktop/mobile/320px, history, refresh, direct URL | PASS (local) | 129 E2E, 154 visual, 13 dev navigation |
+| `848308f` navigation regression | NO REGRESSION FOUND | Full-history diff; navigation core files unchanged |
+| Fresh hosted Auth config | PASS (read-only) | Six-digit template, OTP 6, custom SMTP, autoconfirm false |
+| Exact hosted signup error / email delivery / `verifyOtp` | NOT TESTED | Postgres audit disabled; no owner inbox or authenticated browser |
+| New verified account / onboarding / workspace isolation / owner access | NOT TESTED | Requires owner-controlled inbox and authenticated Preview session |
+| Complete local suite | PASS | `check`, 129 E2E, 154 visual, 86 axe, 62 clay, 13 dev navigation |
+| Production / SSO / RLS / private storage / publishing lock | UNCHANGED | No changes made |

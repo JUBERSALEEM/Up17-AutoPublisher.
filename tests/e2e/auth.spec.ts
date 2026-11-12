@@ -112,6 +112,7 @@ test("legacy signup confirmation links are rejected and unsafe next targets stay
 test("media access requires same-origin JSON and never returns a demo signed URL @e2e", async ({
   request,
 }) => {
+  const sameOrigin = new URL(test.info().project.use.baseURL ?? "http://127.0.0.1:3100").origin;
   const cross = await request.post("/api/media/access", {
     data: { videoId: "11111111-1111-4111-8111-111111111111" },
     headers: { Origin: "https://evil.invalid" },
@@ -119,7 +120,7 @@ test("media access requires same-origin JSON and never returns a demo signed URL
   expect(cross.status()).toBe(403);
   const missing = await request.post("/api/media/access", {
     data: { videoId: "11111111-1111-4111-8111-111111111111" },
-    headers: { Origin: "http://127.0.0.1:3100" },
+    headers: { Origin: sameOrigin },
   });
   expect(missing.status()).toBe(404);
   expect(missing.headers()["cache-control"]).toContain("no-store");

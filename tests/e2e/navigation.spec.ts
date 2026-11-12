@@ -267,3 +267,32 @@ test("development clears an inherited production service worker @e2e @navigation
   );
   await fresh.close();
 });
+
+test("320px phone reaches every destination with history, refresh and direct URL @e2e @narrow", async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  await page.setViewportSize({ width: 320, height: 800 });
+  const errors = collectBrowserErrors(page);
+  for (const item of allDestinations) {
+    const start = item.href === "/" ? "/settings" : "/";
+    const startItem = allDestinations.find((candidate) => candidate.href === start)!;
+    await page.goto(start);
+    await expectRoute(page, startItem, "mobile");
+    await clickDestination(page, item, "mobile");
+    await expectRoute(page, item, "mobile");
+    await page.reload();
+    await expectRoute(page, item, "mobile");
+    await page.goBack();
+    await expectRoute(page, startItem, "mobile");
+    await page.goForward();
+    await expectRoute(page, item, "mobile");
+    await page.goto(item.href);
+    await expectRoute(page, item, "mobile");
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+      `${item.href} must not overflow a 320px viewport`,
+    ).toBe(true);
+  }
+  expect(errors).toEqual([]);
+});

@@ -1,0 +1,43 @@
+Up17 AutoPublisher — Core Stability Phase validation log
+Date: 2026-11-08 (UTC)
+Branch: arena/698e4880-up17-autopublisher
+Scope: local source, production build and browser evidence only. No owner-authenticated hosted acceptance is claimed.
+
+Environment
+- Node 22.22.3 / npm 11.21.2 / Next.js 16.4.5 / React 19.3.1.
+- Chromium 153.0.8010.0 from a registry-only package fallback; Playwright CDN download remains blocked.
+- Public Supabase config was deliberately absent from the local production build, so auth/demo routes were tested in the honest unconfigured mode. No hosted credentials, SMTP values, service keys or bearer links appear here.
+
+Fresh hosted read-only evidence (not hosted acceptance)
+- supabase.get_auth_config: custom six-digit {{ .Token }} Confirm signup template, mailer_otp_length=6, mailer_otp_exp=3600, mailer_autoconfirm=false, custom SMTP configured, audit_log_disable_postgres=true, all external providers disabled.
+- supabase.execute_query: auth.audit_log_entries=0; auth.one_time_tokens=0; auth.users=1, confirmed users=1, identities=1, sessions=1, refresh_tokens=1; profiles=1, preferences=1, workspaces=1, workspace_members=1, owner memberships=1; platform_connections=0, social_accounts=0, private credentials=0; deployment_evidence=26; verified provider redirect/review/account evidence=0/0/0.
+- public tables without RLS=0; public policies=41; storage-object policies=4; creator-media bucket public=false; private-schema grants empty.
+- Supabase auth/db/storage health ACTIVE_HEALTHY; GoTrue v2.197.0.
+- Exact hosted signup error is unavailable through SQL because Postgres audit logging is disabled and no authorized dashboard/Logflare log source is exposed by the connector.
+- Current deployed Preview dpl_Rd85aCKrQ5hAyi3qFm6gR7r3jwUQ remained READY/STAGED/public=false at 848308fd05e1bf93f54fc556e2856057a62d6f92; anonymous /login fetch reached Vercel Protected Deployment SSO, not the Up17 app.
+
+Git regression comparison
+- git fetch --unshallow restored history. 226ae1b is the earlier navigation fix; 2e9191d is the immediate parent series before 848308f.
+- git diff 2e9191d..848308f changed no navigation core files: lib/navigation.ts, proxy.ts, public/sw.js, components/shell/pwa-provider.tsx, next.config.ts and tests/e2e/navigation.spec.ts were unchanged. components/shell/app-shell.tsx changed only eight lines of account/OTP copy; app/globals.css added OTP/provider CSS.
+- Therefore 848308f did not introduce a navigation-utility regression versus the earlier fix. No hosted page-switching failure could be reproduced without owner-authenticated Preview access.
+
+Reproduced local defects and fixes
+- FAIL before fix: npm run test:e2e 127/128, one failure at tests/e2e/auth.spec.ts:112. Cross-origin POST /api/media/access expected 403 but the documented route did not exist, so Next.js returned a 404 HTML page. Fix: added app/api/media/access/route.ts with same-origin JSON enforcement, no-store responses, 403 cross-origin, 415 non-JSON, 400 malformed JSON and a cache-disabled 404 for no signed URL. privateVideoUrl() still requires a confirmed workspace and workspace-prefixed videos row; the unconfigured local build never returns a demo signed URL.
+- Signup root cause from official Supabase signUp behavior: with Confirm email enabled, an already-registered address returns an obfuscated user with empty identities instead of an error. The old signUp() treated that as success and redirected to /auth/verify-email where no code arrives. Fix: lib/auth/errors.ts signupVerificationState() detects empty identities, a missing confirmation timestamp and an unexpected session; signUp() now returns a safe duplicate/no-code message without creating a session or bypassing verification.
+- Generic auth failures: lib/auth/errors.ts authFailure() maps documented rate-limit, expired-code, duplicate, weak-password, invalid-credential, disabled-signup, invalid-email, captcha, validation and session-expired codes to useful, non-enumerating copy. Raw provider/SMTP/token details, stack traces and status numbers are never returned.
+
+Complete post-fix local suite
+- npm run check: PASS. Toolchain, format, lint, typecheck, 15 unit files / 96 tests, 1 integration file / 4 tests, 48 Python validator tests, 2 TypeScript security files / 8 tests, strict docs PASS (16 required docs, 155 requirements, 218 local links, 227 artifact candidates), production build PASS with 28 routes including /api/media/access.
+- npm run test:e2e: PASS — 129/129 (includes new 320px all-destination navigation, history, refresh and direct-URL regression).
+- npm run test:visual: PASS — 154/154.
+- npm run test:a11y: PASS — 86/86.
+- npm run test:clay: PASS — 62/62.
+- npm run test:navigation:dev: PASS — 13/13; generated next-env.d.ts and tsconfig.json changes restored afterwards.
+- Targeted media route test after correcting its hardcoded port: PASS — 1/1.
+
+Hosted cases still NOT TESTED
+- Real six-digit signup email delivery, verifyOtp({type:"signup"}), resend cooldown, duplicate email, invalid/expired code, sign-in, password recovery and useful hosted error messages.
+- Genuinely new verified account, onboarding completion, correct workspace creation, workspace isolation/permissions and existing owner browser access.
+- Exact deployed Preview build page switching behind Vercel SSO, desktop/mobile/320px layouts, direct URLs, back/forward, refresh and route persistence.
+- Authorized Supabase Auth/Logflare log entry containing the exact signup error.
+No fake users, autoconfirm, verification bypass, SMTP credentials, service-role keys, Vercel SSO changes, Production changes, publishing, social OAuth or paid services were introduced.

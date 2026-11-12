@@ -8,7 +8,7 @@
 - Removed the owner/admin self-attestation server action, setup form and all UI paths that could write provider `VERIFIED` rows from a checkbox. No code, test, health check, config presence or dashboard attestation can fabricate genuine provider redirect/review/account evidence; `providerConfigurationReady()` and `/api/connections/start` remain strict.
 - Updated unit, E2E, visual, accessibility and docs assertions for numeric OTP, 15 statuses, exact disabled reasons, review dialogs, legacy-link rejection and no-self-attestation. Added honest hosted evidence rows for the current Auth/template/SMTP blockers and existing owner session; no provider was marked ready.
 - Pinned full gates PASS: `npm run check`, standalone strict Edge Function TypeScript check, E2E 128, visual 154, axe 86, clay 62, development navigation 13 and a separate local production-build Chromium 18/18 route/viewport check. Generated TS config rewrites were restored. These are technical gates, not real email delivery, provider consent, token storage or owner acceptance.
-- Hosted Supabase Auth remains link-based with eight-digit OTP length and no SMTP; the connected connector cannot change the Confirm signup template, OTP length or SMTP fields. One confirmed owner user/workspace/session exists, but no real six-digit email, Google consent/callback, social account connection, encrypted token or authenticated storage acceptance was recorded. Expected incremental cost remains $0 on existing free allowances, subject to usage limits and separately approved paid services.
+- Fresh hosted Supabase Auth inspection during the Core Stability Phase supersedes this older snapshot: the owner has configured a custom six-digit `{{ .Token }}` Confirm signup template, `mailer_otp_length=6`, custom SMTP and `mailer_autoconfirm=false`. Configuration presence is not proof of real inbox delivery or `verifyOtp` success; those hosted cases remain NOT TESTED. One confirmed owner user/workspace/session exists, but no real six-digit email, Google consent/callback, social account connection, encrypted token or authenticated storage acceptance was recorded. Expected incremental cost remains $0 on existing free allowances, subject to usage limits and separately approved paid services.
 
 ## Unreleased — real owner authentication and foundation OAuth (2026-11-08, historical baseline)
 
@@ -147,3 +147,14 @@ No website, design primitives, product workflow, database, authentication, uploa
 - Updated Supabase Auth Site URL/redirect allowlist with the three exact public bridge callback URLs and query forms. No custom SMTP, provider app, live consent, real upload/cross-workspace test, Production promotion, paid plan, publishing or Smart AI change.
 
 Earlier autonomous-milestone runtime commit `df774e42ccf098b0c7c4959a7d144308bbd8cc97` was pushed and verified as Vercel Preview `dpl_4R3BdHpC9qpcNB1Kpo5YeFnn2Jwg` (READY, exact SHA, `public=false`, SSO-protected, Node 22.x). A subsequent docs-only commit records the exact deployment ID and final evidence; runtime code is unchanged. A later docs-only Git Preview, if created, does not replace this explicit exact-SHA runtime deployment.
+
+
+## Unreleased — Core Stability Phase (2026-11-08)
+
+**Local fixes, not hosted acceptance.** Paused social OAuth and provider evidence work. See [Core Stability report](CORE_STABILITY_REPORT.md) and [validation log](evidence/core-stability-validation.txt).
+
+- Restored the documented same-origin JSON `app/api/media/access/route.ts`, fixing the only failing existing E2E case (before 127/128, after 129/129). It returns no-store 403/415/400/404 and never fabricates a demo signed URL.
+- Added `lib/auth/errors.ts` with safe Auth error mapping and `signupVerificationState()`. `signUp()` now detects Supabase's obfuscated duplicate-email user, a missing confirmation timestamp and an unexpected session instead of redirecting to an OTP page where no code arrives. Verification is not bypassed.
+- Added a 320px all-destination navigation regression covering direct URLs, back/forward, refresh, route persistence and no horizontal overflow; corrected the media E2E test's hardcoded origin port.
+- Corrected stale link-based / eight-digit OTP / no-SMTP documentation using the fresh hosted Auth read. The prior owner checklist is historical and paused.
+- Full post-fix local suite PASS: `npm run check`, 129 E2E, 154 visual, 86 axe, 62 clay and 13 development-navigation assertions. Hosted signup, email verification, onboarding, workspace isolation and owner-authenticated Preview navigation remain NOT TESTED.

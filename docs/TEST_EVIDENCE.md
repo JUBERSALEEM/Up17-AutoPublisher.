@@ -17,7 +17,7 @@ This ledger records executed checks, not aspirational test names. See [TEST_STRA
 | `npm run test:navigation:dev` | PASS — 13; generated `tsconfig.json`/`next-env.d.ts` rewrites restored |
 | Separate local production-build Chromium | PASS — 18/18 across `/login`, `/signup`, `/auth/verify-email`, `/accounts`, `/onboarding`, `/settings` at desktop, mobile and 320px; exact headings, no overflow, OTP controls and disabled “Continue to provider” review dialog checked |
 | Hosted owner/session inspection | PASS — `auth.users=1`, confirmed=1, signed-in=1, one owner workspace/membership/preferences and one session; agent has no owner browser cookies |
-| Hosted Auth config inspection | PASS/BLOCKED — link-based Confirm signup template, `mailer_otp_length=8`, `mailer_autoconfirm=false`, all `smtp_*` null; connector cannot set template/length/SMTP |
+| Fresh hosted Auth config inspection | PASS — owner-configured custom six-digit `{{ .Token }}` Confirm signup template, `mailer_otp_length=6`, `mailer_otp_exp=3600`, custom SMTP, `mailer_autoconfirm=false`, Postgres audit disabled; exact signup error and inbox delivery NOT TESTED |
 | Hosted evidence inspection | PASS/BLOCKED — 26 rows; `auth-otp-code=CONFIGURED`, `otp-template`/`email-smtp=OWNER ACTION REQUIRED`, provider credentials `BLOCKED`, all provider redirect/review/account rows `OWNER ACTION REQUIRED`; no provider `VERIFIED` |
 | Real OTP email / recovery / Google consent / callback / token storage | NOT VERIFIED / NOT RUN — owner inbox, Supabase dashboard/Management API and provider dashboards required |
 | Owner-authenticated hosted browser / storage isolation / Production / cron / publishing | NOT RECORDED / NOT RUN — separate owner approvals |
@@ -266,3 +266,26 @@ Browser gates used the documented registry-only Chromium fallback with `PLAYWRIG
 - Accounts readiness: PASS (static/local) — `/accounts` uses `RealAccountsBoard` with server-side `getAccountsState()`; `getViewer()` and `getWorkspaceContext()` gate `canManage`; the old `AccountsBoard` is not imported by the route. The shell hides the sample `@up17longshotyt` handle on account routes. Disabled Connect buttons expose `aria-describedby`, exact blocker text and title reasons. Hosted evidence has three VERIFIED rows, three BLOCKED, four OWNER ACTION REQUIRED and no provider `*-redirect`, `*-review` or `*-account` row marked VERIFIED. Google/YouTube, Instagram and TikTok therefore remain BLOCKED / OWNER ACTION REQUIRED; publishing stays disabled.
 - Fresh access-clarification Preview: PASS — commit `e18cd394a699afa7b339c756edb40c7cba3f3fa35` (7 files) built as READY/STAGED `dpl_3BksENjHFzsNS9T8eNrT3fyLbCQr`, `public=false`, exact SHA, immutable URL `https://autopublisher-6r5xnhkzn-auto-uploader.vercel.app`, global SSO/DEMO/Production unchanged. Pinned `npm run check` and all five browser gates were rerun PASS; no new bypass secret, SMTP setting, fake user or publishing change. A later docs-only Git Preview may advance the branch alias; use the immutable URL for exact-SHA checks.
 - Owner onboarding flows: STATIC/LOCAL ONLY — sign-in, sign-up, reset, confirmation resend, password update, sign-out, safe `next` redirects, verified-session RPC and owner-role bootstrap were inspected and covered by local unit/E2E gates. No real email, confirmation, session persistence, workspace creation, role assignment, membership/authorization or logout was exercised in a hosted owner session because custom SMTP and owner consent are genuine external gates.
+
+
+## Core Stability Phase — post-fix local evidence (2026-11-08)
+
+**Scope:** local source/build/browser gates only. Social OAuth and provider evidence work is paused. See [Core Stability report](CORE_STABILITY_REPORT.md) and [validation log](evidence/core-stability-validation.txt).
+
+| Check | Actual result |
+|---|---|
+| Fresh hosted Auth config read | PASS — owner-configured six-digit `{{ .Token }}` template, OTP length 6, custom SMTP, autoconfirm false, Postgres audit disabled; exact error and delivery NOT TESTED |
+| SQL/hosted DB inventory | PASS — one confirmed owner user/workspace/session; zero new users, OTP tokens, connections, credentials or verified provider evidence |
+| Exact hosted Auth-log signup error | NOT TESTED — `audit_log_disable_postgres=true`, `auth.audit_log_entries=0`, no authorized log source |
+| `npm run check` | PASS — toolchain/format/lint/typecheck, 15 unit files / 96 tests, 1 integration / 4 tests, 48 Python validator tests, 8 TypeScript security tests, strict docs 16/155/218/227, 28-route production build |
+| `npm run test:e2e` | PASS — 129/129; includes restored media route and new 320px navigation regression |
+| `npm run test:visual` | PASS — 154/154 |
+| `npm run test:a11y` | PASS — 86/86 |
+| `npm run test:clay` | PASS — 62/62 |
+| `npm run test:navigation:dev` | PASS — 13/13; generated TS config changes restored |
+| Real signup / six-digit delivery / `verifyOtp` / resend / duplicate / invalid / expired / sign-in / recovery | NOT TESTED — owner inbox and authenticated Preview required |
+| New verified account / onboarding / workspace isolation / existing owner browser access | NOT TESTED — no fake user created |
+| Exact deployed Preview page switching behind Vercel SSO | NOT TESTED — anonymous request reaches Vercel Protected Deployment login |
+| Production / SSO / RLS / private storage / publishing lock | PASS — unchanged |
+
+The earlier link-based / eight-digit OTP / no-SMTP hosted snapshot in this document is superseded by the fresh config read above. A READY deployment or local browser PASS is not hosted acceptance.
