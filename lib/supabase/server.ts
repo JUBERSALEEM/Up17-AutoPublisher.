@@ -2,12 +2,21 @@ import "server-only";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { getSupabaseConfig } from "./config";
+import { authDiagnosticReference, recordAuthDiagnostic } from "@/lib/auth/diagnostics";
 import type { Database } from "./database.types";
 
 import { AUTH_COOKIE } from "./constants";
 export async function createSupabaseServerClient() {
   const config = getSupabaseConfig();
-  if (!config) return null;
+  if (!config) {
+    recordAuthDiagnostic({
+      stage: "supabase-client",
+      action: "createSupabaseServerClient",
+      outcome: "client-unconfigured",
+      reference: authDiagnosticReference(),
+    });
+    return null;
+  }
   const cookieStore = await cookies();
   return createServerClient<Database>(config.url, config.publishableKey, {
     cookieOptions: {
@@ -22,8 +31,15 @@ export async function createSupabaseServerClient() {
       setAll: (values) => {
         try {
           values.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
-        } catch {
+        } catch (error) {
           /* Server Components cannot set cookies; proxy refreshes before rendering. */
+          recordAuthDiagnostic({
+            stage: "supabase-client",
+            action: "cookie.setAll",
+            outcome: "cookie-write-deferred",
+            reference: authDiagnosticReference(),
+            error,
+          });
         }
       },
     },

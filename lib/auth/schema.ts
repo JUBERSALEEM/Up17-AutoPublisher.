@@ -24,5 +24,7 @@ export type AuthFormState = {
   status: "idle" | "error" | "success";
   message: string;
   action?: "sign-in" | "resend" | "verify-code" | "retry";
+  /** Short redacted server-log correlation id; never an email, OTP or token. */
+  reference?: string;
 };
 export const initialAuthState: AuthFormState = { status: "idle", message: "" };

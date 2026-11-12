@@ -5,6 +5,7 @@ import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { Button, Card, Input } from "@/components/ui";
 import { initialAuthState } from "@/lib/auth/schema";
 import { signIn, signUp, resetPassword, updatePassword } from "@/lib/auth/actions";
+import { AuthErrorReference } from "./auth-error-reference";
 
 const actions = {
   "sign-in": signIn,
@@ -106,6 +107,7 @@ export function AuthForm({
             ) : null}
           </p>
         ) : null}
+        <AuthErrorReference reference={state.reference} />
         {state.status !== "success" ? (
           <form action={submit} className="stack">
             <input type="hidden" name="next" value={next} />

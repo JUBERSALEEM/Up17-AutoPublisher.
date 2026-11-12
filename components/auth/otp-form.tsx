@@ -12,6 +12,7 @@ import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { Button, Card, Input } from "@/components/ui";
 import { initialAuthState, type AuthFormState } from "@/lib/auth/schema";
 import { resendConfirmation, verifySignupOtp } from "@/lib/auth/actions";
+import { AuthErrorReference } from "./auth-error-reference";
 
 const LENGTH = 6;
 const RESEND_SECONDS = 60;
@@ -120,6 +121,12 @@ export function OtpForm({
         ? resendState.message
         : null;
   const success = resendState.status === "success" ? resendState.message : null;
+  const errorReference =
+    verifyState.status === "error"
+      ? verifyState.reference
+      : resendState.status === "error"
+        ? resendState.reference
+        : undefined;
 
   return (
     <div className="page auth-page">
@@ -164,6 +171,7 @@ export function OtpForm({
             {success}
           </p>
         ) : null}
+        <AuthErrorReference reference={errorReference} />
         <form action={verifyAction} className="stack">
           <input type="hidden" name="next" value={next} />
           {defaultEmail ? (

@@ -14,7 +14,12 @@ import {
 } from "./schema";
 import { safeNext } from "./redirects";
 import { getViewer } from "./session";
-import { authFailure, signupVerificationState } from "./errors";
+import { authFailure, signupVerificationState, type SignupVerificationState } from "./errors";
+import {
+  authDiagnosticReference,
+  recordAuthDiagnostic,
+  type AuthDiagnosticStage,
+} from "./diagnostics";
 
 const PENDING_EMAIL_COOKIE = "up17_pending_email";
 const OTP_RESEND_COOKIE = "up17_otp_resend_at";
@@ -34,32 +39,72 @@ async function client() {
   return supabase;
 }
 
-const unavailable: AuthFormState = {
-  status: "error",
-  message: "Authentication is temporarily unavailable. Please try again later.",
-  action: "retry",
-};
+const UNAVAILABLE_MESSAGE = "Authentication is temporarily unavailable. Please try again later.";
+const SIGNUP_FALLBACK_MESSAGE = "We could not create the account. Check the details and try again.";
 
 const SIGNUP_NO_CODE_MESSAGE =
   "We could not start email verification for this address. If it is already registered, sign in or use password recovery; otherwise wait a minute and try again.";
 
+function unavailable(reference: string): AuthFormState {
+  return { status: "error", message: UNAVAILABLE_MESSAGE, action: "retry", reference };
+}
+
+function logAuthError(
+  stage: AuthDiagnosticStage,
+  action: string,
+  error: unknown,
+  reference: string,
+): void {
+  recordAuthDiagnostic({ stage, action, outcome: "auth-error", reference, error });
+}
+
+function logUnexpected(
+  stage: AuthDiagnosticStage,
+  action: string,
+  error: unknown,
+  reference: string,
+): void {
+  recordAuthDiagnostic({ stage, action, outcome: "unexpected-exception", reference, error });
+}
+
+function logVerificationState(
+  stage: AuthDiagnosticStage,
+  action: string,
+  verificationState: SignupVerificationState,
+  reference: string,
+): void {
+  recordAuthDiagnostic({
+    stage,
+    action,
+    outcome: "verification-state",
+    reference,
+    verificationState,
+  });
+}
+
 export async function signIn(_state: AuthFormState, form: FormData): Promise<AuthFormState> {
+  const reference = authDiagnosticReference();
   const parsed = signInSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success)
     return {
       status: "error",
       message: "Enter a valid email address and password.",
       action: "retry",
+      reference,
     };
   try {
     const { error } = await (await client()).auth.signInWithPassword(parsed.data);
-    if (error)
+    if (error) {
+      logAuthError("sign-in", "signInWithPassword", error, reference);
       return authFailure(
         error,
         "Email or password not recognised, or sign-in is temporarily unavailable.",
+        reference,
       );
-  } catch {
-    return unavailable;
+    }
+  } catch (error) {
+    logUnexpected("sign-in", "signInWithPassword", error, reference);
+    return unavailable(reference);
   }
   redirect(safeNext(form.get("next")));
 }
@@ -70,12 +115,14 @@ export async function signIn(_state: AuthFormState, form: FormData): Promise<Aut
  * generated for this flow and no custom OTP is stored by Up17.
  */
 export async function signUp(_state: AuthFormState, form: FormData): Promise<AuthFormState> {
+  const reference = authDiagnosticReference();
   const parsed = signUpSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success)
     return {
       status: "error",
       message: "Enter your name, a valid email and a password of 12–128 characters.",
       action: "retry",
+      reference,
     };
   try {
     const { data, error } = await (
@@ -85,22 +132,26 @@ export async function signUp(_state: AuthFormState, form: FormData): Promise<Aut
       password: parsed.data.password,
       options: { data: { display_name: parsed.data.displayName } },
     });
-    if (error)
-      return authFailure(
-        error,
-        "We could not create the account. Check the details and try again.",
-      );
+    if (error) {
+      logAuthError("sign-up", "signUp", error, reference);
+      return authFailure(error, SIGNUP_FALLBACK_MESSAGE, reference);
+    }
     const verification = signupVerificationState(data);
-    if (verification === "duplicate-or-no-code")
-      return { status: "error", message: SIGNUP_NO_CODE_MESSAGE, action: "sign-in" };
+    logVerificationState("sign-up", "signUp", verification, reference);
+    // Obfuscated duplicates and an absent confirmation response use the same
+    // ambiguous message: the UI must not become an account-enumeration oracle.
+    if (verification === "duplicate-or-no-code" || verification === "no-code")
+      return { status: "error", message: SIGNUP_NO_CODE_MESSAGE, action: "sign-in", reference };
     if (verification !== "ready")
       return {
         status: "error",
         message: "Email verification could not be started. Try again later.",
         action: "retry",
+        reference,
       };
-  } catch {
-    return unavailable;
+  } catch (error) {
+    logUnexpected("sign-up", "signUp", error, reference);
+    return unavailable(reference);
   }
   const store = await cookies();
   // The address is only in a protected short-lived cookie, never in a URL or log.
@@ -114,12 +165,14 @@ export async function verifySignupOtp(
   _state: AuthFormState,
   form: FormData,
 ): Promise<AuthFormState> {
+  const reference = authDiagnosticReference();
   const parsed = otpSchema.safeParse({ email: form.get("email"), token: form.get("token") });
   if (!parsed.success)
     return {
       status: "error",
       message: "Enter the six-digit numeric code from your email.",
       action: "retry",
+      reference,
     };
   try {
     const supabase = await client();
@@ -128,16 +181,26 @@ export async function verifySignupOtp(
       token: parsed.data.token,
       type: "signup",
     });
-    if (error)
-      return authFailure(error, "That code could not be verified. Request a fresh six-digit code.");
-    if (!data.session || !data.user?.email_confirmed_at)
+    if (error) {
+      logAuthError("verify-signup-otp", "verifyOtp", error, reference);
+      return authFailure(
+        error,
+        "That code could not be verified. Request a fresh six-digit code.",
+        reference,
+      );
+    }
+    if (!data.session || !data.user?.email_confirmed_at) {
+      logVerificationState("verify-signup-otp", "verifyOtp", "no-code", reference);
       return {
         status: "error",
         message: "Verification succeeded but no confirmed session was established. Sign in.",
         action: "sign-in",
+        reference,
       };
-  } catch {
-    return unavailable;
+    }
+  } catch (error) {
+    logUnexpected("verify-signup-otp", "verifyOtp", error, reference);
+    return unavailable(reference);
   }
   const store = await cookies();
   store.set(PENDING_EMAIL_COOKIE, "", { ...COOKIE_OPTIONS, maxAge: 0 });
@@ -151,20 +214,30 @@ export async function resendConfirmation(
   _state: AuthFormState,
   form: FormData,
 ): Promise<AuthFormState> {
+  const reference = authDiagnosticReference();
   const parsed = emailSchema.safeParse(form.get("email"));
   if (!parsed.success)
     return {
       status: "error",
       message: "Enter a valid email address.",
       action: "retry",
+      reference,
     };
   const store = await cookies();
-  if (store.get(OTP_RESEND_COOKIE))
+  if (store.get(OTP_RESEND_COOKIE)) {
+    recordAuthDiagnostic({
+      stage: "resend-confirmation",
+      action: "resend",
+      outcome: "cooldown",
+      reference,
+    });
     return {
       status: "error",
       message: "Wait for the resend cooldown before requesting another code.",
       action: "retry",
+      reference,
     };
+  }
   try {
     const { error } = await (
       await client()
@@ -172,13 +245,17 @@ export async function resendConfirmation(
       type: "signup",
       email: parsed.data,
     });
-    if (error)
+    if (error) {
+      logAuthError("resend-confirmation", "resend", error, reference);
       return authFailure(
         error,
         "A fresh code could not be requested right now. Wait a moment and try again.",
+        reference,
       );
-  } catch {
-    return unavailable;
+    }
+  } catch (error) {
+    logUnexpected("resend-confirmation", "resend", error, reference);
+    return unavailable(reference);
   }
   store.set(PENDING_EMAIL_COOKIE, parsed.data, COOKIE_OPTIONS);
   store.set(OTP_RESEND_COOKIE, "1", OTP_COOKIE_OPTIONS);
@@ -189,22 +266,27 @@ export async function resendConfirmation(
 }
 
 export async function resetPassword(_state: AuthFormState, form: FormData): Promise<AuthFormState> {
+  const reference = authDiagnosticReference();
   const parsed = emailSchema.safeParse(form.get("email"));
   if (!parsed.success)
-    return { status: "error", message: "Enter a valid email address.", action: "retry" };
+    return { status: "error", message: "Enter a valid email address.", action: "retry", reference };
   try {
     const { error } = await (
       await client()
     ).auth.resetPasswordForEmail(parsed.data, {
       redirectTo: `${appOrigin()}/auth/callback?next=/auth/update-password`,
     });
-    if (error)
+    if (error) {
+      logAuthError("reset-password", "resetPasswordForEmail", error, reference);
       return authFailure(
         error,
         "A recovery email could not be requested right now. Try again in a moment.",
+        reference,
       );
-  } catch {
-    return unavailable;
+    }
+  } catch (error) {
+    logUnexpected("reset-password", "resetPasswordForEmail", error, reference);
+    return unavailable(reference);
   }
   return {
     status: "success",
@@ -217,11 +299,13 @@ export async function updatePassword(
   _state: AuthFormState,
   form: FormData,
 ): Promise<AuthFormState> {
+  const reference = authDiagnosticReference();
   if (!(await getViewer()))
     return {
       status: "error",
       message: "Open a fresh password recovery link to continue.",
       action: "retry",
+      reference,
     };
   const parsed = passwordSchema.safeParse(form.get("password"));
   if (!parsed.success || form.get("password") !== form.get("confirmPassword"))
@@ -229,20 +313,25 @@ export async function updatePassword(
       status: "error",
       message: "Passwords must match and contain 12–128 characters.",
       action: "retry",
+      reference,
     };
   let otherSessions: "revoked" | "unknown" = "unknown";
   try {
     const supabase = await client();
     const { error } = await supabase.auth.updateUser({ password: parsed.data });
-    if (error)
+    if (error) {
+      logAuthError("update-password", "updateUser", error, reference);
       return authFailure(
         error,
         "The password could not be updated. Open a fresh recovery link and try again.",
+        reference,
       );
+    }
     const { error: signOutError } = await supabase.auth.signOut({ scope: "others" });
     otherSessions = signOutError ? "unknown" : "revoked";
-  } catch {
-    return unavailable;
+  } catch (error) {
+    logUnexpected("update-password", "updateUser", error, reference);
+    return unavailable(reference);
   }
   redirect(`/account?password=updated&other_sessions=${otherSessions}`);
 }

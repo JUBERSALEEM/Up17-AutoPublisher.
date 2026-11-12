@@ -4,6 +4,8 @@ import type { AuthFormState } from "./schema";
 export interface AuthFailureLike {
   code?: string;
   status?: number;
+  /** Classification only; never returned, logged or shown to the user. */
+  message?: string;
 }
 
 /** Minimal shape of `auth.signUp()` data needed to detect an email that was not sent. */
@@ -35,44 +37,93 @@ const SESSION_EXPIRED_CODES = [
   "flow_state_not_found",
 ];
 const SIGNUP_DISABLED_CODES = ["signup_disabled", "email_provider_disabled"];
-const INVALID_EMAIL_CODES = ["email_address_invalid", "email_address_not_authorized"];
+const INVALID_EMAIL_CODES = ["email_address_invalid"];
+const EMAIL_DELIVERY_CODES = ["email_send_failed", "email_address_not_authorized"];
+const EMAIL_DELIVERY_MESSAGE =
+  "We could not send the verification email. This is not caused by the details you entered. Please try again in a few minutes; if it continues, contact support.";
 
-function result(message: string, action: AuthFormState["action"] = "retry"): AuthFormState {
-  return { status: "error", message, action };
+/** GoTrue returns a generic 500 for a refused confirmation-email handover. */
+function isEmailDeliveryFailure(error: AuthFailureLike | null): boolean {
+  const code = error?.code ?? "";
+  if (EMAIL_DELIVERY_CODES.includes(code)) return true;
+  return (
+    code === "unexpected_failure" &&
+    typeof error?.message === "string" &&
+    /sending (confirmation|verification|recovery|magic link|invite) email/i.test(error.message)
+  );
+}
+
+function result(
+  message: string,
+  action: AuthFormState["action"] = "retry",
+  reference?: string,
+): AuthFormState {
+  return {
+    status: "error",
+    message,
+    action,
+    ...(reference ? { reference } : {}),
+  };
 }
 
 /**
  * Convert Auth errors into useful, non-enumerating copy. Raw provider/SMTP/token
  * details and stack traces are intentionally never included.
  */
-export function authFailure(error: AuthFailureLike | null, fallback: string): AuthFormState {
+export function authFailure(
+  error: AuthFailureLike | null,
+  fallback: string,
+  reference?: string,
+): AuthFormState {
   const code = error?.code ?? "";
   if (RATE_LIMIT_CODES.some((candidate) => code.includes(candidate)))
-    return result("Too many requests. Wait a few minutes before trying again.");
+    return result("Too many requests. Wait a few minutes before trying again.", "retry", reference);
   if (EXPIRED_CODES.some((candidate) => code.includes(candidate)))
-    return result("That code is invalid or has expired. Request a fresh six-digit code.", "resend");
+    return result(
+      "That code is invalid or has expired. Request a fresh six-digit code.",
+      "resend",
+      reference,
+    );
   if (code === "email_not_confirmed")
-    return result("Enter the six-digit code sent to your email, then sign in.", "verify-code");
+    return result(
+      "Enter the six-digit code sent to your email, then sign in.",
+      "verify-code",
+      reference,
+    );
   if (DUPLICATE_CODES.includes(code))
     return result(
       "This address may already be registered. Sign in or use password recovery if you have forgotten it.",
       "sign-in",
+      reference,
     );
   if (WEAK_PASSWORD_CODES.includes(code))
     return result(
       "Choose a stronger, different password of 12–128 characters that you have not reused.",
+      "retry",
+      reference,
     );
-  if (INVALID_CREDENTIAL_CODES.includes(code)) return result("Email or password not recognised.");
+  if (INVALID_CREDENTIAL_CODES.includes(code))
+    return result("Email or password not recognised.", "retry", reference);
   if (SESSION_EXPIRED_CODES.includes(code))
-    return result("Your session expired. Sign in again.", "sign-in");
+    return result("Your session expired. Sign in again.", "sign-in", reference);
   if (SIGNUP_DISABLED_CODES.includes(code))
-    return result("New account creation is unavailable right now. Try again later.");
+    return result(
+      "New account creation is unavailable right now. Try again later.",
+      "retry",
+      reference,
+    );
   if (INVALID_EMAIL_CODES.includes(code))
-    return result("Enter a valid email address that can receive the verification code.");
+    return result(
+      "Enter a valid email address that can receive the verification code.",
+      "retry",
+      reference,
+    );
   if (code === "captcha_failed")
-    return result("The verification check did not complete. Try again.");
-  if (code === "validation_failed") return result("Check the details you entered and try again.");
-  return result(fallback);
+    return result("The verification check did not complete. Try again.", "retry", reference);
+  if (code === "validation_failed")
+    return result("Check the details you entered and try again.", "retry", reference);
+  if (isEmailDeliveryFailure(error)) return result(EMAIL_DELIVERY_MESSAGE, "retry", reference);
+  return result(fallback, "retry", reference);
 }
 
 /**

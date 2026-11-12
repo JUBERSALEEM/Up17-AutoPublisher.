@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import type { Database } from "@/lib/supabase/database.types";
 import { AUTH_COOKIE } from "@/lib/supabase/constants";
+import { authDiagnosticReference, recordAuthDiagnostic } from "@/lib/auth/diagnostics";
 
 export async function proxy(request: NextRequest) {
   const response = NextResponse.next({ request });
@@ -30,8 +31,15 @@ export async function proxy(request: NextRequest) {
   });
   try {
     await client.auth.getClaims();
-  } catch {
+  } catch (error) {
     /* Protected server reads still verify the user; never log cookies/tokens. */
+    recordAuthDiagnostic({
+      stage: "proxy",
+      action: "getClaims",
+      outcome: "claims-refresh-failed",
+      reference: authDiagnosticReference(),
+      error,
+    });
   }
   return response;
 }
