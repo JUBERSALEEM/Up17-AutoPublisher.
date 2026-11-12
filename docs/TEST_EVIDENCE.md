@@ -289,3 +289,5 @@ Browser gates used the documented registry-only Chromium fallback with `PLAYWRIG
 | Production / SSO / RLS / private storage / publishing lock | PASS — unchanged |
 
 The earlier link-based / eight-digit OTP / no-SMTP hosted snapshot in this document is superseded by the fresh config read above. A READY deployment or local browser PASS is not hosted acceptance.
+
+**Correction:** the first READY Core Stability deployment is superseded because its Git tree omitted `app/api/media/access/route.ts` due to the broad `media/` ignore rule. A narrow `.gitignore` exception and a rerun of the complete check precede the final commit/deployment. The final exact-SHA immutable URL appears in the delivery record, not in this document.

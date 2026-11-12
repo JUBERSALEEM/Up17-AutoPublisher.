@@ -106,6 +106,10 @@ samconfig.toml
 *.sqlite3
 *.db
 media/
+# Source code for the same-origin media access API is not local media content.
+!app/api/media/
+!app/api/media/access/
+!app/api/media/access/route.ts
 uploads/
 tmp/
 .DS_Store

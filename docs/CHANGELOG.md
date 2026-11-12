@@ -158,3 +158,7 @@ Earlier autonomous-milestone runtime commit `df774e42ccf098b0c7c4959a7d144308bbd
 - Added a 320px all-destination navigation regression covering direct URLs, back/forward, refresh, route persistence and no horizontal overflow; corrected the media E2E test's hardcoded origin port.
 - Corrected stale link-based / eight-digit OTP / no-SMTP documentation using the fresh hosted Auth read. The prior owner checklist is historical and paused.
 - Full post-fix local suite PASS: `npm run check`, 129 E2E, 154 visual, 86 axe, 62 clay and 13 development-navigation assertions. Hosted signup, email verification, onboarding, workspace isolation and owner-authenticated Preview navigation remain NOT TESTED.
+
+### Git artifact correction
+
+The first Core Stability commit built READY on Vercel but its Git tree omitted `app/api/media/access/route.ts`: the broad `media/` ignore rule excluded this API source directory. Added a narrow `.gitignore` exception for that directory and route only, reran the complete check, then committed and pushed the corrected tree. The earlier deployment is superseded; use only the final exact-SHA immutable Preview URL in the delivery record.

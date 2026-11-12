@@ -41,3 +41,9 @@ Hosted cases still NOT TESTED
 - Exact deployed Preview build page switching behind Vercel SSO, desktop/mobile/320px layouts, direct URLs, back/forward, refresh and route persistence.
 - Authorized Supabase Auth/Logflare log entry containing the exact signup error.
 No fake users, autoconfirm, verification bypass, SMTP credentials, service-role keys, Vercel SSO changes, Production changes, publishing, social OAuth or paid services were introduced.
+
+Git artifact correction (after first READY deployment)
+- Inspecting the committed tree found app/api/media/access/route.ts ABSENT from HEAD and 848308f; .gitignore line 108 had a broad media/ rule. The local file was present but ignored, so the earlier local build route count was not representative of a Git-based Vercel clone.
+- The first Core Stability commit 76aef79c4eb5219df029f1565e5e6237d15d73e8 produced READY/private dpl_3835jU6LDFh7BpdQ2bKZAD6o1VLC at autopublisher-q69rxt0u7-auto-uploader.vercel.app, but the route was absent from that Git tree. That deployment is superseded and is NOT final acceptance.
+- .gitignore now has narrow negated patterns for app/api/media/, app/api/media/access/ and app/api/media/access/route.ts; git status shows the route as an untracked candidate and docs:check passes with 229 artifact candidates.
+- The complete check/build was rerun on the corrected tree: PASS (15 unit files / 96 tests, 1 integration / 4 tests, 48 Python validator tests, 8 TypeScript security tests, docs 16/155/232/229, 28 build routes including /api/media/access). E2E was rerun on port 3112: PASS 129/129. Visual 154/154, axe 86/86, clay 62/62 and dev navigation 13/13 had already passed on the same runtime source before the ignore-rule correction; no runtime source changed in that correction. Final exact SHA, deployment ID and immutable URL are reported in the final delivery record; no separate document contains its own commit hash.
